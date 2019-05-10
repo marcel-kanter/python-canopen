@@ -21,9 +21,47 @@ class NetworkTestCase(unittest.TestCase):
 	
 	def test_message(self):
 		network = canopen.Network()
-		message = can.Message(arbitration_id = 0x100, data = [])
 		
+		cb = Mock()
+		network.subscribe(cb, 0x100)
+		network.subscribe(self.__callback_raise, 0x100)
+		
+		message = can.Message(arbitration_id = 0x100, data = [])
 		network.on_message(message)
+		cb.assert_called_once()
+		
+		message = can.Message(arbitration_id = 0x200, data = [])
+		network.on_message(message)
+		cb.assert_called_once()
+		
+		network.unsubscribe(cb, 0x100)
+		
+		message = can.Message(arbitration_id = 0x100, data = [])
+		network.on_message(message)
+		cb.assert_called_once()
+		
+		network.unsubscribe(self.__callback_raise, 0x100)
+	
+	def test_subscribe(self):
+		network = canopen.Network()
+		
+		cb = object()
+		
+		with self.assertRaises(TypeError):
+			network.subscribe(cb, 0x100)
+		
+		with self.assertRaises(TypeError):
+			network.unsubscribe(cb, 0x100)
+		
+		cb = Mock()
+		
+		network.subscribe(cb, 0x100)
+		with self.assertRaises(KeyError):
+			network.unsubscribe(cb, 0x200)
+		network.unsubscribe(cb, 0x100)
+	
+	def __callback_raise(self, message):
+		raise Exception()
 
 
 class MessageListenerTestCase(unittest.TestCase):
