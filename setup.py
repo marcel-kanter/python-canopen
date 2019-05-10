@@ -9,6 +9,7 @@ setup(
 	version = version,
 	packages = ["canopen"],
 
+	install_requires = ["python-can >= 3.0.0"],
 	setup_requires = ["pytest-runner"],
 	tests_require = ["pytest", "pytest-timeout", "pytest-cov"],
 
