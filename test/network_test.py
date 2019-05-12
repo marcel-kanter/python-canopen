@@ -60,6 +60,48 @@ class NetworkTestCase(unittest.TestCase):
 			network.unsubscribe(cb, 0x200)
 		network.unsubscribe(cb, 0x100)
 	
+	def test_collection(self):
+		network = canopen.Network()
+		
+		# append
+		x = canopen.Network()
+		with self.assertRaises(TypeError):
+			network.append(x)
+		
+		n1 = canopen.Node("n1", 10)
+		network.append(n1)
+		self.assertEqual(len(network), 1)
+		
+		x = canopen.Node("n1", 20)
+		with self.assertRaises(ValueError):
+			network.append(x)
+		x = canopen.Node("n2", 10)
+		with self.assertRaises(ValueError):
+			network.append(x)
+		
+		n2 = canopen.Node("n2", 20)
+		network.append(n2)
+		self.assertEqual(len(network), 2)
+		
+		# contains
+		self.assertFalse("xxx" in network)
+		self.assertFalse(99 in network)
+		self.assertTrue(n1.name in network)
+		self.assertTrue(n1.id in network)
+		self.assertTrue(n2.name in network)
+		self.assertTrue(n2.id in network)
+		
+		# iter, getitem
+		items = []
+		for k in network:
+			items.append(network[k])
+		
+		# delitem
+		for x in items:
+			del network[x.name]
+		
+		self.assertEqual(len(network), 0)
+	
 	def __callback_raise(self, message):
 		raise Exception()
 
