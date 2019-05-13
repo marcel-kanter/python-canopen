@@ -1,5 +1,5 @@
 import can
-from .node import Node
+import canopen.node
 
 
 class Network(object):
@@ -39,7 +39,7 @@ class Network(object):
 		del self._items_name[item.name]
 	
 	def append(self, value):
-		if not isinstance(value, Node):
+		if not isinstance(value, canopen.Node):
 			raise TypeError()
 		if value.id in self._items_id or value.name in self._items_name:
 			raise ValueError()
