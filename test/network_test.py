@@ -9,13 +9,13 @@ class NetworkTestCase(unittest.TestCase):
 		network = canopen.Network()
 		bus = can.Bus(interface = "virtual", channel = 0)
 		
-		network.disconnect()
+		network.detach()
 		
-		network.connect(bus)
+		network.attach(bus)
 		
-		network.connect(bus)
+		network.attach(bus)
 		
-		network.disconnect()
+		network.detach()
 		
 		bus.shutdown()
 	

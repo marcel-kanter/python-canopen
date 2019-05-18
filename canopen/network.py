@@ -47,14 +47,14 @@ class Network(object):
 		self._items_id[value.id] = value
 		self._items_name[value.name] = value
 	
-	def connect(self, bus):
+	def attach(self, bus):
 		if self._bus != None:
-			self.disconnect()
+			self.detach()
 		
 		self._bus = bus
 		self._notifier = can.Notifier(self._bus, self._listeners)
 	
-	def disconnect(self):
+	def detach(self):
 		if self._notifier != None:
 			self._notifier.stop()
 		self._notifier = None
