@@ -29,9 +29,15 @@ class ObjectDictionaryTestCase(unittest.TestCase):
 		dictionary.append(r)
 		self.assertEqual(len(dictionary), 2)
 		
+		with self.assertRaises(ValueError):
+			dictionary.append(r)
+		
 		v = canopen.objectdictionary.Variable("var", 300, 0)
 		dictionary.append(v)
 		self.assertEqual(len(dictionary), 3)
+		
+		with self.assertRaises(ValueError):
+			dictionary.append(v)
 		
 		# contains
 		self.assertFalse("xxx" in dictionary)
