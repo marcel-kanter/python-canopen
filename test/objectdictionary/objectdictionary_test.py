@@ -1,10 +1,10 @@
 import unittest
-import canopen
+import canopen.objectdictionary
 
 
 class ObjectDictionaryTestCase(unittest.TestCase):
 	def test_init(self):
-		dictionary = canopen.ObjectDictionary()
+		canopen.ObjectDictionary()
 	
 	def test_collection(self):
 		dictionary = canopen.ObjectDictionary()
@@ -32,7 +32,7 @@ class ObjectDictionaryTestCase(unittest.TestCase):
 		with self.assertRaises(ValueError):
 			dictionary.append(r)
 		
-		v = canopen.objectdictionary.Variable("var", 300, 0)
+		v = canopen.objectdictionary.Variable("var", 300, 0, canopen.objectdictionary.UNSIGNED32)
 		dictionary.append(v)
 		self.assertEqual(len(dictionary), 3)
 		

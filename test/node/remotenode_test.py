@@ -5,15 +5,15 @@ import canopen
 class RemoteNodeTestCase(unittest.TestCase):
 	def test_init(self):
 		with self.assertRaises(ValueError):
-			node = canopen.RemoteNode("n", 0)
+			canopen.RemoteNode("n", 0)
 		with self.assertRaises(ValueError):
-			node = canopen.RemoteNode("n", 128)
+			canopen.RemoteNode("n", 128)
 		
 		name = "n"
-		id = 1
-		node = canopen.RemoteNode(name, id)
+		node_id = 1
+		node = canopen.RemoteNode(name, node_id)
 		
-		self.assertEqual(node.id, id)
+		self.assertEqual(node.id, node_id)
 		self.assertEqual(node.name, name)
 		self.assertEqual(node.network, None)
 		

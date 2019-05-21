@@ -1,13 +1,13 @@
 import unittest
-import canopen
+import canopen.objectdictionary
 
 
 class RecordTestCase(unittest.TestCase):
 	def test_init(self):
 		with self.assertRaises(ValueError):
-			record = canopen.objectdictionary.Record("rec", -1)
+			canopen.objectdictionary.Record("rec", -1)
 		with self.assertRaises(ValueError):
-			record = canopen.objectdictionary.Record("rec", 65536)
+			canopen.objectdictionary.Record("rec", 65536)
 		
 		name = "rec"
 		index = 100
@@ -33,22 +33,22 @@ class RecordTestCase(unittest.TestCase):
 		with self.assertRaises(TypeError):
 			record.append(x)
 		
-		x = canopen.objectdictionary.Variable("var", 200, 0)
+		x = canopen.objectdictionary.Variable("var", 200, 0, canopen.objectdictionary.UNSIGNED32)
 		with self.assertRaises(ValueError):
 			record.append(x)
 		
-		v1 = canopen.objectdictionary.Variable("var1", 100, 0)
+		v1 = canopen.objectdictionary.Variable("var1", 100, 0, canopen.objectdictionary.UNSIGNED32)
 		record.append(v1)
 		self.assertEqual(len(record), 1)
 		
-		x = canopen.objectdictionary.Variable("var1", 100, 1)
+		x = canopen.objectdictionary.Variable("var1", 100, 1, canopen.objectdictionary.UNSIGNED32)
 		with self.assertRaises(ValueError):
 			record.append(x)
-		x = canopen.objectdictionary.Variable("rec", 100, 0)
+		x = canopen.objectdictionary.Variable("rec", 100, 0, canopen.objectdictionary.UNSIGNED32)
 		with self.assertRaises(ValueError):
 			record.append(x)
 		
-		v2 = canopen.objectdictionary.Variable("var2", 100, 1)
+		v2 = canopen.objectdictionary.Variable("var2", 100, 1, canopen.objectdictionary.UNSIGNED32)
 		record.append(v2)
 		self.assertEqual(len(record), 2)
 		

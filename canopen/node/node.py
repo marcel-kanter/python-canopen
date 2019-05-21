@@ -2,11 +2,11 @@ import canopen
 
 
 class Node(object):
-	def __init__(self, name, id):
-		if id < 1 or id > 127:
+	def __init__(self, name, node_id):
+		if node_id < 1 or node_id > 127:
 			raise ValueError()
 		
-		self._id = id
+		self._id = node_id
 		self._name = name
 		self._network = None
 	

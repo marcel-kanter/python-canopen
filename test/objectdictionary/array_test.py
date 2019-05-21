@@ -1,13 +1,13 @@
 import unittest
-import canopen
+import canopen.objectdictionary
 
 
 class ArrayTestCase(unittest.TestCase):
 	def test_init(self):
 		with self.assertRaises(ValueError):
-			array = canopen.objectdictionary.Array("arr", -1)
+			canopen.objectdictionary.Array("arr", -1)
 		with self.assertRaises(ValueError):
-			array = canopen.objectdictionary.Array("arr", 65536)
+			canopen.objectdictionary.Array("arr", 65536)
 		
 		name = "arr"
 		index = 100
@@ -33,22 +33,22 @@ class ArrayTestCase(unittest.TestCase):
 		with self.assertRaises(TypeError):
 			array.append(x)
 		
-		x = canopen.objectdictionary.Variable("var", 200, 0)
+		x = canopen.objectdictionary.Variable("var", 200, 0, canopen.objectdictionary.UNSIGNED32)
 		with self.assertRaises(ValueError):
 			array.append(x)
 		
-		v1 = canopen.objectdictionary.Variable("var1", 100, 0)
+		v1 = canopen.objectdictionary.Variable("var1", 100, 0, canopen.objectdictionary.UNSIGNED32)
 		array.append(v1)
 		self.assertEqual(len(array), 1)
 		
-		x = canopen.objectdictionary.Variable("var1", 100, 1)
+		x = canopen.objectdictionary.Variable("var1", 100, 1, canopen.objectdictionary.UNSIGNED32)
 		with self.assertRaises(ValueError):
 			array.append(x)
-		x = canopen.objectdictionary.Variable("rec", 100, 0)
+		x = canopen.objectdictionary.Variable("rec", 100, 0, canopen.objectdictionary.UNSIGNED32)
 		with self.assertRaises(ValueError):
 			array.append(x)
 		
-		v2 = canopen.objectdictionary.Variable("var2", 100, 1)
+		v2 = canopen.objectdictionary.Variable("var2", 100, 1, canopen.objectdictionary.UNSIGNED32)
 		array.append(v2)
 		self.assertEqual(len(array), 2)
 		
