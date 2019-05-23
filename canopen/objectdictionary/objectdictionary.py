@@ -11,7 +11,7 @@ class ObjectDictionary(collections.abc.Collection):
 	
 	def __contains__(self, key):
 		try:
-			x = self[key]
+			self[key]
 		except:
 			return False
 		else:
