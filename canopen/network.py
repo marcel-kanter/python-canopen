@@ -14,7 +14,7 @@ class Network(object):
 	
 	def __contains__(self, key):
 		try:
-			x = self[key]
+			self[key]
 		except:
 			return False
 		else:
@@ -35,6 +35,7 @@ class Network(object):
 	
 	def __delitem__(self, key):
 		item = self[key]
+		item.detach()
 		del self._items_id[item.id]
 		del self._items_name[item.name]
 	
@@ -46,6 +47,7 @@ class Network(object):
 		
 		self._items_id[value.id] = value
 		self._items_name[value.name] = value
+		value.attach(self)
 	
 	def attach(self, bus):
 		if self._bus != None:

@@ -110,7 +110,7 @@ class MessageListenerTestCase(unittest.TestCase):
 	def test_init(self):
 		x = object()
 		with self.assertRaises(TypeError):
-			listener = canopen.network.MessageListener(x)
+			canopen.network.MessageListener(x)
 	
 	def test_message(self):
 		network = canopen.Network()
