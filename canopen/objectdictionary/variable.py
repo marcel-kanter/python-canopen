@@ -4,7 +4,7 @@ from .datatypes import *
 
 class Variable(object):
 	def __init__(self, name, index, subindex, data_type):
-		allowed_types = [BOOLEAN, INTEGER8, INTEGER16, INTEGER32, UNSIGNED8, UNSIGNED16, UNSIGNED32, REAL32, VISIBLE_STRING, OCTET_STRING, UNICODE_STRING, DOMAIN, INTEGER24, REAL64, INTEGER40, INTEGER48, INTEGER56, INTEGER64, UNSIGNED24, UNSIGNED40, UNSIGNED48, UNSIGNED56, UNSIGNED64]
+		allowed_types = [BOOLEAN, INTEGER8, INTEGER16, INTEGER32, UNSIGNED8, UNSIGNED16, UNSIGNED32, REAL32, VISIBLE_STRING, OCTET_STRING, UNICODE_STRING, TIME_OF_DAY, TIME_DIFFERENCE, DOMAIN, INTEGER24, REAL64, INTEGER40, INTEGER48, INTEGER56, INTEGER64, UNSIGNED24, UNSIGNED40, UNSIGNED48, UNSIGNED56, UNSIGNED64]
 		
 		if index < 0 or index > 65535:
 			raise ValueError()
@@ -109,6 +109,12 @@ class Variable(object):
 		except:
 			raise ValueError()
 		
+		if self._data_type == TIME_OF_DAY:
+			raise NotImplementedError()
+		
+		if self._data_type == TIME_DIFFERENCE:
+			raise NotImplementedError()
+		
 		return value
 	
 	def encode(self, value):
@@ -185,6 +191,12 @@ class Variable(object):
 				data = struct.pack("<Q", value)
 		except:
 			raise ValueError()
+		
+		if self._data_type == TIME_OF_DAY:
+			raise NotImplementedError()
+		
+		if self._data_type == TIME_DIFFERENCE:
+			raise NotImplementedError()
 		
 		return data
 	

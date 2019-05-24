@@ -104,6 +104,14 @@ class VariableTestCase(unittest.TestCase):
 		e = variable.encode("TEXT")
 		self.assertEqual(e, b"T\x00E\x00X\x00T\x00")
 		
+		variable = canopen.objectdictionary.Variable("TIME_OF_DAY", 100, 0, canopen.objectdictionary.TIME_OF_DAY)
+		with self.assertRaises(NotImplementedError):
+			variable.encode(0.0)
+		
+		variable = canopen.objectdictionary.Variable("TIME_DIFFERENCE", 100, 0, canopen.objectdictionary.TIME_DIFFERENCE)
+		with self.assertRaises(NotImplementedError):
+			variable.encode(0.0)
+		
 		variable = canopen.objectdictionary.Variable("DOMAIN", 100, 0, canopen.objectdictionary.DOMAIN)
 		e = variable.encode(b"\xA5\x5A")
 		self.assertEqual(e, b"\xA5\x5A")
@@ -246,6 +254,14 @@ class VariableTestCase(unittest.TestCase):
 		variable = canopen.objectdictionary.Variable("UNICODE_STRING", 100, 0, canopen.objectdictionary.UNICODE_STRING)
 		d = variable.decode(b"T\x00E\x00X\x00T\x00")
 		self.assertEqual(d, "TEXT")
+		
+		variable = canopen.objectdictionary.Variable("TIME_OF_DAY", 100, 0, canopen.objectdictionary.TIME_OF_DAY)
+		with self.assertRaises(NotImplementedError):
+			variable.decode(0.0)
+		
+		variable = canopen.objectdictionary.Variable("TIME_DIFFERENCE", 100, 0, canopen.objectdictionary.TIME_DIFFERENCE)
+		with self.assertRaises(NotImplementedError):
+			variable.decode(0.0)
 		
 		variable = canopen.objectdictionary.Variable("DOMAIN", 100, 0, canopen.objectdictionary.DOMAIN)
 		d = variable.decode(b"\xA5\x5A")
