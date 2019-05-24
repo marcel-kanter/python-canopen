@@ -24,6 +24,26 @@ class LocalNodeTestCase(unittest.TestCase):
 		with self.assertRaises(AttributeError):
 			node.network = None
 
+	def test_attach_detach(self):
+		network1 = canopen.Network()
+		network2 = canopen.Network()
+		node = canopen.LocalNode("n", 1)
+		
+		with self.assertRaises(TypeError):
+			node.attach(None)
+		
+		node.attach(network1)
+		
+		self.assertEqual(node.network, network1)
+		
+		with self.assertRaises(ValueError):
+			node.attach(network1)
+		
+		node.attach(network2)
+		
+		self.assertEqual(node.network, network2)
+		
+		node.detach()
 
 if __name__ == "__main__":
 	unittest.main()

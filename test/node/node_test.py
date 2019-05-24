@@ -24,7 +24,7 @@ class NodeTestCase(unittest.TestCase):
 		with self.assertRaises(AttributeError):
 			node.network = None
 	
-	def test_attach(self):
+	def test_attach_detach(self):
 		network1 = canopen.Network()
 		network2 = canopen.Network()
 		node = canopen.Node("n", 1)
