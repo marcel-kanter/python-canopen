@@ -1,26 +1,19 @@
 import struct
-import canopen.node
+from .service import Service
 
 
-class NMTSlave(object):
+class NMTSlave(Service):
 	def __init__(self):
-		self._node = None
+		Service.__init__(self)
 		self._state = 0
 	
 	def attach(self, node):
-		if not isinstance(node, canopen.node.Node):
-			raise TypeError()
-		if self._node == node:
-			raise ValueError()
-		if self._node != None:
-			self.detach()
-		
-		self._node = node
+		Service.attach(self, node)
 		self._node.network.subscribe(self.on_node_control, 0x000)
 	
 	def detach(self):
 		self._node.network.unsubscribe(self.on_node_control, 0x000)
-		self._node = None
+		Service.detach(self)
 	
 	def on_node_control(self, message):
 		if message.dlc != 2:
