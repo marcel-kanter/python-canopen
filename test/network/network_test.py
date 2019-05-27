@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import Mock
-import canopen
+import canopen.network
 import can
 
 
