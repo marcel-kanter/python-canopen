@@ -130,6 +130,33 @@ class NMTSlaveTestCase(unittest.TestCase):
 		
 		network.detach()
 		bus.shutdown()
+	
+	def test_error_control(self):
+		bus = can.Bus(interface = "virtual", channel = 0, receive_own_messages = True)
+		network = canopen.Network()
+		node = canopen.LocalNode("a", 0x0A)
+		
+		network.attach(bus)
+		network.append(node)
+		
+		self.assertEqual(node.nmt.state, 0x00)
+		
+		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, data = [])
+		bus.send(message)
+		time.sleep(0.001)
+		
+		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 2)
+		bus.send(message)
+		time.sleep(0.001)
+		
+		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 1)
+		bus.send(message)
+		time.sleep(0.001)
+		
+		self.assertEqual(node.nmt.state, 0x00)
+		
+		network.detach()
+		bus.shutdown()
 
 
 if __name__ == "__main__":
