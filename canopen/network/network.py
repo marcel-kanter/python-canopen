@@ -50,6 +50,10 @@ class Network(object):
 		value.attach(self)
 	
 	def attach(self, bus):
+		if not isinstance(bus, can.BusABC):
+			raise TypeError()
+		if self._bus == bus:
+			raise ValueError()
 		if self._bus != None:
 			self.detach()
 		
@@ -57,8 +61,10 @@ class Network(object):
 		self._notifier = can.Notifier(self._bus, self._listeners)
 	
 	def detach(self):
-		if self._notifier != None:
-			self._notifier.stop()
+		if self._bus == None:
+			raise RuntimeError()
+		
+		self._notifier.stop()
 		self._notifier = None
 		self._bus = None
 	

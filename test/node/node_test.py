@@ -29,6 +29,9 @@ class NodeTestCase(unittest.TestCase):
 		network2 = canopen.Network()
 		node = canopen.Node("n", 1)
 		
+		with self.assertRaises(RuntimeError):
+			node.detach()
+		
 		with self.assertRaises(TypeError):
 			node.attach(None)
 		

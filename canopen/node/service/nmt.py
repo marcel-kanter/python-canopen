@@ -17,6 +17,9 @@ class NMTSlave(Service):
 		self._node.network.subscribe(self.on_error_control, 0x700 + self._node.id)
 	
 	def detach(self):
+		if self._node == None:
+			raise RuntimeError()
+		
 		self._node.network.unsubscribe(self.on_error_control, 0x700 + self._node.id)
 		self._node.network.unsubscribe(self.on_node_control, 0x000)
 		Service.detach(self)

@@ -21,6 +21,9 @@ class NMTSlaveTestCase(unittest.TestCase):
 		node1.attach(network)
 		node2.attach(network)
 		
+		with self.assertRaises(RuntimeError):
+			nmt.detach()
+		
 		with self.assertRaises(TypeError):
 			nmt.attach(None)
 		

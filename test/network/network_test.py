@@ -6,18 +6,30 @@ import can
 
 class NetworkTestCase(unittest.TestCase):
 	def test_init(self):
+		canopen.Network()
+	
+	def test_attach_detach(self):
 		network = canopen.Network()
-		bus = can.Bus(interface = "virtual", channel = 0)
+		bus1 = can.Bus(interface = "virtual", channel = 0)
+		bus2 = can.Bus(interface = "virtual", channel = 0)
+		
+		with self.assertRaises(RuntimeError):
+			network.detach()
+		
+		with self.assertRaises(TypeError):
+			network.attach(None)
+		
+		network.attach(bus1)
+		
+		with self.assertRaises(ValueError):
+			network.attach(bus1)
+		
+		network.attach(bus2)
 		
 		network.detach()
 		
-		network.attach(bus)
-		
-		network.attach(bus)
-		
-		network.detach()
-		
-		bus.shutdown()
+		bus1.shutdown()
+		bus2.shutdown()
 	
 	def test_message(self):
 		network = canopen.Network()

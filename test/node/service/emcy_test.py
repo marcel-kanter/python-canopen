@@ -15,6 +15,9 @@ class EMCYProducerTestCase(unittest.TestCase):
 		node1.attach(network)
 		node2.attach(network)
 		
+		with self.assertRaises(RuntimeError):
+			emcyproducer.detach()
+		
 		with self.assertRaises(TypeError):
 			emcyproducer.attach(None)
 		

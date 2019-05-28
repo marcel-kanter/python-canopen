@@ -16,4 +16,7 @@ class Service(object):
 		self._node = node
 	
 	def detach(self):
+		if self._node == None:
+			raise RuntimeError()
+		
 		self._node = None

@@ -15,6 +15,9 @@ class ServiceTestCase(unittest.TestCase):
 		node1.attach(network)
 		node2.attach(network)
 		
+		with self.assertRaises(RuntimeError):
+			service.detach()
+		
 		with self.assertRaises(TypeError):
 			service.attach(None)
 		

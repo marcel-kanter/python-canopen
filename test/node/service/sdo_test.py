@@ -15,6 +15,9 @@ class SDOServerTestCase(unittest.TestCase):
 		node1.attach(network)
 		node2.attach(network)
 		
+		with self.assertRaises(RuntimeError):
+			sdoserver.detach()
+		
 		with self.assertRaises(TypeError):
 			sdoserver.attach(None)
 		

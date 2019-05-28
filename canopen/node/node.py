@@ -21,6 +21,9 @@ class Node(object):
 		self._network = network
 	
 	def detach(self):
+		if self._network == None:
+			raise RuntimeError()
+		
 		self._network = None
 	
 	@property
