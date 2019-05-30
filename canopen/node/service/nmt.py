@@ -31,7 +31,7 @@ class NMTSlave(Service):
 			return
 		
 		response = can.Message(arbitration_id = 0x700 + self._node.id, is_extended_id = False, data = [self._toggle_bit | self._state])
-		# TODO: Send node guarding message
+		self._node.network.send(response)
 		
 		self._toggle_bit ^= 0x80
 	
@@ -51,9 +51,11 @@ class NMTSlave(Service):
 			if command == 0x81: # Enter NMT reset application
 				self._state = 0x00
 				self._toggle_bit = 0x00
+				self._state = 0x7F
 			if command == 0x82: # Enter NMT reset communication
 				self._state = 0x00
 				self._toggle_bit = 0x00
+				self._state = 0x7F
 	
 	@property
 	def state(self):
