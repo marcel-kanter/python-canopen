@@ -1,8 +1,9 @@
+import collections
 import can
 import canopen.node
 
 
-class Network(object):
+class Network(collections.abc.Collection):
 	def __init__(self):
 		self._bus = None
 		self._listeners = [MessageListener(self)]
@@ -67,6 +68,9 @@ class Network(object):
 		self._notifier.stop()
 		self._notifier = None
 		self._bus = None
+	
+	def send(self, message):
+		self._bus.send(message)
 	
 	def subscribe(self, callback, message_id):
 		if not callable(callback):

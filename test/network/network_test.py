@@ -1,4 +1,5 @@
 import unittest
+import time
 from unittest.mock import Mock
 import canopen.network
 import can
@@ -113,6 +114,28 @@ class NetworkTestCase(unittest.TestCase):
 			del network[x.name]
 		
 		self.assertEqual(len(network), 0)
+	
+	def test_send(self):
+		network = canopen.Network()
+		bus1 = can.Bus(interface = "virtual", channel = 0)
+		bus2 = can.Bus(interface = "virtual", channel = 0)
+		
+		network.attach(bus1)
+		
+		message_send = can.Message(arbitration_id = 0x100, is_extended_id = False, data = b"\x11\x22\x33\x44")
+		network.send(message_send)
+		
+		time.sleep(0.001)
+		
+		message_recv = bus2.recv()
+		self.assertEqual(message_recv.arbitration_id, message_send.arbitration_id)
+		self.assertEqual(message_recv.is_extended_id, message_send.is_extended_id)
+		self.assertEqual(message_recv.data, message_send.data)
+		
+		network.detach()
+		
+		bus1.shutdown()
+		bus2.shutdown()
 	
 	def __callback_raise(self, message):
 		raise Exception()
