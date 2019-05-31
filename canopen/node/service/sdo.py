@@ -1,4 +1,7 @@
+import struct
+import can
 from .service import Service
+import canopen.objectdictionary
 
 
 class SDOServer(Service):
@@ -38,26 +41,79 @@ class SDOServer(Service):
 		if command == 0xE0: # Network indication
 			self._on_network_indication(message)
 	
+	def _abort(self, index, subindex, code):
+		message = can.Message(arbitration_id = 0x580 + self._node.id, is_extended_id = False, data = struct.pack("<BHBL", 0x80, index, subindex, code))
+		self._node.network.send(message)
+	
 	def _on_download_segment(self, message):
-		pass
+		command, request_data = struct.unpack_from("<B7s", message.data)
+		
+		raise NotImplementedError
 	
 	def _on_initiate_download(self, message):
-		pass
+		command, index, subindex, request_data = struct.unpack("<BHB4s", message.data)
+		
+		try:
+			item = self._node.dictionary[index]
+		except:
+			# 0x06020000 Object does not exist in the object dictionary.
+			self._abort(index, subindex, 0x06020000)
+			return
+		
+		if not isinstance(item, canopen.objectdictionary.Variable):
+			try:
+				item = item[subindex]
+			except:
+				# 0x06090011 Sub-index does not exist.
+				self._abort(index, subindex, 0x06090011)
+				return
+		
+		if "w" not in item.access_type:
+			# 0x06010002 Attempt to write a read only object.
+			self._abort(index, subindex, 0x06010002)
+			return
 	
 	def _on_initiate_upload(self, message):
-		pass
+		command, index, subindex, request_data = struct.unpack("<BHB4s", message.data)
+		
+		try:
+			item = self._node.dictionary[index]
+		except:
+			# 0x06020000 Object does not exist in the object dictionary.
+			self._abort(index, subindex, 0x06020000)
+			return
+		
+		if not isinstance(item, canopen.objectdictionary.Variable):
+			try:
+				item = item[subindex]
+			except:
+				# 0x06090011 Sub-index does not exist.
+				self._abort(index, subindex, 0x06090011)
+				return
+		
+		if "r" not in item.access_type:
+			# 0x06010001 Attempt to read a write only object.
+			self._abort(index, subindex, 0x06010001)
+			return
 	
 	def _on_upload_segment(self, message):
-		pass
+		command, request_data = struct.unpack_from("<B7s", message.data)
+		
+		raise NotImplementedError
 	
 	def _on_abort(self, message):
-		pass
+		command, index, subindex, code = struct.unpack("<BHBL", message.data)
+		
+		raise NotImplementedError
 	
 	def _on_block_upload(self, message):
-		pass
+		# 0x05040001 Client/server command specifier not valid or unknown.
+		self._abort(0, 0, 0x05040001)
 	
 	def _on_block_download(self, message):
-		pass
+		# 0x05040001 Client/server command specifier not valid or unknown.
+		self._abort(0, 0, 0x05040001)
 	
 	def _on_network_indication(self, message):
-		pass
+		# 0x05040001 Client/server command specifier not valid or unknown.
+		self._abort(0, 0, 0x05040001)
