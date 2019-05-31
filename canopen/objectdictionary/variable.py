@@ -3,7 +3,7 @@ from .datatypes import *
 
 
 class Variable(object):
-	def __init__(self, name, index, subindex, data_type):
+	def __init__(self, name, index, subindex, data_type, access_type = "rw"):
 		allowed_types = [BOOLEAN, INTEGER8, INTEGER16, INTEGER32, UNSIGNED8, UNSIGNED16, UNSIGNED32, REAL32, VISIBLE_STRING, OCTET_STRING, UNICODE_STRING, TIME_OF_DAY, TIME_DIFFERENCE, DOMAIN, INTEGER24, REAL64, INTEGER40, INTEGER48, INTEGER56, INTEGER64, UNSIGNED24, UNSIGNED40, UNSIGNED48, UNSIGNED56, UNSIGNED64]
 		
 		if index < 0 or index > 65535:
@@ -12,11 +12,14 @@ class Variable(object):
 			raise ValueError()
 		if data_type not in allowed_types:
 			raise ValueError()
+		if access_type not in ["r", "w", "rw"]:
+			raise ValueError()
 		
-		self._name = name
+		self._name = str(name)
 		self._index = index
 		self._subindex = subindex
 		self._data_type = data_type
+		self._access_type = access_type
 	
 	def decode(self, data):
 		value = None
@@ -215,3 +218,7 @@ class Variable(object):
 	@property
 	def data_type(self):
 		return self._data_type
+	
+	@property
+	def access_type(self):
+		return self._access_type

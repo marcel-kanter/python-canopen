@@ -14,17 +14,21 @@ class VariableTestCase(unittest.TestCase):
 			canopen.objectdictionary.Variable("var", 0, 256, canopen.objectdictionary.UNSIGNED32)
 		with self.assertRaises(ValueError):
 			canopen.objectdictionary.Variable("var", 0, 0, 0)
+		with self.assertRaises(ValueError):
+			canopen.objectdictionary.Variable("var", 0, 0, canopen.objectdictionary.UNSIGNED32, "X")
 		
 		name = "var"
 		index = 100
 		subindex = 0
 		data_type = canopen.objectdictionary.UNSIGNED32
-		variable = canopen.objectdictionary.Variable(name, index, subindex, data_type)
+		access_type = "rw"
+		variable = canopen.objectdictionary.Variable(name, index, subindex, data_type, access_type)
 		
 		self.assertEqual(variable.name, name)
 		self.assertEqual(variable.index, index)
 		self.assertEqual(variable.subindex, subindex)
 		self.assertEqual(variable.data_type, data_type)
+		self.assertEqual(variable.access_type, access_type)
 		
 		with self.assertRaises(AttributeError):
 			variable.name = name
@@ -34,7 +38,12 @@ class VariableTestCase(unittest.TestCase):
 			variable.subindex = subindex
 		with self.assertRaises(AttributeError):
 			variable.data_type = data_type
-
+		with self.assertRaises(AttributeError):
+			variable.access_type = access_type
+		
+		canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32, "r")
+		canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32, "w")
+	
 	def test_encode(self):
 		variable = canopen.objectdictionary.Variable("BOOLEAN", 100, 0, canopen.objectdictionary.BOOLEAN)
 		e = variable.encode(False)
