@@ -62,7 +62,6 @@ class SDOServerTestCase(unittest.TestCase):
 		# Block upload -> Not implemented and thus the response is an abort
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\xA0\x00\x00\x00\x00\x00\x00\x00")
 		bus2.send(message)
-		time.sleep(0.010)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
@@ -72,7 +71,6 @@ class SDOServerTestCase(unittest.TestCase):
 		# Block download -> Not implemented and thus the response is an abort
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\xC0\x00\x00\x00\x00\x00\x00\x00")
 		bus2.send(message)
-		time.sleep(0.001)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
@@ -82,7 +80,6 @@ class SDOServerTestCase(unittest.TestCase):
 		# Network indication -> Not implemented and thus the response is an abort
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\xE0\x00\x00\x00\x00\x00\x00\x00")
 		bus2.send(message)
-		time.sleep(0.001)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
@@ -115,7 +112,6 @@ class SDOServerTestCase(unittest.TestCase):
 		# Download initiate with unknwon index -> Abort with index unknown
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\x20\x00\x00\x00\x00\x00\x00\x00")
 		bus2.send(message)
-		time.sleep(0.001)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
@@ -125,7 +121,6 @@ class SDOServerTestCase(unittest.TestCase):
 		# Download initiate with knwon index, but unknown subindex -> Abort with subindex unknown
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\x20\x34\x12\x99\x00\x00\x00\x00")
 		bus2.send(message)
-		time.sleep(0.001)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
@@ -135,25 +130,33 @@ class SDOServerTestCase(unittest.TestCase):
 		# Download initiate with knwon index and known subindex, but download is not allowed -> Abort
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\x20\x34\x12\x56\x00\x00\x00\x00")
 		bus2.send(message)
-		time.sleep(0.001)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
 		self.assertEqual(message_recv.data, b"\x80\x34\x12\x56\x02\x00\x01\x06")
 		
+		# Download segment with no active segmented transfer -> Abort
+		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\x00\x00\x00\x00\x00\x00\x00\x00")
+		bus2.send(message)
+		
+		message_recv = bus2.recv(1)
+		self.assertEqual(message_recv.arbitration_id, 0x581)
+		self.assertEqual(message_recv.is_extended_id, False)
+		self.assertEqual(message_recv.data, b"\x80\x00\x00\x00\x01\x00\x04\x05")
+		
 		# Download initiate with knwon index, known subindex and download is allowed
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\x20\x34\x12\x78\x00\x00\x00\x00")
 		bus2.send(message)
 		time.sleep(0.001)
 		
-		# Download initiate with knwon index, known subindex and download is allowed
-		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\x20\x78\x56\x00\x00\x00\x00\x00")
+		# Download segment
+		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\x00\x00\x00\x00\x00\x00\x00\x00")
 		bus2.send(message)
 		time.sleep(0.001)
 		
-		# Download segment
-		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\x00\x00\x00\x00\x00\x00\x00\x00")
+		# Download initiate with knwon index, known subindex and download is allowed
+		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\x22\x78\x56\x00\x00\x00\x00\x00")
 		bus2.send(message)
 		time.sleep(0.001)
 		
@@ -179,11 +182,10 @@ class SDOServerTestCase(unittest.TestCase):
 		network.attach(bus1)
 		node.attach(network)
 		sdoserver.attach(node)
-		
+				
 		# Upload initiate with unknwon index -> Abort with index unknown
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\x40\x00\x00\x00\x00\x00\x00\x00")
 		bus2.send(message)
-		time.sleep(0.001)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
@@ -193,8 +195,7 @@ class SDOServerTestCase(unittest.TestCase):
 		# Upload initiate with knwon index, but unknown subindex -> Abort with subindex unknown
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\x40\x34\x12\x99\x00\x00\x00\x00")
 		bus2.send(message)
-		time.sleep(0.001)
-		
+			
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
@@ -203,25 +204,33 @@ class SDOServerTestCase(unittest.TestCase):
 		# Upload initiate with knwon index and known subindex, but upload is not allowed -> Abort
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\x40\x34\x12\x78\x00\x00\x00\x00")
 		bus2.send(message)
-		time.sleep(0.001)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
 		self.assertEqual(message_recv.data, b"\x80\x34\x12\x78\x01\x00\x01\x06")
 		
+		# Upload segment with no active segmented transfer -> Abort
+		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\x60\x00\x00\x00\x00\x00\x00\x00")
+		bus2.send(message)
+		
+		message_recv = bus2.recv(1)
+		self.assertEqual(message_recv.arbitration_id, 0x581)
+		self.assertEqual(message_recv.is_extended_id, False)
+		self.assertEqual(message_recv.data, b"\x80\x00\x00\x00\x01\x00\x04\x05")
+		
 		# Upload initiate with knwon index and known subindex
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\x40\x34\x12\x56\x00\x00\x00\x00")
 		bus2.send(message)
 		time.sleep(0.001)
 		
-		# Upload initiate with knwon index and known subindex
-		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\x40\x78\x56\x00\x00\x00\x00\x00")
+		# Upload segment
+		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\x60\x00\x00\x00\x00\x00\x00\x00")
 		bus2.send(message)
 		time.sleep(0.001)
 		
-		# Upload segment
-		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\x60\x00\x00\x00\x00\x00\x00\x00")
+		# Upload initiate with knwon index and known subindex
+		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\x42\x78\x56\x00\x00\x00\x00\x00")
 		bus2.send(message)
 		time.sleep(0.001)
 		

@@ -7,9 +7,20 @@ import canopen.objectdictionary
 class SDOServer(Service):
 	def __init__(self):
 		Service.__init__(self)
+		
+		self._state = 0x80
+		self._index = 0
+		self._subindex = 0
+		self._buffer = b""
 	
 	def attach(self, node):
 		Service.attach(self, node)
+		
+		self._state = 0x80
+		self._index = 0
+		self._subindex = 0
+		self._buffer = b""
+		
 		self._node.network.subscribe(self.on_request, 0x600 + self._node.id)
 	
 	def detach(self):
@@ -42,13 +53,20 @@ class SDOServer(Service):
 			self._on_network_indication(message)
 	
 	def _abort(self, index, subindex, code):
+		self._state = 0x80
+		self._index = 0
+		self._subindex = 0
+		self._buffer = b""
+		
 		message = can.Message(arbitration_id = 0x580 + self._node.id, is_extended_id = False, data = struct.pack("<BHBL", 0x80, index, subindex, code))
 		self._node.network.send(message)
 	
 	def _on_download_segment(self, message):
 		command, request_data = struct.unpack_from("<B7s", message.data)
 		
-		raise NotImplementedError
+		if self._state != 0x20:
+			# 0x05040001 Client/server command specifier not valid or unknown.
+			self._abort(self._index, self._subindex, 0x05040001)
 	
 	def _on_initiate_download(self, message):
 		command, index, subindex, request_data = struct.unpack("<BHB4s", message.data)
@@ -72,6 +90,14 @@ class SDOServer(Service):
 			# 0x06010002 Attempt to write a read only object.
 			self._abort(index, subindex, 0x06010002)
 			return
+		
+		if command & (1 << 1): # Expedited transfer
+			self._state = 0x80
+		else: # Segmented transfer
+			self._state = 0x20
+			self._index = index
+			self._subindex = subindex
+			self._buffer = b""
 	
 	def _on_initiate_upload(self, message):
 		command, index, subindex, request_data = struct.unpack("<BHB4s", message.data)
@@ -95,16 +121,29 @@ class SDOServer(Service):
 			# 0x06010001 Attempt to read a write only object.
 			self._abort(index, subindex, 0x06010001)
 			return
+		
+		if command & (1 << 1): # Expedited transfer
+			self._state = 0x80
+		else: # Segmented transfer
+			self._state = 0x40
+			self._index = index
+			self._subindex = subindex
+			self._buffer = b""
 	
 	def _on_upload_segment(self, message):
 		command, request_data = struct.unpack_from("<B7s", message.data)
 		
-		raise NotImplementedError
+		if self._state != 0x40:
+			# 0x05040001 Client/server command specifier not valid or unknown.
+			self._abort(self._index, self._subindex, 0x05040001)
 	
 	def _on_abort(self, message):
 		command, index, subindex, code = struct.unpack("<BHBL", message.data)
 		
-		raise NotImplementedError
+		self._state = 0x80
+		self._index = 0
+		self._subindex = 0
+		self._buffer = b""
 	
 	def _on_block_upload(self, message):
 		# 0x05040001 Client/server command specifier not valid or unknown.
