@@ -4,19 +4,26 @@ import canopen
 
 class NodeTestCase(unittest.TestCase):
 	def test_init(self):
+		dictionary = canopen.ObjectDictionary()
+		
 		with self.assertRaises(ValueError):
-			canopen.Node("n", 0)
+			canopen.Node("n", 0, dictionary)
 		with self.assertRaises(ValueError):
-			canopen.Node("n", 128)
+			canopen.Node("n", 128, dictionary)
+		with self.assertRaises(TypeError):
+			canopen.Node("n", 1, None)
 		
 		name = "n"
 		node_id = 1
-		node = canopen.Node(name, node_id)
+		node = canopen.Node(name, node_id, dictionary)
 		
+		self.assertEqual(node.dictionary, dictionary)
 		self.assertEqual(node.id, node_id)
 		self.assertEqual(node.name, name)
 		self.assertEqual(node.network, None)
 		
+		with self.assertRaises(AttributeError):
+			node.dictionary = dictionary
 		with self.assertRaises(AttributeError):
 			node.id = node_id
 		with self.assertRaises(AttributeError):
@@ -27,7 +34,8 @@ class NodeTestCase(unittest.TestCase):
 	def test_attach_detach(self):
 		network1 = canopen.Network()
 		network2 = canopen.Network()
-		node = canopen.Node("n", 1)
+		dictionary = canopen.ObjectDictionary()
+		node = canopen.Node("n", 1, dictionary)
 		
 		with self.assertRaises(RuntimeError):
 			node.detach()

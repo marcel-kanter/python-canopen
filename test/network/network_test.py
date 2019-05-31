@@ -74,6 +74,7 @@ class NetworkTestCase(unittest.TestCase):
 		network.unsubscribe(cb, 0x100)
 	
 	def test_collection(self):
+		dictionary = canopen.ObjectDictionary()
 		network = canopen.Network()
 		
 		# append
@@ -81,18 +82,18 @@ class NetworkTestCase(unittest.TestCase):
 		with self.assertRaises(TypeError):
 			network.append(x)
 		
-		n1 = canopen.Node("n1", 10)
+		n1 = canopen.Node("n1", 10, dictionary)
 		network.append(n1)
 		self.assertEqual(len(network), 1)
 		
-		x = canopen.Node("n1", 20)
+		x = canopen.Node("n1", 20, dictionary)
 		with self.assertRaises(ValueError):
 			network.append(x)
-		x = canopen.Node("n2", 10)
+		x = canopen.Node("n2", 10, dictionary)
 		with self.assertRaises(ValueError):
 			network.append(x)
 		
-		n2 = canopen.Node("n2", 20)
+		n2 = canopen.Node("n2", 20, dictionary)
 		network.append(n2)
 		self.assertEqual(len(network), 2)
 		

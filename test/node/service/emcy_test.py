@@ -7,9 +7,10 @@ class EMCYProducerTestCase(unittest.TestCase):
 		canopen.node.service.EMCYProducer()
 	
 	def test_attach_detach(self):
+		dictionary = canopen.ObjectDictionary()
 		network = canopen.Network()
-		node1 = canopen.Node("a", 1)
-		node2 = canopen.Node("b", 2)
+		node1 = canopen.Node("a", 1, dictionary)
+		node2 = canopen.Node("b", 2, dictionary)
 		emcyproducer = canopen.node.service.EMCYProducer()
 		
 		node1.attach(network)

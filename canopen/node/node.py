@@ -2,10 +2,13 @@ import canopen
 
 
 class Node(object):
-	def __init__(self, name, node_id):
+	def __init__(self, name, node_id, dictionary):
 		if node_id < 1 or node_id > 127:
 			raise ValueError()
+		if not isinstance(dictionary, canopen.ObjectDictionary):
+			raise TypeError()
 		
+		self._dictionary = dictionary
 		self._id = node_id
 		self._name = name
 		self._network = None
@@ -25,6 +28,10 @@ class Node(object):
 			raise RuntimeError()
 		
 		self._network = None
+	
+	@property
+	def dictionary(self):
+		return self._dictionary
 	
 	@property
 	def id(self):

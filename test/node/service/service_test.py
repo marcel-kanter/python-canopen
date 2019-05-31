@@ -8,8 +8,9 @@ class ServiceTestCase(unittest.TestCase):
 	
 	def test_attach_detach(self):
 		network = canopen.Network()
-		node1 = canopen.Node("a", 1)
-		node2 = canopen.Node("b", 2)
+		dictionary = canopen.ObjectDictionary()
+		node1 = canopen.Node("a", 1, dictionary)
+		node2 = canopen.Node("b", 2, dictionary)
 		service = canopen.node.service.Service()
 		
 		node1.attach(network)

@@ -10,8 +10,9 @@ class SDOServerTestCase(unittest.TestCase):
 	
 	def test_attach_detach(self):
 		network = canopen.Network()
-		node1 = canopen.Node("a", 1)
-		node2 = canopen.Node("b", 2)
+		dictionary = canopen.ObjectDictionary()
+		node1 = canopen.Node("a", 1, dictionary)
+		node2 = canopen.Node("b", 2, dictionary)
 		sdoserver = canopen.node.service.SDOServer()
 		
 		node1.attach(network)
@@ -38,7 +39,8 @@ class SDOServerTestCase(unittest.TestCase):
 	def test_request(self):
 		bus = can.Bus(interface = "virtual", channel = 0, receive_own_messages = True)
 		network = canopen.Network()
-		node = canopen.Node("a", 1)
+		dictionary = canopen.ObjectDictionary()
+		node = canopen.Node("a", 1, dictionary)
 		sdoserver = canopen.node.service.SDOServer()
 		
 		network.attach(bus)

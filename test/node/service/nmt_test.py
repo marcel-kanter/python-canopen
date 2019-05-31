@@ -14,8 +14,9 @@ class NMTSlaveTestCase(unittest.TestCase):
 	
 	def test_attach_detach(self):
 		network = canopen.Network()
-		node1 = canopen.Node("a", 1)
-		node2 = canopen.Node("b", 2)
+		dictionary = canopen.ObjectDictionary()
+		node1 = canopen.Node("a", 1, dictionary)
+		node2 = canopen.Node("b", 2, dictionary)
 		nmt = canopen.node.service.NMTSlave()
 		
 		node1.attach(network)
@@ -42,7 +43,8 @@ class NMTSlaveTestCase(unittest.TestCase):
 	def test_node_control(self):
 		bus = can.Bus(interface = "virtual", channel = 0, receive_own_messages = True)
 		network = canopen.Network()
-		node = canopen.LocalNode("a", 0x0A)
+		dictionary = canopen.ObjectDictionary()
+		node = canopen.LocalNode("a", 0x0A, dictionary)
 		
 		network.attach(bus)
 		network.append(node)
@@ -138,7 +140,8 @@ class NMTSlaveTestCase(unittest.TestCase):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
 		network = canopen.Network()
-		node = canopen.LocalNode("a", 0x0A)
+		dictionary = canopen.ObjectDictionary()
+		node = canopen.LocalNode("a", 0x0A, dictionary)
 		
 		network.attach(bus1)
 		network.append(node)

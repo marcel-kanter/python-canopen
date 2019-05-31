@@ -3,8 +3,8 @@ from .service import NMTSlave, EMCYProducer, SDOServer
 
 
 class LocalNode(Node):
-	def __init__(self, name, node_id):
-		Node.__init__(self, name, node_id)
+	def __init__(self, name, node_id, dictionary):
+		Node.__init__(self, name, node_id, dictionary)
 		self.nmt = NMTSlave()
 		self.emcy = EMCYProducer()
 		self.sdo = SDOServer()
