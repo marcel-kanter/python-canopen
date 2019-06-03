@@ -1,4 +1,4 @@
-from .service import Service
+from canopen.node.service import Service
 
 
 class EMCYProducer(Service):

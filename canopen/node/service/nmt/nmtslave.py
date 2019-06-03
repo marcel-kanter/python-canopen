@@ -1,6 +1,6 @@
 import struct
 import can
-from .service import Service
+from canopen.node.service import Service
 
 
 class NMTSlave(Service):
