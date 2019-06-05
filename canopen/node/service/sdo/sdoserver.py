@@ -139,6 +139,8 @@ class SDOServer(Service):
 			return
 		
 		if request_command & (1 << 1): # Expedited transfer
+			self._state = 0x80
+			
 			if request_command & (1 << 0): # Size indicated
 				size = 4 - ((request_command >> 2) & 0x03)
 			else:
@@ -146,6 +148,8 @@ class SDOServer(Service):
 			
 			try:
 				data = item.decode(request_data[:size])
+				# TODO: Write data to node
+				# self._node.set_data(self._index, self._subindex, data
 			except:
 				# 0x06070010 Data type does not match; length of service parameter does not match.
 				self._abort(index, subindex, 0x06070010)
@@ -192,19 +196,28 @@ class SDOServer(Service):
 			self._abort(index, subindex, 0x06010001)
 			return
 		
-		if request_command & (1 << 1): # Expedited transfer
-			if request_command & (1 << 0): # Size indicated
-				pass
-			else:
-				pass
+		# TODO: Read data from node
+		data = item.encode(0)
+		
+		size = len(data)
+		
+		if size > 0 and size <= 4: # Expedited transfer
+			response_command = 0x40 | ((4 - size) << 2) | (1 << 1) | (1 << 0)
+			response_data = data
+			self._state = 0x80
 		else: # Segmented transfer
-			if request_command & (1 << 0): # Size indicated
-				self._state = 0x40
-				self._toggle_bit = 0x00
-			else:
-				# 0x05040001 Client/server command specifier not valid or unknown.
-				self._abort(index, subindex, 0x05040001)
-				return
+			response_command = 0x40 | (1 << 0)
+			response_data = struct.pack("<L", size)
+			self._state = 0x40
+			self._toggle_bit = 0x00
+			self._data_size = size
+			self._buffer = data
+			self._index = index
+			self._subindex = subindex
+		
+		d = struct.pack("<BHB4s", response_command, index, subindex, response_data)
+		response = can.Message(arbitration_id = 0x580 + self._node.id, is_extended_id = False, data = d)
+		self._node.network.send(response)
 	
 	def _on_upload_segment(self, message):
 		request_command, request_data = struct.unpack_from("<B7s", message.data)
@@ -218,6 +231,22 @@ class SDOServer(Service):
 			# 0x05030000 Toggle bit not alternated.
 			self._abort(self._index, self._subindex, 0x05030000)
 			return
+		
+		size = len(self._buffer)
+		
+		if size > 7:
+			response_command = 0x00 | self._toggle_bit
+		else:
+			response_command = 0x00 | self._toggle_bit | ((7 - size) << 1) | (1 << 0)
+			self._state = 0x80
+
+		response_data = self._buffer[:7]
+		
+		d = struct.pack("<B7s", response_command, response_data)
+		response = can.Message(arbitration_id = 0x580 + self._node.id, is_extended_id = False, data = d)
+		self._node.network.send(response)
+		
+		self._buffer = self._buffer[7:]
 		
 		self._toggle_bit ^= (1 << 4)
 	
