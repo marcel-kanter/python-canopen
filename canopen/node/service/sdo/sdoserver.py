@@ -9,17 +9,16 @@ class SDOServer(Service):
 		Service.__init__(self)
 		
 		self._state = 0x80
+		self._toggle_bit = 0x00
+		self._data_size = 0
+		self._buffer = b""
 		self._index = 0
 		self._subindex = 0
-		self._buffer = b""
 	
 	def attach(self, node):
 		Service.attach(self, node)
 		
 		self._state = 0x80
-		self._index = 0
-		self._subindex = 0
-		self._buffer = b""
 		
 		self._node.network.subscribe(self.on_request, 0x600 + self._node.id)
 	
@@ -54,22 +53,70 @@ class SDOServer(Service):
 	
 	def _abort(self, index, subindex, code):
 		self._state = 0x80
-		self._index = 0
-		self._subindex = 0
-		self._buffer = b""
 		
 		message = can.Message(arbitration_id = 0x580 + self._node.id, is_extended_id = False, data = struct.pack("<BHBL", 0x80, index, subindex, code))
 		self._node.network.send(message)
 	
 	def _on_download_segment(self, message):
-		command, request_data = struct.unpack_from("<B7s", message.data)
+		request_command, request_data = struct.unpack_from("<B7s", message.data)
 		
 		if self._state != 0x20:
 			# 0x05040001 Client/server command specifier not valid or unknown.
 			self._abort(self._index, self._subindex, 0x05040001)
+			return
+	
+		if self._toggle_bit != (request_command & (1 << 4)):
+			# 0x05030000 Toggle bit not alternated.
+			self._abort(self._index, self._subindex, 0x05030000)
+			return
+		
+		size = 7 - ((request_command & 0x0E) >> 1)
+		self._buffer = self._buffer + request_data[:size]
+		
+		if request_command & (1 << 0):
+			# Check the size from initiate with size of buffer - maybe two segments got lost
+			if self._data_size != len(self._buffer):
+				# 0x06070010 Data type does not match; length of service parameter does not match.
+				self._abort(self._index, self._subindex, 0x06070010)
+				return
+			
+			# Try to get object dictionary item - the dictionary may have changed since initiate
+			try:
+				item = self._node.dictionary[self._index]
+			except:
+				# 0x06020000 Object does not exist in the object dictionary.
+				self._abort(self._index, self._subindex, 0x06020000)
+				return
+			
+			if not isinstance(item, canopen.objectdictionary.Variable):
+				try:
+					item = item[self._subindex]
+				except:
+					# 0x06090011 Sub-index does not exist.
+					self._abort(self._index, self._subindex, 0x06090011)
+					return
+			
+			try:
+				data = item.decode(self._buffer)
+				# TODO: Write data to node
+				# self._node.set_data(self._index, self._subindex, data)
+			except:
+				# 0x06070010 Data type does not match; length of service parameter does not match.
+				self._abort(self._index, self._subindex, 0x06070010)
+				return
+				
+			self._state = 0x80
+		
+		response_command = 0x20 | self._toggle_bit
+		response_data = b"\x00\x00\x00\x00\x00\x00\x00"
+		d = struct.pack("<B7s", response_command, response_data)
+		response = can.Message(arbitration_id = 0x580 + self._node.id, is_extended_id = False, data = d)
+		self._node.network.send(response)
+		
+		self._toggle_bit ^= (1 << 4)
 	
 	def _on_initiate_download(self, message):
-		command, index, subindex, request_data = struct.unpack("<BHB4s", message.data)
+		request_command, index, subindex, request_data = struct.unpack("<BHB4s", message.data)
 		
 		try:
 			item = self._node.dictionary[index]
@@ -91,16 +138,39 @@ class SDOServer(Service):
 			self._abort(index, subindex, 0x06010002)
 			return
 		
-		if command & (1 << 1): # Expedited transfer
-			self._state = 0x80
+		if request_command & (1 << 1): # Expedited transfer
+			if request_command & (1 << 0): # Size indicated
+				size = 4 - ((request_command >> 2) & 0x03)
+			else:
+				size = 4
+			
+			try:
+				data = item.decode(request_data[:size])
+			except:
+				# 0x06070010 Data type does not match; length of service parameter does not match.
+				self._abort(index, subindex, 0x06070010)
+				return
 		else: # Segmented transfer
-			self._state = 0x20
-			self._index = index
-			self._subindex = subindex
-			self._buffer = b""
+			if request_command & (1 << 0): # Size indicated
+				self._state = 0x20
+				self._toggle_bit = 0x00
+				self._data_size = struct.unpack("<L", request_data)[0]
+				self._buffer = b""
+				self._index = index
+				self._subindex = subindex
+			else:
+				# 0x05040001 Client/server command specifier not valid or unknown.
+				self._abort(index, subindex, 0x05040001)
+				return
+		
+		response_command = 0x60
+		response_data = b"\x00\x00\x00\x00"
+		d = struct.pack("<BHB4s", response_command, index, subindex, response_data)
+		response = can.Message(arbitration_id = 0x580 + self._node.id, is_extended_id = False, data = d)
+		self._node.network.send(response)
 	
 	def _on_initiate_upload(self, message):
-		command, index, subindex, request_data = struct.unpack("<BHB4s", message.data)
+		request_command, index, subindex, request_data = struct.unpack("<BHB4s", message.data)
 		
 		try:
 			item = self._node.dictionary[index]
@@ -122,28 +192,37 @@ class SDOServer(Service):
 			self._abort(index, subindex, 0x06010001)
 			return
 		
-		if command & (1 << 1): # Expedited transfer
-			self._state = 0x80
+		if request_command & (1 << 1): # Expedited transfer
+			if request_command & (1 << 0): # Size indicated
+				pass
+			else:
+				pass
 		else: # Segmented transfer
-			self._state = 0x40
-			self._index = index
-			self._subindex = subindex
-			self._buffer = b""
+			if request_command & (1 << 0): # Size indicated
+				self._state = 0x40
+				self._toggle_bit = 0x00
+			else:
+				# 0x05040001 Client/server command specifier not valid or unknown.
+				self._abort(index, subindex, 0x05040001)
+				return
 	
 	def _on_upload_segment(self, message):
-		command, request_data = struct.unpack_from("<B7s", message.data)
+		request_command, request_data = struct.unpack_from("<B7s", message.data)
 		
 		if self._state != 0x40:
 			# 0x05040001 Client/server command specifier not valid or unknown.
 			self._abort(self._index, self._subindex, 0x05040001)
+			return
+	
+		if self._toggle_bit != (request_command & (1 << 4)):
+			# 0x05030000 Toggle bit not alternated.
+			self._abort(self._index, self._subindex, 0x05030000)
+			return
+		
+		self._toggle_bit ^= (1 << 4)
 	
 	def _on_abort(self, message):
-		command, index, subindex, code = struct.unpack("<BHBL", message.data)
-		
 		self._state = 0x80
-		self._index = 0
-		self._subindex = 0
-		self._buffer = b""
 	
 	def _on_block_upload(self, message):
 		# 0x05040001 Client/server command specifier not valid or unknown.
