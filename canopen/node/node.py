@@ -1,10 +1,11 @@
+import collections
 import canopen
 
 
-class Node(object):
+class Node(collections.abc.Collection):
 	""" Representation of a CANopen node.
 	
-	This class is a basic representation of a CANopen node.
+	This class is a basic representation of a CANopen node. It is an auto-associative list and may contain zero or more variables, records or arrays.
 	"""
 	def __init__(self, name, node_id, dictionary):
 		if node_id < 1 or node_id > 127:
@@ -16,6 +17,18 @@ class Node(object):
 		self._id = node_id
 		self._name = name
 		self._network = None
+	
+	def __contains__(self, key):
+		""" Returns True if the node contains a variable, record or array with the specified index or name. """
+		return key in self._dictionary
+	
+	def __iter__(self):
+		""" Returns an iterator over all indexes of the objects in the node. """
+		return iter(self._dictionary)
+	
+	def __len__(self):
+		""" Returns the number of objects in the object dictionary. """
+		return len(self._dictionary)
 	
 	def attach(self, network):
 		""" Attach this node to a network. It does NOT append or assign the node to the network. """

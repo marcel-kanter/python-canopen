@@ -1,5 +1,6 @@
 import unittest
 import canopen
+import canopen.objectdictionary
 
 
 class NodeTestCase(unittest.TestCase):
@@ -55,6 +56,38 @@ class NodeTestCase(unittest.TestCase):
 		self.assertEqual(node.network, network2)
 		
 		node.detach()
+	
+	def test_collection(self):
+		dictionary = canopen.ObjectDictionary()
+		dictionary.append(canopen.objectdictionary.Record("rec", 0x1234))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("boolean", 0x1234, 0x01, 0x01, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("integer8", 0x1234, 0x02, 0x02, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("integer16", 0x1234, 0x03, 0x03, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("integer32", 0x1234, 0x04, 0x04, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("unsigned8", 0x1234, 0x05, 0x05, "r"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("unsigned16", 0x1234, 0x06, 0x06, "w"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("domain", 0x1234, 0x0F, 0x0F, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("integer24", 0x1234, 0x10, 0x10, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("integer40", 0x1234, 0x11, 0x11, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("integer48", 0x1234, 0x12, 0x12, "rw"))
+		dictionary.append(canopen.objectdictionary.Variable("var", 0x5678, 0x00, 0x07, "rw"))
+		node = canopen.Node("a", 1, dictionary)
+		
+		# contains
+		self.assertFalse("xxx" in node)
+		self.assertFalse(99 in node)
+		self.assertTrue("rec" in node)
+		self.assertTrue(0x1234 in node)
+		self.assertTrue("var" in node)
+		self.assertTrue(0x5678 in node)
+		
+		# iter
+		items = []
+		for k in node:
+			items.append(k)
+		
+		# len
+		self.assertEqual(len(node), 2)
 
 
 if __name__ == "__main__":
