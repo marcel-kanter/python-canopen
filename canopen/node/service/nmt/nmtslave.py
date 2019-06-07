@@ -47,20 +47,31 @@ class NMTSlave(Service):
 		
 		if address == self._node.id or address == 0:
 			if command == 0x01: # Start (enter NMT operational)
-				self._state = 0x05
+				self.state = 0x05
 			if command == 0x02: # Stop (enter to NMT stopped)
-				self._state = 0x04
+				self.state = 0x04
 			if command == 0x80: # Enter NMT pre-operational
-				self._state = 0x7F
+				self.state = 0x7F
 			if command == 0x81: # Enter NMT reset application
-				self._state = 0x00
-				self._toggle_bit = 0x00
-				self._state = 0x7F
+				self.state = 0x00
+				self.state = 0x7F
 			if command == 0x82: # Enter NMT reset communication
-				self._state = 0x00
-				self._toggle_bit = 0x00
-				self._state = 0x7F
+				self.state = 0x00
+				self.state = 0x7F
 	
 	@property
 	def state(self):
 		return self._state
+	
+	@state.setter
+	def state(self, value):
+		if value not in [0x00, 0x04, 0x05, 0x7F]:
+			raise ValueError()
+		
+		if self._state == 0x00:
+			# In initialization state, only the transition to pre-operational state is allowed.
+			if value != 0x7F: 
+				raise ValueError()
+			self._toggle_bit = 0x00
+		
+		self._state = value 

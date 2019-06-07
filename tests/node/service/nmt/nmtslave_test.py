@@ -7,10 +7,43 @@ import canopen.node.service
 class NMTSlaveTestCase(unittest.TestCase):
 	def test_init(self):
 		nmt = canopen.node.service.NMTSlave()
-		self.assertEqual(nmt.state, 0)
+		self.assertEqual(nmt.state, 0x00)
 		
-		with self.assertRaises(AttributeError):
-			nmt.state = 0
+		#### Test step: Check if unallowed values raise a ValueError
+		with self.assertRaises(ValueError):
+			nmt.state = 0x11
+		
+		#### Test step: Check if only transition to pre-operational state is allowed
+		with self.assertRaises(ValueError):
+			nmt.state = 0x04
+		
+		with self.assertRaises(ValueError):
+			nmt.state = 0x05
+		
+		nmt.state = 0x7F
+		self.assertEqual(nmt.state, 0x7F)
+		
+		#### Test step: Check if all transitions are possible
+		nmt.state = 0x7F
+		self.assertEqual(nmt.state, 0x7F)
+		
+		nmt.state = 0x05
+		self.assertEqual(nmt.state, 0x05)
+		
+		nmt.state = 0x04
+		self.assertEqual(nmt.state, 0x04)
+		
+		nmt.state = 0x7F
+		self.assertEqual(nmt.state, 0x7F)
+		
+		nmt.state = 0x04
+		self.assertEqual(nmt.state, 0x04)
+		
+		nmt.state = 0x05
+		self.assertEqual(nmt.state, 0x05)
+		
+		nmt.state = 0x7F
+		self.assertEqual(nmt.state, 0x7F)
 	
 	def test_attach_detach(self):
 		network = canopen.Network()
@@ -76,6 +109,9 @@ class NMTSlaveTestCase(unittest.TestCase):
 		self.assertEqual(node.nmt.state, 0x00)
 		
 		#### Test step: Addressing with node id
+		# Application somewhen finishes start-up and changes the node's nmt state to pre-operational
+		node.nmt.state = 0x7F
+		
 		# Start (enter NMT operational)
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x01\x0A")
 		bus.send(message)
@@ -171,6 +207,9 @@ class NMTSlaveTestCase(unittest.TestCase):
 		self.assertEqual(message, None)
 		
 		#### Test step: Check toggle bit in operational state
+		# Application somewhen finishes start-up and changes the node's nmt state to pre-operational
+		node.nmt.state = 0x7F
+		
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x01\x0A")
 		bus2.send(message)
 		time.sleep(0.001)
@@ -243,6 +282,23 @@ class NMTSlaveTestCase(unittest.TestCase):
 		self.assertEqual(message.arbitration_id, 0x70A)
 		self.assertEqual(message.is_remote_frame, False)
 		self.assertEqual(message.data, b"\x7F")
+		
+		#### Test step: Setting state by application
+		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x81\x0A")
+		bus2.send(message)
+		time.sleep(0.001)
+		self.assertEqual(node.nmt.state, 0x7F)
+		
+		node.nmt.state = 0x05
+		self.assertEqual(node.nmt.state, 0x05)
+		
+		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 1)
+		bus2.send(message)
+		
+		message = bus2.recv(1)
+		self.assertEqual(message.arbitration_id, 0x70A)
+		self.assertEqual(message.is_remote_frame, False)
+		self.assertEqual(message.data, b"\x05")
 		
 		network.detach()
 		bus1.shutdown()
