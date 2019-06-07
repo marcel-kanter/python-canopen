@@ -4,12 +4,17 @@ from canopen.node.service import Service
 
 
 class NMTSlave(Service):
+	""" NMTSlave service.
+	
+	This class is an implementation of the NMT slave. The nmt state of the node can be accessed by the state property.
+	"""
 	def __init__(self):
 		Service.__init__(self)
 		self._state = 0
 		self._toggle_bit = 0
 	
 	def attach(self, node):
+		""" Attaches the service to a node. It does NOT append or assign this service to the node. """
 		Service.attach(self, node)
 		self._state = 0
 		self._toggle_bit = 0
@@ -17,6 +22,7 @@ class NMTSlave(Service):
 		self._node.network.subscribe(self.on_error_control, 0x700 + self._node.id)
 	
 	def detach(self):
+		""" Detaches the service from the node. It does NOT remove or delete the service from the node. """
 		if self._node == None:
 			raise RuntimeError()
 		
@@ -25,6 +31,7 @@ class NMTSlave(Service):
 		Service.detach(self)
 	
 	def on_error_control(self, message):
+		""" Handler for received error control requests. """
 		if not message.is_remote_frame:
 			return
 		if message.dlc != 1:
@@ -40,6 +47,7 @@ class NMTSlave(Service):
 		self._toggle_bit ^= 0x80
 	
 	def on_node_control(self, message):
+		""" Handler for received node control requests. """
 		if message.dlc != 2:
 			return
 		

@@ -22,6 +22,7 @@ class Variable(object):
 		self._access_type = access_type
 	
 	def decode(self, data):
+		""" Returns the value for the given byte-like CANopen representation, depending on the type of the CANopen variable. """
 		value = None
 		
 		try:
@@ -121,6 +122,7 @@ class Variable(object):
 		return value
 	
 	def encode(self, value):
+		""" Returns the byte-like CANopen representation of the given value, depending on the type of the CANopen variable. """
 		data = None
 		
 		try:

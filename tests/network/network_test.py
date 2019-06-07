@@ -1,5 +1,4 @@
 import unittest
-import time
 from unittest.mock import Mock
 import canopen.network
 import can
@@ -121,12 +120,15 @@ class NetworkTestCase(unittest.TestCase):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
 		
+		#### Test step: Send on detached bus
+		with self.assertRaises(RuntimeError):
+			network.send(can.Message(arbitration_id = 0x00, dlc = 0))
+		
+		#### Test step: Send message and receive on other bus.
 		network.attach(bus1)
 		
 		message_send = can.Message(arbitration_id = 0x100, is_extended_id = False, data = b"\x11\x22\x33\x44")
 		network.send(message_send)
-		
-		time.sleep(0.001)
 		
 		message_recv = bus2.recv()
 		self.assertEqual(message_recv.arbitration_id, message_send.arbitration_id)

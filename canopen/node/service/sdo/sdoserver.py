@@ -5,6 +5,12 @@ import canopen.objectdictionary
 
 
 class SDOServer(Service):
+	""" SDOServer server
+	
+	This class is an implementation of a SDO server. It handles requests for expedited and segmented uploads and downloads.
+	Block upload and download is not implemented.
+	Network indication is not implemented.
+	"""
 	def __init__(self):
 		Service.__init__(self)
 		
@@ -16,6 +22,7 @@ class SDOServer(Service):
 		self._subindex = 0
 	
 	def attach(self, node):
+		""" Attaches the service to a node. It does NOT append or assign this service to the node. """
 		Service.attach(self, node)
 		
 		self._state = 0x80
@@ -23,6 +30,7 @@ class SDOServer(Service):
 		self._node.network.subscribe(self.on_request, 0x600 + self._node.id)
 	
 	def detach(self):
+		""" Detaches the service from the node. It does NOT remove or delete the service from the node. """
 		if self._node == None:
 			raise RuntimeError()
 		
@@ -30,6 +38,7 @@ class SDOServer(Service):
 		Service.detach(self)
 	
 	def on_request(self, message):
+		""" Handler for upload and download requests to the SDO server. """
 		if message.dlc != 8:
 			return
 		

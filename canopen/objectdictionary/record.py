@@ -3,6 +3,10 @@ from .variable import Variable
 
 
 class Record(collections.abc.Collection):
+	""" Representation of a record of a CANopen object dictionary.
+	
+	This class is the representation of a record of a CANopen object dictionary. It is an auto-associative list and may contain zero or more variables.
+	"""
 	def __init__(self, name, index):
 		if index < 0 or index > 65535:
 			raise ValueError()
@@ -13,6 +17,7 @@ class Record(collections.abc.Collection):
 		self._items_name = {}
 	
 	def __contains__(self, key):
+		""" Returns True if the record contains a variable with the specified subindex or name. """
 		try:
 			self[key]
 		except:
@@ -21,12 +26,15 @@ class Record(collections.abc.Collection):
 			return True
 	
 	def __iter__(self):
+		""" Returns an iterator over all subindexes of the variables in the record. """
 		return iter(self._items_subindex)
 	
 	def __len__(self):
+		""" Returns the number of variables in the record. """
 		return len(self._items_subindex)
 	
 	def __getitem__(self, key):
+		""" Returns the variable identified by the name or the subindex. """
 		if key in self._items_subindex:
 			return self._items_subindex[key]
 		if key in self._items_name:
@@ -34,11 +42,13 @@ class Record(collections.abc.Collection):
 		raise KeyError()
 	
 	def __delitem__(self, key):
+		""" Removes the variable identified by the name of the subindex from the record. """
 		item = self[key]
 		del self._items_subindex[item.subindex]
 		del self._items_name[item.name]
 	
 	def append(self, value):
+		""" Appends a variable to the record. It may be accessed later by the name or the subindex. """
 		if not isinstance(value, Variable):
 			raise TypeError()
 		if value.subindex in self._items_subindex or value.name in self._items_name:
