@@ -30,6 +30,10 @@ class NMTSlave(Service):
 		if message.dlc != 1:
 			return
 		
+		# Do not respond to error control request in initialization state
+		if self._state == 0x00:
+			return
+		
 		response = can.Message(arbitration_id = 0x700 + self._node.id, is_extended_id = False, data = [self._toggle_bit | self._state])
 		self._node.network.send(response)
 		

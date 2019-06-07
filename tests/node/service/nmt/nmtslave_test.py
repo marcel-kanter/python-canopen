@@ -51,27 +51,31 @@ class NMTSlaveTestCase(unittest.TestCase):
 		
 		self.assertEqual(node.nmt.state, 0x00)
 		
+		#### Test step: Wrong data length
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x00")
 		bus.send(message)
 		time.sleep(0.001)
 		self.assertEqual(node.nmt.state, 0x00)
 		
+		#### Test step: Wrong node id
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x01\x10")
 		bus.send(message)
 		time.sleep(0.001)
 		self.assertEqual(node.nmt.state, 0x00)
 		
+		#### Test step: Unknown command with direct addressing
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x00\x0A")
 		bus.send(message)
 		time.sleep(0.001)
 		self.assertEqual(node.nmt.state, 0x00)
 		
+		#### Test step: Unknwon command with broadcast
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x00\x00")
 		bus.send(message)
 		time.sleep(0.001)
 		self.assertEqual(node.nmt.state, 0x00)
 		
-		# Addressing by node id
+		#### Test step: Addressing with node id
 		# Start (enter NMT operational)
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x01\x0A")
 		bus.send(message)
@@ -102,7 +106,7 @@ class NMTSlaveTestCase(unittest.TestCase):
 		time.sleep(0.001)
 		self.assertEqual(node.nmt.state, 0x7F)
 		
-		# Addressing by broadcast
+		#### Test step: Addressing with broadcast
 		# Start (enter NMT operational)
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x01\x00")
 		bus.send(message)
@@ -146,15 +150,27 @@ class NMTSlaveTestCase(unittest.TestCase):
 		network.attach(bus1)
 		network.append(node)
 		
+		#### Test step: Missing data
 		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, data = [])
 		bus2.send(message)
 		time.sleep(0.001)
 		
+		#### Test step: Wrong RTR length
 		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 2)
 		bus2.send(message)
 		time.sleep(0.001)
 		
-		# Enter operational state
+		#### Test step: Error control should not respond in initialization state
+		self.assertEqual(node.nmt.state, 0x00)
+		
+		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 1)
+		bus2.send(message)
+		
+		# No response after 1 second
+		message = bus2.recv(1)
+		self.assertEqual(message, None)
+		
+		#### Test step: Check toggle bit in operational state
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x01\x0A")
 		bus2.send(message)
 		time.sleep(0.001)
@@ -162,32 +178,29 @@ class NMTSlaveTestCase(unittest.TestCase):
 		
 		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
-		time.sleep(0.001)
 		
-		message = bus2.recv()
+		message = bus2.recv(1)
 		self.assertEqual(message.arbitration_id, 0x70A)
 		self.assertEqual(message.is_remote_frame, False)
 		self.assertEqual(message.data, b"\x05")
 		
 		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
-		time.sleep(0.001)
 		
-		message = bus2.recv()
+		message = bus2.recv(1)
 		self.assertEqual(message.arbitration_id, 0x70A)
 		self.assertEqual(message.is_remote_frame, False)
 		self.assertEqual(message.data, b"\x85")
 		
 		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
-		time.sleep(0.001)
 		
-		message = bus2.recv()
+		message = bus2.recv(1)
 		self.assertEqual(message.arbitration_id, 0x70A)
 		self.assertEqual(message.is_remote_frame, False)
 		self.assertEqual(message.data, b"\x05")
 		
-		# Reset communication - toggle bit should be reset to 0
+		#### Test step: Reset communication - toggle bit should be reset to 0.
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x82\x0A")
 		bus2.send(message)
 		time.sleep(0.001)
@@ -195,27 +208,38 @@ class NMTSlaveTestCase(unittest.TestCase):
 		
 		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
-		time.sleep(0.001)
 		
-		message = bus2.recv()
+		message = bus2.recv(1)
+		self.assertEqual(message.arbitration_id, 0x70A)
+		self.assertEqual(message.is_remote_frame, False)
+		self.assertEqual(message.data, b"\x7F")
+		
+		# The next error control response would be 0xFF. But we reset communication (and the toggle bit) now.
+		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x82\x0A")
+		bus2.send(message)
+		time.sleep(0.001)
+		self.assertEqual(node.nmt.state, 0x7F)
+		
+		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 1)
+		bus2.send(message)
+		
+		message = bus2.recv(1)
 		self.assertEqual(message.arbitration_id, 0x70A)
 		self.assertEqual(message.is_remote_frame, False)
 		self.assertEqual(message.data, b"\x7F")
 		
 		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
-		time.sleep(0.001)
 		
-		message = bus2.recv()
+		message = bus2.recv(1)
 		self.assertEqual(message.arbitration_id, 0x70A)
 		self.assertEqual(message.is_remote_frame, False)
 		self.assertEqual(message.data, b"\xFF")
 		
 		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
-		time.sleep(0.001)
 		
-		message = bus2.recv()
+		message = bus2.recv(1)
 		self.assertEqual(message.arbitration_id, 0x70A)
 		self.assertEqual(message.is_remote_frame, False)
 		self.assertEqual(message.data, b"\x7F")
