@@ -32,6 +32,10 @@ class RecordTestCase(unittest.TestCase):
 			canopen.node.record.Record(node, dictionary["arr"])
 		with self.assertRaises(TypeError):
 			canopen.node.record.Record(node, dictionary["var"])
+		
+		#### Test step: property forwarding
+		self.assertEqual(node["rec"].name, dictionary["rec"].name)
+		self.assertEqual(node["rec"].index, dictionary["rec"].index)
 	
 	def test_collection(self):
 		dictionary = canopen.ObjectDictionary()

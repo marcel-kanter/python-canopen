@@ -28,3 +28,11 @@ class Record(collections.abc.Collection):
 		""" Returns the variable identified by the name or the subindex. """
 		item = self._entry[key]
 		return Variable(self._node, item)
+	
+	@property
+	def index(self):
+		return self._entry._index
+	
+	@property
+	def name(self):
+		return self._entry._name

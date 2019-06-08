@@ -32,6 +32,10 @@ class ArrayTestCase(unittest.TestCase):
 			canopen.node.array.Array(node, dictionary["rec"])
 		with self.assertRaises(TypeError):
 			canopen.node.array.Array(node, dictionary["var"])
+		
+		#### Test step: property forwarding
+		self.assertEqual(node["arr"].name, dictionary["arr"].name)
+		self.assertEqual(node["arr"].index, dictionary["arr"].index)
 	
 	def test_collection(self):
 		dictionary = canopen.ObjectDictionary()

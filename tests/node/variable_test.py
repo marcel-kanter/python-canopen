@@ -32,6 +32,13 @@ class VariableTestCase(unittest.TestCase):
 			canopen.node.variable.Variable(node, dictionary["rec"])
 		with self.assertRaises(TypeError):
 			canopen.node.variable.Variable(node, dictionary["arr"])
+		
+		#### Test step: property forwarding
+		self.assertEqual(node["var"].name, dictionary["var"].name)
+		self.assertEqual(node["var"].index, dictionary["var"].index)
+		self.assertEqual(node["var"].subindex, dictionary["var"].subindex)
+		self.assertEqual(node["var"].data_type, dictionary["var"].data_type)
+		self.assertEqual(node["var"].access_type, dictionary["var"].access_type)
 
 
 if __name__ == "__main__":
