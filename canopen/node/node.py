@@ -1,5 +1,8 @@
 import collections
-import canopen
+import canopen.objectdictionary
+from .array import Array
+from .record import Record
+from .variable import Variable
 
 
 class Node(collections.abc.Collection):
@@ -30,8 +33,20 @@ class Node(collections.abc.Collection):
 		""" Returns the number of objects in the object dictionary. """
 		return len(self._dictionary)
 	
+	def __getitem__(self, key):
+		""" Returns the variable, record or array identified by the name or the index. """
+		item = self._dictionary[key]
+		if isinstance(item, canopen.objectdictionary.Variable):
+			return Variable(self, item)
+		if isinstance(item, canopen.objectdictionary.Array):
+			return Array(self, item)
+		if isinstance(item, canopen.objectdictionary.Record):
+			return Record(self, item)
+		raise NotImplementedError()
+	
 	def attach(self, network):
-		""" Attach this node to a network. It does NOT append or assign the node to the network. """
+		""" Attach this node to a network. It does NOT append or assign the node to the network.
+		If the node is already attached to a network, it is automatically detached. """
 		if not isinstance(network, canopen.Network):
 			raise TypeError()
 		if self._network == network:

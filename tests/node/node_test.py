@@ -1,6 +1,6 @@
 import unittest
-import canopen
 import canopen.objectdictionary
+from unittest.mock import MagicMock
 
 
 class NodeTestCase(unittest.TestCase):
@@ -71,23 +71,45 @@ class NodeTestCase(unittest.TestCase):
 		dictionary["rec"].append(canopen.objectdictionary.Variable("integer40", 0x1234, 0x11, 0x11, "rw"))
 		dictionary["rec"].append(canopen.objectdictionary.Variable("integer48", 0x1234, 0x12, 0x12, "rw"))
 		dictionary.append(canopen.objectdictionary.Variable("var", 0x5678, 0x00, 0x07, "rw"))
+		dictionary.append(canopen.objectdictionary.Array("arr", 0xabcd))
+		
 		node = canopen.Node("a", 1, dictionary)
 		
-		# contains
+		#### Test step: contains
 		self.assertFalse("xxx" in node)
-		self.assertFalse(99 in node)
+		self.assertFalse(0x99 in node)
 		self.assertTrue("rec" in node)
 		self.assertTrue(0x1234 in node)
 		self.assertTrue("var" in node)
 		self.assertTrue(0x5678 in node)
 		
-		# iter
+		#### Test step: iter, getitem, len
+		with self.assertRaises(KeyError):
+			node[0x99]
+		
 		items = []
 		for k in node:
-			items.append(k)
+			items.append(node[k])
 		
-		# len
-		self.assertEqual(len(node), 2)
+		self.assertEqual(len(node), len(items))
+		self.assertEqual(len(node), len(dictionary))
+		
+		#### Test step: ObjectDictionary.__getitem__ returns a type that node.__getitem__ doesn't know -> this should raise NotImplementedError
+		# prepare a mocked dictionary and let it return None
+		mockdictionary = MagicMock(spec = canopen.ObjectDictionary)
+		mockdictionary.__contains__.side_effect = dictionary.__contains__
+		mockdictionary.__iter__.side_effect = dictionary.__iter__
+		mockdictionary.__len__.side_effect = dictionary.__len__
+		mockdictionary.__getitem__.side_effect = self.__return_value
+		
+		node = canopen.Node("a", 1, mockdictionary)
+		
+		# mocked getitem will return a str, which is not a valid entry in the object dictionary
+		with self.assertRaises(NotImplementedError):
+			node["ZZZ"]
+	
+	def __return_value(self, value):
+		return value
 
 
 if __name__ == "__main__":
