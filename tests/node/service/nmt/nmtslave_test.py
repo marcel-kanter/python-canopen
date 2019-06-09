@@ -348,19 +348,19 @@ class NMTSlaveTestCase(unittest.TestCase):
 		bus1.shutdown()
 		bus2.shutdown()
 	
-	def __callback_start(self, nmt):
-		nmt.state = 0x05
+	def __callback_start(self, node):
+		node.nmt.state = 0x05
 	
-	def __callback_stop(self, nmt):
-		nmt.state = 0x04
+	def __callback_stop(self, node):
+		node.nmt.state = 0x04
 	
-	def __callback_pause(self, nmt):
-		nmt.state = 0x7F
+	def __callback_pause(self, node):
+		node.nmt.state = 0x7F
 	
-	def __callback_reset(self, nmt):
-		nmt.state = 0x7F
+	def __callback_reset(self, node):
+		node.nmt.state = 0x7F
 	
-	def __callback_raises(self, nmt):
+	def __callback_raises(self, node):
 		raise Exception()
 
 

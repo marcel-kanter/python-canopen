@@ -56,7 +56,7 @@ class NMTSlave(Service):
 		
 		for callback in self._callbacks[event]:
 			try:
-				callback(self)
+				callback(self._node)
 			except:
 				pass
 	
