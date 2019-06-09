@@ -1,3 +1,5 @@
+import struct
+import can
 from canopen.node.service import Service
 
 
@@ -36,3 +38,21 @@ class NMTMaster(Service):
 	@property
 	def state(self):
 		return self._state
+	
+	@state.setter
+	def state(self, value):
+		if value not in [0x00, 0x04, 0x05, 0x7F]:
+			raise ValueError()
+		
+		if value == 0x00: # NMT reset application
+			command = 0x81
+		if value == 0x04: # NMT stopped
+			command = 0x02
+		if value == 0x05: # NMT Operational
+			command = 0x01
+		if value == 0x7F: # NMT pre-operational
+			command = 0x80
+		
+		d = struct.pack("<BB", command, self._node.id)
+		request = can.Message(arbitration_id = 0x00, is_extended_id = False, data = d)
+		self._node.network.send(request)
