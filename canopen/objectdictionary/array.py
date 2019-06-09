@@ -5,7 +5,7 @@ from .variable import Variable
 class Array(collections.abc.Collection):
 	""" Representation of an array of a CANopen object dictionary.
 	
-	This class is the representation of an array of a CANopen object dictionary. It is an auto-associative list and may contain zero or more variables.
+	This class is the representation of an array of a CANopen object dictionary. It is a mutable auto-associative list and may contain zero or more variables.
 	"""
 	def __init__(self, name, index):
 		if index < 0 or index > 65535:

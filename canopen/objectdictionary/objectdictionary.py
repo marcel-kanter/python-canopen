@@ -7,14 +7,14 @@ from .variable import Variable
 class ObjectDictionary(collections.abc.Collection):
 	""" Representation of a CANopen object dictionary.
 	
-	This class is the representation of one CANopen object dictionary. It is an auto-associative list and may contain zero or more CANopen variables, records or arrays.
+	This class is the representation of one CANopen object dictionary. It is a mutable auto-associative list and may contain zero or more variables, records or arrays.
 	"""
 	def __init__(self):
 		self._items_index = {}
 		self._items_name = {}
 	
 	def __contains__(self, key):
-		""" Returns true if the object dictionary contains a variable, record or array with the specified index or name. """
+		""" Returns True if the object dictionary contains a variable, record or array with the specified index or name. """
 		try:
 			self[key]
 		except:
@@ -23,11 +23,11 @@ class ObjectDictionary(collections.abc.Collection):
 			return True
 	
 	def __iter__(self):
-		""" Returns an iterator over all indexes of the elements in the object dictionary. """
+		""" Returns an iterator over all indexes of the objects in the object dictionary. """
 		return iter(self._items_index)
 	
 	def __len__(self):
-		""" Returns the number of elements in the object dictionary. """
+		""" Returns the number of objects in the object dictionary. """
 		return len(self._items_index)
 	
 	def __getitem__(self, key):

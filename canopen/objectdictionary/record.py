@@ -5,7 +5,7 @@ from .variable import Variable
 class Record(collections.abc.Collection):
 	""" Representation of a record of a CANopen object dictionary.
 	
-	This class is the representation of a record of a CANopen object dictionary. It is an auto-associative list and may contain zero or more variables.
+	This class is the representation of a record of a CANopen object dictionary. It is a mutable auto-associative list and may contain zero or more variables.
 	"""
 	def __init__(self, name, index):
 		if index < 0 or index > 65535:

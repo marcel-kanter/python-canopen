@@ -113,6 +113,7 @@ class NetworkTestCase(unittest.TestCase):
 		for x in items:
 			del network[x.name]
 		
+		# len
 		self.assertEqual(len(network), 0)
 	
 	def test_send(self):

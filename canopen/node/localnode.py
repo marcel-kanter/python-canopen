@@ -5,7 +5,7 @@ from .service import NMTSlave, EMCYProducer, SDOServer
 class LocalNode(Node):
 	""" Representation of a local CANopen node.
 	
-	This class represents a local CANopen node and can be accessed by other nodes on the bus.
+	This class represents a local CANopen node and can be accessed by other nodes on the bus. It is an auto-associative list and may contain zero or more variables, records or arrays.
 	"""
 	def __init__(self, name, node_id, dictionary):
 		Node.__init__(self, name, node_id, dictionary)
