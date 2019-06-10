@@ -36,9 +36,9 @@ Each variable has a data type. The data types are defined in DS301 and the follo
 
 Each variable has an access type. The access types as defined in DS301 and the follwing access types are supported.
 
-* r
 * rw
-* w
+* wo
+* ro
 
 Encode/Decode
 -------------

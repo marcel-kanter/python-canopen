@@ -41,8 +41,8 @@ class VariableTestCase(unittest.TestCase):
 		with self.assertRaises(AttributeError):
 			variable.access_type = access_type
 		
-		canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32, "r")
-		canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32, "w")
+		canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32, "ro")
+		canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32, "wo")
 	
 	def test_encode(self):
 		variable = canopen.objectdictionary.Variable("BOOLEAN", 100, 0, canopen.objectdictionary.BOOLEAN)
