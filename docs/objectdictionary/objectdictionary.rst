@@ -1,15 +1,15 @@
 ObjectDictionary
 ================
 
-This class is the representation of an object dictionary. It is a mutable auto-associative list and may contain zero or more Arrays, Records and Variables.
+This class is the representation of an object dictionary. It is a mutable auto-associative list and may contain zero or more ``Arrays``, ``Records`` and ``Variables``.
 
 Auto-associative list
 ---------------------
 
 The ``ObjectDictionary`` class is a mutable auto-associative list of Arrays, Records and Variables and the properties for association are index and name.
-It's possible to get a Array, Record or Variable by index or name from the list.
+It's possible to get a ``Array``, ``Record`` or ``Variable`` by index or name from the list.
 
-To add a element to the network, the ``append`` function is used. The index and the name of the elements inside the object dictionary must be unique.
+To add a element to the list, the ``append`` function is used. The index and the name of the elements inside the list must be unique.
 
 .. code:: python
 
@@ -22,7 +22,7 @@ To add a element to the network, the ``append`` function is used. The index and 
 	# This fails, because there is already a record with index 1.
 	the_dictionary.append(one_array)
 
-After adding the element to the object dictionary, it can be accessed trough the object dictionary via subscription.
+After adding the element to the list, it can be accessed via subscription.
 If the index and the name belong to the same element, the two lines will retrieve the same element:
 
 .. code:: python

@@ -3,6 +3,8 @@ from .datatypes import *
 
 
 class Variable(object):
+	"""	This class is the representation of an variable of an object dictionary.
+	"""
 	def __init__(self, name, index, subindex, data_type, access_type = "rw"):
 		allowed_types = [BOOLEAN, INTEGER8, INTEGER16, INTEGER32, UNSIGNED8, UNSIGNED16, UNSIGNED32, REAL32, VISIBLE_STRING, OCTET_STRING, UNICODE_STRING, TIME_OF_DAY, TIME_DIFFERENCE, DOMAIN, INTEGER24, REAL64, INTEGER40, INTEGER48, INTEGER56, INTEGER64, UNSIGNED24, UNSIGNED40, UNSIGNED48, UNSIGNED56, UNSIGNED64]
 		
