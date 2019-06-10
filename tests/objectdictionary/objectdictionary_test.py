@@ -25,25 +25,43 @@ class ObjectDictionaryTestCase(unittest.TestCase):
 		with self.assertRaises(ValueError):
 			dictionary.append(x)
 		
+		ds = canopen.objectdictionary.DefStruct("defstruct", 0x40)
+		dictionary.append(ds)
+		self.assertEqual(len(dictionary), 2)
+		
+		with self.assertRaises(ValueError):
+			dictionary.append(ds)
+		
+		dt = canopen.objectdictionary.DefStruct("deftype", 0x60)
+		dictionary.append(dt)
+		self.assertEqual(len(dictionary), 3)
+		
+		with self.assertRaises(ValueError):
+			dictionary.append(dt)
+		
 		r = canopen.objectdictionary.Record("rec", 200)
 		dictionary.append(r)
-		self.assertEqual(len(dictionary), 2)
+		self.assertEqual(len(dictionary), 4)
 		
 		with self.assertRaises(ValueError):
 			dictionary.append(r)
 		
 		v = canopen.objectdictionary.Variable("var", 300, 0, canopen.objectdictionary.UNSIGNED32)
 		dictionary.append(v)
-		self.assertEqual(len(dictionary), 3)
+		self.assertEqual(len(dictionary), 5)
 		
 		with self.assertRaises(ValueError):
 			dictionary.append(v)
 		
 		# contains
 		self.assertFalse("xxx" in dictionary)
-		self.assertFalse(999 in dictionary)
+		self.assertFalse(99 in dictionary)
 		self.assertTrue(a.name in dictionary)
 		self.assertTrue(a.index in dictionary)
+		self.assertTrue(ds.name in dictionary)
+		self.assertTrue(ds.index in dictionary)
+		self.assertTrue(dt.name in dictionary)
+		self.assertTrue(dt.index in dictionary)
 		self.assertTrue(r.name in dictionary)
 		self.assertTrue(r.index in dictionary)
 		self.assertTrue(v.name in dictionary)

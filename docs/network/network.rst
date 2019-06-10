@@ -18,8 +18,8 @@ To add a node to the list, the ``append`` function is used. The id and the name 
 
 	the_network = canopen.Network()
 	
-	one_node = canopen.Node("A", 1)
-	other_node = canopen.Node("B", 1)
+	one_node = canopen.Node("A", 1, dictionary)
+	other_node = canopen.Node("B", 1, dictionary)
 	
 	the_network.append(one_node)
 	# This fails, because there is already a node with id 1.

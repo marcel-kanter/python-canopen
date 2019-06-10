@@ -1,5 +1,7 @@
 import collections
 from .array import Array
+from .defstruct import DefStruct
+from .deftype import DefType
 from .record import Record
 from .variable import Variable
 
@@ -7,7 +9,7 @@ from .variable import Variable
 class ObjectDictionary(collections.abc.Collection):
 	""" Representation of a CANopen object dictionary.
 	
-	This class is the representation of one CANopen object dictionary. It is a mutable auto-associative list and may contain zero or more variables, records or arrays.
+	This class is the representation of one CANopen object dictionary. It is a mutable auto-associative list and may contain zero or more elements of type Array, DefStruct, DefType, Record or Variable.
 	"""
 	def __init__(self):
 		self._items_index = {}
@@ -46,7 +48,7 @@ class ObjectDictionary(collections.abc.Collection):
 	
 	def append(self, value):
 		""" Appends a variable, record or array to the object dictionary. It may be accessed later by the name or the index. """
-		if not isinstance(value, (Array, Record, Variable)):
+		if not isinstance(value, (Array, DefStruct, DefType, Record, Variable)):
 			raise TypeError()
 		if value.index in self._items_index or value.name in self._items_name:
 			raise ValueError()
