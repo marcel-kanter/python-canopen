@@ -49,14 +49,14 @@ class NMTSlave(Service):
 		
 		self._callbacks[event].remove(callback)
 	
-	def notify(self, event):
+	def notify(self, event, *args):
 		""" Call the callbacks for the given event. """
 		if not event in self._callbacks:
 			raise ValueError()
 		
 		for callback in self._callbacks[event]:
 			try:
-				callback(self._node)
+				callback(event, self._node, *args)
 			except:
 				pass
 	

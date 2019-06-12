@@ -48,6 +48,8 @@ class NMTSlaveTestCase(unittest.TestCase):
 	def test_callback(self):
 		nmt = canopen.node.service.NMTSlave()
 		
+		# TODO: Use Mock to assert each callback is called only once
+		
 		with self.assertRaises(TypeError):
 			nmt.add_callback(None, "start")
 		
@@ -348,19 +350,19 @@ class NMTSlaveTestCase(unittest.TestCase):
 		bus1.shutdown()
 		bus2.shutdown()
 	
-	def __callback_start(self, node):
+	def __callback_start(self, event, node, *args):
 		node.nmt.state = 0x05
 	
-	def __callback_stop(self, node):
+	def __callback_stop(self, event, node, *args):
 		node.nmt.state = 0x04
 	
-	def __callback_pause(self, node):
+	def __callback_pause(self, event, node, *args):
 		node.nmt.state = 0x7F
 	
-	def __callback_reset(self, node):
+	def __callback_reset(self, event, node, *args):
 		node.nmt.state = 0x7F
 	
-	def __callback_raises(self, node):
+	def __callback_raises(self, event, node, *args):
 		raise Exception()
 
 
