@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import Mock
 import time
 import struct
 import can
@@ -37,6 +38,48 @@ class EMCYConsumerTestCase(unittest.TestCase):
 		node1.detach()
 		node2.detach()
 	
+	def test_callback(self):
+		consumer = canopen.node.service.EMCYConsumer()
+		
+		cb1 = Mock()
+		cb2 = Mock()
+		
+		#### Test step: Callback is not callable
+		with self.assertRaises(TypeError):
+			consumer.add_callback(None, "emcy")
+		
+		#### Test step: Event not known
+		with self.assertRaises(ValueError):
+			consumer.add_callback(cb1, "xxx")
+		
+		#### Test step: Add callbacks, one which raises an exception
+		consumer.add_callback(cb1, "emcy")
+		consumer.add_callback(self.__callback_raise, "emcy")
+		consumer.add_callback(self.__callback_emcy, "emcy")
+		consumer.add_callback(cb2, "emcy")
+		
+		#### Test step: Try to notify an unknown event
+		with self.assertRaises(ValueError):
+			consumer.notify("xxx")
+		
+		#### Test step: Notify a known event
+		consumer.notify("emcy", 0x1000, 0x00, b"\x00\x00\x00\x00\x00")
+		
+		cb1.assert_called_once()
+		cb2.assert_called_once()
+		
+		#### Test step: Remove callbacks
+		with self.assertRaises(TypeError):
+			consumer.remove_callback(None, "emcy")
+		
+		with self.assertRaises(ValueError):
+			consumer.remove_callback(cb1, "xxx")
+		
+		consumer.remove_callback(cb1, "emcy")
+		consumer.remove_callback(cb2, "emcy")
+		consumer.remove_callback(self.__callback_raise, "emcy")
+		consumer.remove_callback(self.__callback_emcy, "emcy")
+	
 	def test_on_emcy(self):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
@@ -60,6 +103,12 @@ class EMCYConsumerTestCase(unittest.TestCase):
 		network.detach()
 		bus1.shutdown()
 		bus2.shutdown()
+	
+	def __callback_emcy(self, event, node, error_code, error_register, data):
+		print(error_code)
+	
+	def __callback_raise(self, event, node, *args):
+		raise Exception()
 
 
 if __name__ == "__main__":
