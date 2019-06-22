@@ -57,3 +57,15 @@ For conversion of python variables into the CANopen representation and back, the
 	# Convert python string with ascii encoding into bytes containing CANopen representation
 	# This may raise an exception, if the text includes non-ascii characters
 	encoded = one_variable.encode("TestText")
+
+TIME_OF_DAY
+~~~~~~~~~~~
+
+A variable of type TIME_OF_DAY represents a time in the CANOpen epoch, which starts at 1st January 1984 00:00:00. The resolution is 1 ms.
+Negative times are not allowed.
+
+TIME_DIFFERENCE
+~~~~~~~~~~~~~~~
+
+A variable of type TIME_DIFFERENCE represents a time span. The resolution is 1 ms.
+Negative time differences are not allowed.

@@ -1,10 +1,14 @@
 import struct
+import calendar
 from .datatypes import *
 
 
 class Variable(object):
 	"""	This class is the representation of a Variable in an object dictionary.
 	"""
+	
+	_canopen_epoch = calendar.timegm((1984,1,1,0,0,0))
+	
 	def __init__(self, name, index, subindex, data_type, access_type = "rw"):
 		allowed_types = [BOOLEAN, INTEGER8, INTEGER16, INTEGER32, UNSIGNED8, UNSIGNED16, UNSIGNED32, REAL32, VISIBLE_STRING, OCTET_STRING, UNICODE_STRING, TIME_OF_DAY, TIME_DIFFERENCE, DOMAIN, INTEGER24, REAL64, INTEGER40, INTEGER48, INTEGER56, INTEGER64, UNSIGNED24, UNSIGNED40, UNSIGNED48, UNSIGNED56, UNSIGNED64]
 		
@@ -61,6 +65,16 @@ class Variable(object):
 			if self._data_type == UNICODE_STRING:
 				value = bytes.decode(data, "utf-16-le", errors = "replace")
 			
+			if self._data_type == TIME_OF_DAY:
+				m, d = struct.unpack_from("<LH", data)
+				m &= 0xFFFFFFF
+				value = d * 24 * 60 * 60 + m / 1000 + self._canopen_epoch
+			
+			if self._data_type == TIME_DIFFERENCE:
+				m, d = struct.unpack_from("<LH", data)
+				m &= 0xFFFFFFF
+				value = d * 24 * 60 * 60 + m / 1000
+			
 			if self._data_type == DOMAIN:
 				value = data
 			
@@ -115,12 +129,6 @@ class Variable(object):
 		except:
 			raise ValueError()
 		
-		if self._data_type == TIME_OF_DAY:
-			raise NotImplementedError()
-		
-		if self._data_type == TIME_DIFFERENCE:
-			raise NotImplementedError()
-		
 		return value
 	
 	def encode(self, value):
@@ -161,6 +169,22 @@ class Variable(object):
 			if self._data_type == UNICODE_STRING:
 				data = str.encode(value, "utf-16-le")
 			
+			if self._data_type == TIME_OF_DAY:
+				if value < self._canopen_epoch:
+					raise ValueError()
+				x = divmod(value - self._canopen_epoch, 24 * 60 * 60)
+				d = int(x[0])
+				m = round(x[1] * 1000)
+				data = struct.pack("<LH", m, d)
+			
+			if self._data_type == TIME_DIFFERENCE:
+				if value < 0:
+					raise ValueError()
+				x = divmod(value, 24 * 60 * 60)
+				d = int(x[0])
+				m = round(x[1] * 1000)
+				data = struct.pack("<LH", m, d)
+			
 			if self._data_type == DOMAIN:
 				data = bytes(value)
 			
@@ -198,12 +222,6 @@ class Variable(object):
 				data = struct.pack("<Q", value)
 		except:
 			raise ValueError()
-		
-		if self._data_type == TIME_OF_DAY:
-			raise NotImplementedError()
-		
-		if self._data_type == TIME_DIFFERENCE:
-			raise NotImplementedError()
 		
 		return data
 	

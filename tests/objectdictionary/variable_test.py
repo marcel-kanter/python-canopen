@@ -1,4 +1,5 @@
 import unittest
+import calendar
 import canopen.objectdictionary
 
 
@@ -114,13 +115,17 @@ class VariableTestCase(unittest.TestCase):
 		self.assertEqual(e, b"T\x00E\x00X\x00T\x00")
 		
 		variable = canopen.objectdictionary.Variable("TIME_OF_DAY", 100, 0, canopen.objectdictionary.TIME_OF_DAY)
-		with self.assertRaises(NotImplementedError):
-			variable.encode(0.0)
+		with self.assertRaises(ValueError):
+			variable.encode(0)
+		e = variable.encode(calendar.timegm((1984, 1, 1, 0, 0, 0)))
+		self.assertEqual(e, b"\x00\x00\x00\x00\x00\x00")
 		
 		variable = canopen.objectdictionary.Variable("TIME_DIFFERENCE", 100, 0, canopen.objectdictionary.TIME_DIFFERENCE)
-		with self.assertRaises(NotImplementedError):
-			variable.encode(0.0)
-		
+		with self.assertRaises(ValueError):
+			variable.encode(-0.1)
+		e = variable.encode(0)
+		self.assertEqual(e, b"\x00\x00\x00\x00\x00\x00")
+				
 		variable = canopen.objectdictionary.Variable("DOMAIN", 100, 0, canopen.objectdictionary.DOMAIN)
 		e = variable.encode(b"\xA5\x5A")
 		self.assertEqual(e, b"\xA5\x5A")
@@ -265,12 +270,12 @@ class VariableTestCase(unittest.TestCase):
 		self.assertEqual(d, "TEXT")
 		
 		variable = canopen.objectdictionary.Variable("TIME_OF_DAY", 100, 0, canopen.objectdictionary.TIME_OF_DAY)
-		with self.assertRaises(NotImplementedError):
-			variable.decode(0.0)
+		d = variable.decode(b"\x00\x00\x00\x00\x00\x00")
+		self.assertEqual(d, calendar.timegm((1984, 1, 1, 0, 0, 0)))
 		
 		variable = canopen.objectdictionary.Variable("TIME_DIFFERENCE", 100, 0, canopen.objectdictionary.TIME_DIFFERENCE)
-		with self.assertRaises(NotImplementedError):
-			variable.decode(0.0)
+		d = variable.decode(b"\x00\x00\x00\x00\x00\x00")
+		self.assertEqual(d, 0)
 		
 		variable = canopen.objectdictionary.Variable("DOMAIN", 100, 0, canopen.objectdictionary.DOMAIN)
 		d = variable.decode(b"\xA5\x5A")
