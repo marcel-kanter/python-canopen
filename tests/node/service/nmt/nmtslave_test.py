@@ -64,9 +64,9 @@ class NMTSlaveTestCase(unittest.TestCase):
 		nmt.add_callback(self.__callback_raises, "start")
 		
 		with self.assertRaises(ValueError):
-			nmt.notify("xxx")
+			nmt.notify("xxx", None)
 		
-		nmt.notify("start")
+		nmt.notify("start", None)
 		
 		with self.assertRaises(TypeError):
 			nmt.remove_callback(None, "start")

@@ -23,37 +23,8 @@ class EMCYConsumer(Service):
 		
 		self._node.network.unsubscribe(self.on_emcy, 0x80 + self._node.id)
 		Service.detach(self)
-	
-	def add_callback(self, callback, event):
-		""" Adds the given callback to the event. """
-		if not callable(callback):
-			raise TypeError()
-		if not event in self._callbacks:
-			raise ValueError()
 		
-		self._callbacks[event].append(callback)
-	
-	def remove_callback(self, callback, event):
-		""" Removes the callback from the event. """
-		if not callable(callback):
-			raise TypeError()
-		if not event in self._callbacks:
-			raise ValueError()
-		
-		self._callbacks[event].remove(callback)
-	
-	def notify(self, event, *args):
-		""" Call the callbacks for the given event. """
-		if not event in self._callbacks:
-			raise ValueError()
-		
-		for callback in self._callbacks[event]:
-			try:
-				callback(event, self._node, *args)
-			except:
-				pass
-	
 	def on_emcy(self, message):
 		error_code, error_register, data = struct.unpack("<HB5s", message.data)
 		
-		self.notify("emcy", error_code, error_register, data)
+		self.notify("emcy", self._node, error_code, error_register, data)

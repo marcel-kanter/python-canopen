@@ -8,6 +8,7 @@ class Service(object):
 	"""
 	def __init__(self):
 		self._node = None
+		self._callbacks = {}
 	
 	def attach(self, node):
 		""" Attaches the service to a node. It does NOT append or assign this service to the node. """
@@ -26,3 +27,32 @@ class Service(object):
 			raise RuntimeError()
 		
 		self._node = None
+	
+	def add_callback(self, callback, event):
+		""" Adds the given callback for the event. """
+		if not callable(callback):
+			raise TypeError()
+		if not event in self._callbacks:
+			raise ValueError()
+		
+		self._callbacks[event].append(callback)
+	
+	def remove_callback(self, callback, event):
+		""" Removes the callback for the event. """
+		if not callable(callback):
+			raise TypeError()
+		if not event in self._callbacks:
+			raise ValueError()
+		
+		self._callbacks[event].remove(callback)
+	
+	def notify(self, event, *args):
+		""" Call the callbacks for the given event. """
+		if not event in self._callbacks:
+			raise ValueError()
+		
+		for callback in self._callbacks[event]:
+			try:
+				callback(event, *args)
+			except:
+				pass

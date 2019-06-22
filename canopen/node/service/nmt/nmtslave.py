@@ -30,36 +30,7 @@ class NMTSlave(Service):
 		self._node.network.unsubscribe(self.on_error_control, 0x700 + self._node.id)
 		self._node.network.unsubscribe(self.on_node_control, 0x000)
 		Service.detach(self)
-	
-	def add_callback(self, callback, event):
-		""" Adds the given callback to the event. """
-		if not callable(callback):
-			raise TypeError()
-		if not event in self._callbacks:
-			raise ValueError()
 		
-		self._callbacks[event].append(callback)
-	
-	def remove_callback(self, callback, event):
-		""" Removes the callback from the event. """
-		if not callable(callback):
-			raise TypeError()
-		if not event in self._callbacks:
-			raise ValueError()
-		
-		self._callbacks[event].remove(callback)
-	
-	def notify(self, event, *args):
-		""" Call the callbacks for the given event. """
-		if not event in self._callbacks:
-			raise ValueError()
-		
-		for callback in self._callbacks[event]:
-			try:
-				callback(event, self._node, *args)
-			except:
-				pass
-	
 	def on_error_control(self, message):
 		""" Handler for received error control requests. """
 		if not message.is_remote_frame:
@@ -85,14 +56,14 @@ class NMTSlave(Service):
 		
 		if address == self._node.id or address == 0:
 			if command == 0x01: # Start (enter NMT operational)
-				self.notify("start")
+				self.notify("start", self._node)
 			if command == 0x02: # Stop (enter to NMT stopped)
-				self.notify("stop")
+				self.notify("stop", self._node)
 			if command == 0x80: # Enter NMT pre-operational
-				self.notify("pause")
+				self.notify("pause", self._node)
 			if command == 0x81: # Enter NMT reset application
 				self.state = 0x00
-				self.notify("reset")
+				self.notify("reset", self._node)
 			if command == 0x82: # Enter NMT reset communication
 				self.state = 0x00
 				self.state = 0x7F
