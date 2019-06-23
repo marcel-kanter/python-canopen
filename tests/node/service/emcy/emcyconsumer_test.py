@@ -60,7 +60,7 @@ class EMCYConsumerTestCase(unittest.TestCase):
 		
 		#### Test step: Try to notify an unknown event
 		with self.assertRaises(ValueError):
-			consumer.notify("xxx", None)
+			consumer.notify("xxx", None, 0x1000, 0x00, b"\x00\x00\x00\x00\x00")
 		
 		#### Test step: Notify a known event
 		consumer.notify("emcy", None, 0x1000, 0x00, b"\x00\x00\x00\x00\x00")
@@ -94,7 +94,7 @@ class EMCYConsumerTestCase(unittest.TestCase):
 		
 		#### Test step: EMCY write "no error, or error reset"
 		d = struct.pack("<HB5s", 0x0000, 0x00, b"\x00\x00\x00\x00\x00")
-		message = can.Message(arbitration_id = 0x81, is_extended_id = False, data = d)
+		message = can.Message(arbitration_id = 0x80 + node.id, is_extended_id = False, data = d)
 		bus2.send(message)
 		time.sleep(0.001)
 		
@@ -105,7 +105,7 @@ class EMCYConsumerTestCase(unittest.TestCase):
 		bus2.shutdown()
 	
 	def __callback_emcy(self, event, node, error_code, error_register, data):
-		print(error_code)
+		pass
 	
 	def __callback_raise(self, event, node, *args):
 		raise Exception()

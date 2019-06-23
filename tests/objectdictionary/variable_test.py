@@ -1,4 +1,5 @@
 import unittest
+import struct
 import calendar
 import canopen.objectdictionary
 
@@ -118,14 +119,14 @@ class VariableTestCase(unittest.TestCase):
 		with self.assertRaises(ValueError):
 			variable.encode(0)
 		e = variable.encode(calendar.timegm((1984, 1, 1, 0, 0, 0)))
-		self.assertEqual(e, b"\x00\x00\x00\x00\x00\x00")
+		self.assertEqual(e, struct.pack("<LH", 0, 0))
 		
 		variable = canopen.objectdictionary.Variable("TIME_DIFFERENCE", 100, 0, canopen.objectdictionary.TIME_DIFFERENCE)
 		with self.assertRaises(ValueError):
 			variable.encode(-0.1)
 		e = variable.encode(0)
-		self.assertEqual(e, b"\x00\x00\x00\x00\x00\x00")
-				
+		self.assertEqual(e, struct.pack("<LH", 0, 0))
+		
 		variable = canopen.objectdictionary.Variable("DOMAIN", 100, 0, canopen.objectdictionary.DOMAIN)
 		e = variable.encode(b"\xA5\x5A")
 		self.assertEqual(e, b"\xA5\x5A")
@@ -270,12 +271,20 @@ class VariableTestCase(unittest.TestCase):
 		self.assertEqual(d, "TEXT")
 		
 		variable = canopen.objectdictionary.Variable("TIME_OF_DAY", 100, 0, canopen.objectdictionary.TIME_OF_DAY)
-		d = variable.decode(b"\x00\x00\x00\x00\x00\x00")
+		d = variable.decode(struct.pack("<LH", 0, 0))
 		self.assertEqual(d, calendar.timegm((1984, 1, 1, 0, 0, 0)))
+		d = variable.decode(struct.pack("<LH", 10 * 60 * 60 * 1000, 0))
+		self.assertEqual(d, calendar.timegm((1984, 1, 1, 10, 0, 0)))
+		d = variable.decode(struct.pack("<LH", 0, 366))
+		self.assertEqual(d, calendar.timegm((1985, 1, 1, 0, 0, 0)))
 		
 		variable = canopen.objectdictionary.Variable("TIME_DIFFERENCE", 100, 0, canopen.objectdictionary.TIME_DIFFERENCE)
-		d = variable.decode(b"\x00\x00\x00\x00\x00\x00")
+		d = variable.decode(struct.pack("<LH", 0, 0))
 		self.assertEqual(d, 0)
+		d = variable.decode(struct.pack("<LH", 10 * 60 * 60 * 1000, 0))
+		self.assertEqual(d, 10 * 60 * 60)
+		d = variable.decode(struct.pack("<LH", 0, 366))
+		self.assertEqual(d, 366 * 24 * 60 * 60)
 		
 		variable = canopen.objectdictionary.Variable("DOMAIN", 100, 0, canopen.objectdictionary.DOMAIN)
 		d = variable.decode(b"\xA5\x5A")
