@@ -17,6 +17,8 @@ class NMTSpy(Service):
 	
 	def on_node_control(self, message):
 		print(message)
+		print("NMT: node control")
 	
 	def on_error_control(self, message):
 		print(message)
+		print("NMT: error control")
