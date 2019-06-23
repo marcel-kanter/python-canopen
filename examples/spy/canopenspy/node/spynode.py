@@ -1,5 +1,6 @@
 import canopen
-from .service import NMTSpy, SYNCSpy
+import time
+from .service import NMTSpy, SYNCSpy, TIMESpy
 
 
 class SpyNode(canopen.Node):
@@ -7,14 +8,18 @@ class SpyNode(canopen.Node):
 		canopen.Node.__init__(self, name, node_id, canopen.ObjectDictionary())
 		self.nmt = NMTSpy()
 		self.sync = SYNCSpy()
+		self.time = TIMESpy()
 		self.sync.add_callback(self.sync_callback, "sync")
+		self.time.add_callback(self.time_callback, "time")
 	
 	def attach(self, network):
 		canopen.Node.attach(self, network)
 		self.nmt.attach(self)
 		self.sync.attach(self)
+		self.time.attach(self)
 	
 	def detach(self):
+		self.time.detach()
 		self.sync.detach()
 		self.nmt.detach()
 		canopen.Node.detach(self)
@@ -24,3 +29,6 @@ class SpyNode(canopen.Node):
 			print("SYNC: no counter")
 		else:
 			print("SYNC: counter=" + str(counter))
+	
+	def time_callback(self, event, node, t):
+		print("TIME: time=" + time.ctime(t))

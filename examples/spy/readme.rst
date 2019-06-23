@@ -196,17 +196,19 @@ Test
 
 The program will show NMT messages, when it receives them:
 
-press CTRL-C to quit
-Timestamp:     1187.566894        ID: 0000    S                DLC:  8    40 01 10 00 00 00 00 00     Channel: 0
-NMT: node control
-Timestamp:     1195.062588        ID: 0000    S                DLC:  8    40 01 10 00 00 00 00 00     Channel: 0
-NMT: node control
-Timestamp:     1195.926682        ID: 0000    S                DLC:  8    40 01 10 00 00 00 00 00     Channel: 0
-NMT: node control
-Timestamp:     1207.648163        ID: 0701    S                DLC:  1    01                          Channel: 0
-NMT: error control
-Timestamp:     1214.039344        ID: 0701    S   R            DLC:  1                                Channel: 0
-NMT: error control
+.. code:: console
+
+	press CTRL-C to quit
+	Timestamp:     1187.566894        ID: 0000    S                DLC:  8    40 01 10 00 00 00 00 00     Channel: 0
+	NMT: node control
+	Timestamp:     1195.062588        ID: 0000    S                DLC:  8    40 01 10 00 00 00 00 00     Channel: 0
+	NMT: node control
+	Timestamp:     1195.926682        ID: 0000    S                DLC:  8    40 01 10 00 00 00 00 00     Channel: 0
+	NMT: node control
+	Timestamp:     1207.648163        ID: 0701    S                DLC:  1    01                          Channel: 0
+	NMT: error control
+	Timestamp:     1214.039344        ID: 0701    S   R            DLC:  1                                Channel: 0
+	NMT: error control
 
 2. Subclassing a Service
 ------------------------
@@ -278,13 +280,15 @@ Test
 
 The program will show SYNC messages and in the callback, the counter value is evaluated. Note that RTR messages are filtered by SYNCConsumer and thus the callback is not called for them.
 
-press CTRL-C to quit
-Timestamp:     1475.863103        ID: 0080    S                DLC:  1    00                          Channel: 0
-SYNC: counter=0
-Timestamp:     1477.815169        ID: 0080    S                DLC:  1    01                          Channel: 0
-SYNC: counter=1
-Timestamp:     1479.119166        ID: 0080    S                DLC:  1    01                          Channel: 0
-SYNC: counter=1
-Timestamp:     1482.966143        ID: 0080    S   R            DLC:  1                                Channel: 0
-Timestamp:     1487.255078        ID: 0080    S                DLC:  1    01                          Channel: 0
-SYNC: counter=1
+.. code:: console
+
+	press CTRL-C to quit
+	Timestamp:     1475.863103        ID: 0080    S                DLC:  1    00                          Channel: 0
+	SYNC: counter=0
+	Timestamp:     1477.815169        ID: 0080    S                DLC:  1    01                          Channel: 0
+	SYNC: counter=1
+	Timestamp:     1479.119166        ID: 0080    S                DLC:  1    01                          Channel: 0
+	SYNC: counter=1
+	Timestamp:     1482.966143        ID: 0080    S   R            DLC:  1                                Channel: 0
+	Timestamp:     1487.255078        ID: 0080    S                DLC:  1    01                          Channel: 0
+	SYNC: counter=1
