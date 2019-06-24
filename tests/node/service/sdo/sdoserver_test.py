@@ -15,25 +15,30 @@ class SDOServerTestCase(unittest.TestCase):
 		dictionary = canopen.ObjectDictionary()
 		node1 = canopen.Node("a", 1, dictionary)
 		node2 = canopen.Node("b", 2, dictionary)
-		sdoserver = canopen.node.service.SDOServer()
+		examinee = canopen.node.service.SDOServer()
 		
 		node1.attach(network)
 		node2.attach(network)
 		
+		self.assertEqual(examinee.node, None)
+		
 		with self.assertRaises(RuntimeError):
-			sdoserver.detach()
+			examinee.detach()
 		
 		with self.assertRaises(TypeError):
-			sdoserver.attach(None)
+			examinee.attach(None)
 		
-		sdoserver.attach(node1)
+		examinee.attach(node1)
+		self.assertEqual(examinee.node, node1)
 		
 		with self.assertRaises(ValueError):
-			sdoserver.attach(node1)
+			examinee.attach(node1)
 		
-		sdoserver.attach(node2)
+		examinee.attach(node2)
+		self.assertEqual(examinee.node, node2)
 		
-		sdoserver.detach()
+		examinee.detach()
+		self.assertEqual(examinee.node, None)
 		
 		node1.detach()
 		node2.detach()

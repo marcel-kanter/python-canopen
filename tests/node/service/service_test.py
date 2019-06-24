@@ -11,25 +11,30 @@ class ServiceTestCase(unittest.TestCase):
 		dictionary = canopen.ObjectDictionary()
 		node1 = canopen.Node("a", 1, dictionary)
 		node2 = canopen.Node("b", 2, dictionary)
-		service = canopen.node.service.Service()
+		examinee = canopen.node.service.Service()
 		
 		node1.attach(network)
 		node2.attach(network)
 		
+		self.assertEqual(examinee.node, None)
+		
 		with self.assertRaises(RuntimeError):
-			service.detach()
+			examinee.detach()
 		
 		with self.assertRaises(TypeError):
-			service.attach(None)
+			examinee.attach(None)
 		
-		service.attach(node1)
+		examinee.attach(node1)
+		self.assertEqual(examinee.node, node1)
 		
 		with self.assertRaises(ValueError):
-			service.attach(node1)
+			examinee.attach(node1)
 		
-		service.attach(node2)
+		examinee.attach(node2)
+		self.assertEqual(examinee.node, node2)
 		
-		service.detach()
+		examinee.detach()
+		self.assertEqual(examinee.node, None)
 		
 		node1.detach()
 		node2.detach()

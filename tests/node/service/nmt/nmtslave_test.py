@@ -86,25 +86,30 @@ class NMTSlaveTestCase(unittest.TestCase):
 		dictionary = canopen.ObjectDictionary()
 		node1 = canopen.Node("a", 1, dictionary)
 		node2 = canopen.Node("b", 2, dictionary)
-		nmt = canopen.node.service.NMTSlave()
+		examinee = canopen.node.service.NMTSlave()
 		
 		node1.attach(network)
 		node2.attach(network)
 		
+		self.assertEqual(examinee.node, None)
+		
 		with self.assertRaises(RuntimeError):
-			nmt.detach()
+			examinee.detach()
 		
 		with self.assertRaises(TypeError):
-			nmt.attach(None)
+			examinee.attach(None)
 		
-		nmt.attach(node1)
+		examinee.attach(node1)
+		self.assertEqual(examinee.node, node1)
 		
 		with self.assertRaises(ValueError):
-			nmt.attach(node1)
+			examinee.attach(node1)
 		
-		nmt.attach(node2)
+		examinee.attach(node2)
+		self.assertEqual(examinee.node, node2)
 		
-		nmt.detach()
+		examinee.detach()
+		self.assertEqual(examinee.node, None)
 		
 		node1.detach()
 		node2.detach()

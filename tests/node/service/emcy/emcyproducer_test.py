@@ -11,25 +11,30 @@ class EMCYProducerTestCase(unittest.TestCase):
 		network = canopen.Network()
 		node1 = canopen.Node("a", 1, dictionary)
 		node2 = canopen.Node("b", 2, dictionary)
-		emcyproducer = canopen.node.service.EMCYProducer()
+		examinee = canopen.node.service.EMCYProducer()
 		
 		node1.attach(network)
 		node2.attach(network)
 		
+		self.assertEqual(examinee.node, None)
+		
 		with self.assertRaises(RuntimeError):
-			emcyproducer.detach()
+			examinee.detach()
 		
 		with self.assertRaises(TypeError):
-			emcyproducer.attach(None)
+			examinee.attach(None)
 		
-		emcyproducer.attach(node1)
+		examinee.attach(node1)
+		self.assertEqual(examinee.node, node1)
 		
 		with self.assertRaises(ValueError):
-			emcyproducer.attach(node1)
+			examinee.attach(node1)
 		
-		emcyproducer.attach(node2)
+		examinee.attach(node2)
+		self.assertEqual(examinee.node, node2)
 		
-		emcyproducer.detach()
+		examinee.detach()
+		self.assertEqual(examinee.node, None)
 		
 		node1.detach()
 		node2.detach()

@@ -56,3 +56,7 @@ class Service(object):
 				callback(event, *args)
 			except:
 				pass
+	
+	@property
+	def node(self):
+		return self._node

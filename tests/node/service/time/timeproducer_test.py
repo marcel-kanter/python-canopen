@@ -19,6 +19,8 @@ class TIMEProducerTestCase(unittest.TestCase):
 		node1.attach(network)
 		node2.attach(network)
 		
+		self.assertEqual(examinee.node, None)
+		
 		with self.assertRaises(RuntimeError):
 			examinee.detach()
 		
@@ -26,13 +28,16 @@ class TIMEProducerTestCase(unittest.TestCase):
 			examinee.attach(None)
 		
 		examinee.attach(node1)
+		self.assertEqual(examinee.node, node1)
 		
 		with self.assertRaises(ValueError):
 			examinee.attach(node1)
 		
 		examinee.attach(node2)
+		self.assertEqual(examinee.node, node2)
 		
 		examinee.detach()
+		self.assertEqual(examinee.node, None)
 		
 		node1.detach()
 		node2.detach()
