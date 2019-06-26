@@ -3,7 +3,7 @@ import canopen.objectdictionary
 import canopen.node
 
 
-class VariableTestCase(unittest.TestCase):
+class DefTypeTestCase(unittest.TestCase):
 	def test_init(self):
 		dictionary = canopen.ObjectDictionary()
 		dictionary.append(canopen.objectdictionary.DefStruct("defstruct", 0x40))
@@ -28,20 +28,22 @@ class VariableTestCase(unittest.TestCase):
 		node = canopen.Node("n", 1, dictionary)
 		
 		with self.assertRaises(TypeError):
-			canopen.node.variable.Variable(dictionary, dictionary["var"])
+			canopen.node.deftype.DefType(dictionary, dictionary["deftype"])
 		with self.assertRaises(TypeError):
-			canopen.node.variable.Variable(node, node)
+			canopen.node.deftype.DefType(node, node)
 		with self.assertRaises(TypeError):
-			canopen.node.variable.Variable(node, dictionary["rec"])
+			canopen.node.deftype.DefType(node, dictionary["rec"])
 		with self.assertRaises(TypeError):
-			canopen.node.variable.Variable(node, dictionary["arr"])
+			canopen.node.deftype.DefType(node, dictionary["arr"])
+		
+		canopen.node.deftype.DefType(node, dictionary["deftype"])
 		
 		#### Test step: property forwarding
-		self.assertEqual(node["var"].name, dictionary["var"].name)
-		self.assertEqual(node["var"].index, dictionary["var"].index)
-		self.assertEqual(node["var"].subindex, dictionary["var"].subindex)
-		self.assertEqual(node["var"].data_type, dictionary["var"].data_type)
-		self.assertEqual(node["var"].access_type, dictionary["var"].access_type)
+		self.assertEqual(node["deftype"].name, dictionary["deftype"].name)
+		self.assertEqual(node["deftype"].index, dictionary["deftype"].index)
+		self.assertEqual(node["deftype"].subindex, dictionary["deftype"].subindex)
+		self.assertEqual(node["deftype"].data_type, dictionary["deftype"].data_type)
+		self.assertEqual(node["deftype"].access_type, dictionary["deftype"].access_type)
 
 
 if __name__ == "__main__":

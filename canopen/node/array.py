@@ -31,8 +31,8 @@ class Array(collections.abc.Collection):
 	
 	@property
 	def index(self):
-		return self._entry._index
+		return self._entry.index
 	
 	@property
 	def name(self):
-		return self._entry._name
+		return self._entry.name

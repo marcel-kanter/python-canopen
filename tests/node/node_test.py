@@ -59,6 +59,9 @@ class NodeTestCase(unittest.TestCase):
 	
 	def test_collection(self):
 		dictionary = canopen.ObjectDictionary()
+		dictionary.append(canopen.objectdictionary.DefStruct("defstruct", 0x40))
+		dictionary["defstruct"].append(canopen.objectdictionary.Variable("first", 0x40, 0x00, 0x05, "ro"))
+		dictionary.append(canopen.objectdictionary.DefType("deftype", 0x60))
 		dictionary.append(canopen.objectdictionary.Record("rec", 0x1234))
 		dictionary["rec"].append(canopen.objectdictionary.Variable("boolean", 0x1234, 0x01, 0x01, "rw"))
 		dictionary["rec"].append(canopen.objectdictionary.Variable("integer8", 0x1234, 0x02, 0x02, "rw"))
@@ -78,6 +81,10 @@ class NodeTestCase(unittest.TestCase):
 		#### Test step: contains
 		self.assertFalse("xxx" in node)
 		self.assertFalse(0x99 in node)
+		self.assertTrue("deftype" in node)
+		self.assertTrue(0x40 in node)
+		self.assertTrue("defstruct" in node)
+		self.assertTrue(0x60 in node)
 		self.assertTrue("rec" in node)
 		self.assertTrue(0x1234 in node)
 		self.assertTrue("var" in node)

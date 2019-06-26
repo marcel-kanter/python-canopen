@@ -17,5 +17,7 @@ class DefStruct(Record):
 			raise ValueError()
 		if value.subindex == 0 and value.data_type != UNSIGNED8:
 			raise ValueError()
+		if value.access_type != "ro":
+			raise ValueError()
 		
 		Record.append(self, value)

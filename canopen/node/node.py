@@ -3,6 +3,8 @@ import canopen.objectdictionary
 from .array import Array
 from .record import Record
 from .variable import Variable
+from .defstruct import DefStruct
+from .deftype import DefType
 
 
 class Node(collections.abc.Collection):
@@ -36,6 +38,10 @@ class Node(collections.abc.Collection):
 	def __getitem__(self, key):
 		""" Returns the variable, record or array identified by the name or the index. """
 		item = self._dictionary[key]
+		if isinstance(item, canopen.objectdictionary.DefType):
+			return DefType(self, item)
+		if isinstance(item, canopen.objectdictionary.DefStruct):
+			return DefStruct(self, item)
 		if isinstance(item, canopen.objectdictionary.Variable):
 			return Variable(self, item)
 		if isinstance(item, canopen.objectdictionary.Array):

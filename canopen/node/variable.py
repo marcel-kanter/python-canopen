@@ -12,20 +12,20 @@ class Variable(object):
 	
 	@property
 	def index(self):
-		return self._entry._index
+		return self._entry.index
 	
 	@property
 	def name(self):
-		return self._entry._name
+		return self._entry.name
 	
 	@property
 	def subindex(self):
-		return self._entry._subindex
+		return self._entry.subindex
 	
 	@property
 	def data_type(self):
-		return self._entry._data_type
+		return self._entry.data_type
 	
 	@property
 	def access_type(self):
-		return self._entry._access_type
+		return self._entry.access_type

@@ -3,7 +3,7 @@ import canopen.objectdictionary
 import canopen.node
 
 
-class VariableTestCase(unittest.TestCase):
+class DefStructTestCase(unittest.TestCase):
 	def test_init(self):
 		dictionary = canopen.ObjectDictionary()
 		dictionary.append(canopen.objectdictionary.DefStruct("defstruct", 0x40))
@@ -28,20 +28,43 @@ class VariableTestCase(unittest.TestCase):
 		node = canopen.Node("n", 1, dictionary)
 		
 		with self.assertRaises(TypeError):
-			canopen.node.variable.Variable(dictionary, dictionary["var"])
+			canopen.node.defstruct.DefStruct(dictionary, dictionary["defstruct"])
 		with self.assertRaises(TypeError):
-			canopen.node.variable.Variable(node, node)
+			canopen.node.defstruct.DefStruct(node, node)
 		with self.assertRaises(TypeError):
-			canopen.node.variable.Variable(node, dictionary["rec"])
+			canopen.node.defstruct.DefStruct(node, dictionary["arr"])
 		with self.assertRaises(TypeError):
-			canopen.node.variable.Variable(node, dictionary["arr"])
+			canopen.node.defstruct.DefStruct(node, dictionary["var"])
+		
+		canopen.node.defstruct.DefStruct(node, dictionary["defstruct"])
 		
 		#### Test step: property forwarding
-		self.assertEqual(node["var"].name, dictionary["var"].name)
-		self.assertEqual(node["var"].index, dictionary["var"].index)
-		self.assertEqual(node["var"].subindex, dictionary["var"].subindex)
-		self.assertEqual(node["var"].data_type, dictionary["var"].data_type)
-		self.assertEqual(node["var"].access_type, dictionary["var"].access_type)
+		self.assertEqual(node["defstruct"].name, dictionary["defstruct"].name)
+		self.assertEqual(node["defstruct"].index, dictionary["defstruct"].index)
+	
+	def test_collection(self):
+		dictionary = canopen.ObjectDictionary()
+		dictionary.append(canopen.objectdictionary.DefStruct("defstruct", 0x40))
+		dictionary["defstruct"].append(canopen.objectdictionary.Variable("first", 0x40, 0x00, 0x05, "ro"))
+		
+		node = canopen.Node("n", 1, dictionary)
+		
+		examinee = canopen.node.defstruct.DefStruct(node, dictionary["defstruct"])
+		
+		# contains
+		self.assertFalse("xxx" in examinee)
+		self.assertFalse(99 in examinee)
+		self.assertTrue("first" in examinee)
+		self.assertTrue(0x00 in examinee)
+		
+		# iter, getitem
+		items = []
+		for k in examinee:
+			items.append(examinee[k])
+		
+		# len
+		self.assertEqual(len(examinee), len(dictionary["defstruct"]))
+		self.assertEqual(len(examinee), len(items))
 
 
 if __name__ == "__main__":
