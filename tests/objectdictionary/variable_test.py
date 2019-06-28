@@ -31,6 +31,7 @@ class VariableTestCase(unittest.TestCase):
 		self.assertEqual(variable.subindex, subindex)
 		self.assertEqual(variable.data_type, data_type)
 		self.assertEqual(variable.access_type, access_type)
+		self.assertEqual(variable.default, 0)
 		
 		with self.assertRaises(AttributeError):
 			variable.name = name
@@ -40,8 +41,16 @@ class VariableTestCase(unittest.TestCase):
 			variable.subindex = subindex
 		with self.assertRaises(AttributeError):
 			variable.data_type = data_type
-		with self.assertRaises(AttributeError):
-			variable.access_type = access_type
+		with self.assertRaises(ValueError):
+			variable.access_type = "xx"
+		
+		variable.access_type = "wo"
+		self.assertEqual(variable.access_type, "wo")
+		variable.access_type = "ro"
+		self.assertEqual(variable.access_type, "ro")
+		
+		variable.default = 100
+		self.assertEqual(variable.default, 100)
 		
 		canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32, "ro")
 		canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32, "wo")

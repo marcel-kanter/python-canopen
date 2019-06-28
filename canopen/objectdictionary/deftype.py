@@ -10,3 +10,11 @@ class DefType(Variable):
 	"""
 	def __init__(self, name, index):
 		Variable.__init__(self, name, index, 0, UNSIGNED32, "ro")
+	
+	@property
+	def access_type(self):
+		return self._access_type
+	
+	@access_type.setter
+	def access_type(self, x):
+		raise AttributeError()

@@ -26,6 +26,17 @@ class Variable(object):
 		self._subindex = subindex
 		self._data_type = data_type
 		self._access_type = access_type
+		
+		if self._data_type == BOOLEAN:
+			self._default = False
+		elif self._data_type in [REAL32, REAL64]:
+			self._default = 0.0	
+		elif self._data_type in [VISIBLE_STRING, OCTET_STRING, UNICODE_STRING]:
+			self._default = ""
+		elif self._data_type == DOMAIN:
+			self._default = b""
+		else:
+			self._default = 0
 	
 	def decode(self, data):
 		""" Returns the value for the given byte-like CANopen representation, depending on the type of the CANopen variable. """
@@ -244,3 +255,17 @@ class Variable(object):
 	@property
 	def access_type(self):
 		return self._access_type
+	
+	@access_type.setter
+	def access_type(self, x):
+		if x not in ["rw", "wo", "ro"]:
+			raise ValueError()
+		self._access_type = x
+	
+	@property
+	def default(self):
+		return self._default
+	
+	@default.setter
+	def default(self, x):
+		self._default = x
