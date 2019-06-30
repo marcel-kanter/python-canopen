@@ -60,21 +60,23 @@ class NodeTestCase(unittest.TestCase):
 	def test_collection(self):
 		dictionary = canopen.ObjectDictionary()
 		dictionary.append(canopen.objectdictionary.DefStruct("defstruct", 0x40))
-		dictionary["defstruct"].append(canopen.objectdictionary.Variable("first", 0x40, 0x00, 0x05, "ro"))
+		dictionary["defstruct"].append(canopen.objectdictionary.Variable("first", 0x40, 0x00, canopen.objectdictionary.UNSIGNED8, "ro"))
 		dictionary.append(canopen.objectdictionary.DefType("deftype", 0x60))
 		dictionary.append(canopen.objectdictionary.Record("rec", 0x1234))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("boolean", 0x1234, 0x01, 0x01, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("integer8", 0x1234, 0x02, 0x02, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("integer16", 0x1234, 0x03, 0x03, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("integer32", 0x1234, 0x04, 0x04, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("unsigned8", 0x1234, 0x05, 0x05, "ro"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("unsigned16", 0x1234, 0x06, 0x06, "wo"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("domain", 0x1234, 0x0F, 0x0F, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("integer24", 0x1234, 0x10, 0x10, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("integer40", 0x1234, 0x11, 0x11, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("integer48", 0x1234, 0x12, 0x12, "rw"))
-		dictionary.append(canopen.objectdictionary.Variable("var", 0x5678, 0x00, 0x07, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("boolean", 0x1234, 0x01, canopen.objectdictionary.BOOLEAN, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("integer8", 0x1234, 0x02, canopen.objectdictionary.INTEGER8, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("integer16", 0x1234, 0x03, canopen.objectdictionary.INTEGER16, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("integer32", 0x1234, 0x04, canopen.objectdictionary.INTEGER32, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("unsigned8", 0x1234, 0x05, canopen.objectdictionary.UNSIGNED8, "ro"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("unsigned16", 0x1234, 0x06, canopen.objectdictionary.UNSIGNED16, "wo"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("domain", 0x1234, 0x0F, canopen.objectdictionary.DOMAIN, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("integer24", 0x1234, 0x10, canopen.objectdictionary.INTEGER24, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("real64", 0x1234, 0x11, canopen.objectdictionary.REAL64, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("integer40", 0x1234, 0x12, canopen.objectdictionary.INTEGER40, "rw"))
+		dictionary.append(canopen.objectdictionary.Variable("var", 0x5678, 0x00, canopen.objectdictionary.UNSIGNED32, "rw"))
 		dictionary.append(canopen.objectdictionary.Array("arr", 0xabcd))
+		dictionary["arr"].append(canopen.objectdictionary.Variable("first", 0xabcd, 0x01, canopen.objectdictionary.INTEGER8, "rw"))
+		dictionary["arr"].append(canopen.objectdictionary.Variable("second", 0xabcd, 0x02, canopen.objectdictionary.INTEGER8, "rw"))
 		
 		node = canopen.Node("a", 1, dictionary)
 		
@@ -114,6 +116,19 @@ class NodeTestCase(unittest.TestCase):
 		# mocked getitem will return a str, which is not a valid entry in the object dictionary
 		with self.assertRaises(NotImplementedError):
 			node["ZZZ"]
+	
+	def test_data_access(self):
+		dictionary = canopen.ObjectDictionary()
+		dictionary.append(canopen.objectdictionary.Record("rec", 0x1234))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("integer32", 0x1234, 0x04, canopen.objectdictionary.INTEGER32, "rw"))
+		dictionary.append(canopen.objectdictionary.Variable("var", 0x5678, 0x00, canopen.objectdictionary.UNSIGNED32, "rw"))
+		examinee = canopen.Node("n", 1, dictionary)
+		
+		#### Test step: get_data and set_data not implemented
+		with self.assertRaises(NotImplementedError):
+			examinee.get_data(0x5678, 0x00)
+		with self.assertRaises(NotImplementedError):
+			examinee.set_data(0x5678, 0x00, 0x00)
 	
 	def __return_value(self, value):
 		return value

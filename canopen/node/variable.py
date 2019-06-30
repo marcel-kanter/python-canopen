@@ -11,6 +11,14 @@ class Variable(object):
 		self._entry = entry
 	
 	@property
+	def value(self):
+		return self._node.get_data(self._entry.index, self._entry.subindex)
+	
+	@value.setter
+	def value(self, x):
+		self._node.set_data(self._entry.index, self._entry.subindex, x)
+	
+	@property
 	def index(self):
 		return self._entry.index
 	

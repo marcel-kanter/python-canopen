@@ -1,3 +1,4 @@
+import canopen.objectdictionary
 from .node import Node
 from .service import NMTSlave, EMCYProducer, SDOServer
 
@@ -9,6 +10,7 @@ class LocalNode(Node):
 	"""
 	def __init__(self, name, node_id, dictionary):
 		Node.__init__(self, name, node_id, dictionary)
+		self._data = {}
 		self.nmt = NMTSlave()
 		self.emcy = EMCYProducer()
 		self.sdo = SDOServer()
@@ -26,3 +28,23 @@ class LocalNode(Node):
 		self.sdo.detach()
 		self.nmt.detach()
 		Node.detach(self)
+	
+	def get_data(self, index, subindex):
+		if not (index, subindex) in self._data:
+			try:
+				item = self._dictionary[index]
+			except:
+				raise KeyError()
+				
+			if not isinstance(item, canopen.objectdictionary.Variable):
+				try:
+					item = item[subindex]
+				except:
+					raise KeyError()
+			
+			return item.default
+		else:
+			return self._data[(index, subindex)]
+	
+	def set_data(self, index, subindex, data):
+		self._data[(index, subindex)] = data

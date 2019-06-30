@@ -10,8 +10,8 @@ class RemoteNode(Node):
 	def __init__(self, name, node_id, dictionary):
 		Node.__init__(self, name, node_id, dictionary)
 		self.nmt = NMTMaster()
-		self.sdo = SDOClient()
 		self.emcy = EMCYConsumer()
+		self.sdo = SDOClient()
 	
 	def attach(self, network):
 		""" Attach the node and then all services to the network. It does NOT append or assign the node to the network."""
@@ -26,3 +26,9 @@ class RemoteNode(Node):
 		self.sdo.detach()
 		self.nmt.detach()
 		Node.detach(self)
+	
+	def get_data(self, index, subindex):
+		raise NotImplementedError()
+	
+	def set_data(self, index, subindex, value):
+		raise NotImplementedError()

@@ -69,6 +69,12 @@ class Node(collections.abc.Collection):
 		
 		self._network = None
 	
+	def get_data(self, index, subindex):
+		raise NotImplementedError()
+	
+	def set_data(self, index, subindex, data):
+		raise NotImplementedError()
+	
 	@property
 	def dictionary(self):
 		return self._dictionary

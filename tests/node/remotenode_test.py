@@ -1,5 +1,6 @@
 import unittest
 import canopen
+import canopen.objectdictionary
 
 
 class RemoteNodeTestCase(unittest.TestCase):
@@ -55,6 +56,19 @@ class RemoteNodeTestCase(unittest.TestCase):
 		self.assertEqual(node.network, network2)
 		
 		node.detach()
+	
+	def test_data_access(self):
+		dictionary = canopen.ObjectDictionary()
+		dictionary.append(canopen.objectdictionary.Record("rec", 0x1234))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("integer32", 0x1234, 0x04, canopen.objectdictionary.INTEGER32, "rw"))
+		dictionary.append(canopen.objectdictionary.Variable("var", 0x5678, 0x00, canopen.objectdictionary.UNSIGNED32, "rw"))
+		examinee = canopen.RemoteNode("n", 1, dictionary)
+		
+		#### Test step: get_data and set_data not implemented
+		with self.assertRaises(NotImplementedError):
+			examinee.get_data(0x5678, 0x00)
+		with self.assertRaises(NotImplementedError):
+			examinee.set_data(0x5678, 0x00, 0x00)
 
 
 if __name__ == "__main__":
