@@ -104,17 +104,17 @@ class SDOServerTestCase(unittest.TestCase):
 		network = canopen.Network()
 		dictionary = canopen.ObjectDictionary()
 		dictionary.append(canopen.objectdictionary.Record("rec", 0x1234))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("boolean", 0x1234, 0x01, 0x01, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("integer8", 0x1234, 0x02, 0x02, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("integer16", 0x1234, 0x03, 0x03, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("integer32", 0x1234, 0x04, 0x04, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("unsigned8", 0x1234, 0x05, 0x05, "ro"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("unsigned16", 0x1234, 0x06, 0x06, "wo"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("domain", 0x1234, 0x0F, 0x0F, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("integer24", 0x1234, 0x10, 0x10, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("integer40", 0x1234, 0x11, 0x11, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("integer48", 0x1234, 0x12, 0x12, "rw"))
-		dictionary.append(canopen.objectdictionary.Variable("var", 0x5678, 0x00, 0x07, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("boolean", 0x1234, 0x01, canopen.objectdictionary.BOOLEAN, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("integer8", 0x1234, 0x02, canopen.objectdictionary.INTEGER8, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("integer16", 0x1234, 0x03, canopen.objectdictionary.INTEGER16, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("integer32", 0x1234, 0x04, canopen.objectdictionary.INTEGER32, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("unsigned8", 0x1234, 0x05, canopen.objectdictionary.UNSIGNED8, "ro"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("unsigned16", 0x1234, 0x06, canopen.objectdictionary.UNSIGNED16, "wo"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("domain", 0x1234, 0x0F, canopen.objectdictionary.DOMAIN, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("integer24", 0x1234, 0x10, canopen.objectdictionary.INTEGER24, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("real64", 0x1234, 0x11, canopen.objectdictionary.REAL64, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("integer40", 0x1234, 0x12, canopen.objectdictionary.INTEGER40, "rw"))
+		dictionary.append(canopen.objectdictionary.Variable("var", 0x5678, 0x00, canopen.objectdictionary.UNSIGNED32, "rw"))
 		node = canopen.Node("a", 1, dictionary)
 		sdoserver = canopen.node.service.SDOServer()
 		
@@ -124,36 +124,42 @@ class SDOServerTestCase(unittest.TestCase):
 		
 		#### Test step
 		# Initiate: index: - -> Abort with index unknown
-		d = struct.pack("<BHBL", 0x20, 0x0000, 0x00, 0x00000000)
+		index = 0x0000
+		subindex = 0x00
+		d = struct.pack("<BHBL", 0x20, index, subindex, 0x00000000)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data,struct.pack("<BHBL", 0x80, 0x0000, 0x00, 0x06020000))
+		self.assertEqual(message_recv.data,struct.pack("<BHBL", 0x80, index, subindex, 0x06020000))
 		
 		#### Test step
 		# Initiate: index: +, subindex: - -> Abort with subindex unknown
-		d = struct.pack("<BHBL", 0x20, 0x1234, 0x99, 0x00000000)
+		index = 0x1234
+		subindex = 0x99
+		d = struct.pack("<BHBL", 0x20, index, subindex, 0x00000000)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, 0x1234, 0x99, 0x06090011))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x06090011))
 		
 		#### Test step
 		# Initiate: index: +, subindex: +, rw: - -> Abort with attempt to write an read only object
-		d = struct.pack("<BHBL", 0x20, 0x1234, 0x05, 0x00000000)
+		index = 0x1234
+		subindex = 0x05
+		d = struct.pack("<BHBL", 0x20, index, subindex, 0x00000000)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, 0x1234, 0x05, 0x06010002))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x06010002))
 		
 		#### Test step
 		# Segment: No active segmented transfer -> Abort
@@ -168,25 +174,29 @@ class SDOServerTestCase(unittest.TestCase):
 		
 		#### Test step
 		# Initiate: index: +, subindex: +, rw: +, e = 0 & s = 0 & n = 0 -> Abort with command invalid
-		d = struct.pack("<BHBL", 0x20, 0x1234, 0x0F, 0x00000000)
+		index = 0x1234
+		subindex = 0x0F
+		d = struct.pack("<BHBL", 0x20, index, subindex, 0x00000000)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, 0x1234, 0x0F, 0x05040001))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x05040001))
 		
 		#### Test step
 		# Initiate: e = 0 & s = 1 & size in data -> Confirm
-		d = struct.pack("<BHBL", 0x21, 0x1234, 0x0F, 0x00000004)
+		index = 0x1234
+		subindex = 0x0F
+		d = struct.pack("<BHBL", 0x21, index, subindex, 0x00000004)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x60, 0x1234, 0x0F, 0x00000000))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x60, index, subindex, 0x00000000))
 		
 		# Segment: Wrong toggle bit -> Abort
 		d = struct.pack("<B7s", 0x10, b"\x00\x00\x00\x00\x00\x00\x00")
@@ -196,18 +206,20 @@ class SDOServerTestCase(unittest.TestCase):
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, 0x1234, 0x0F, 0x05030000))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x05030000))
 		
 		#### Test step
 		# Initiate: e = 0 & s = 1 & size in data -> Confirm
-		d = struct.pack("<BHBL", 0x21, 0x1234, 0x0F, 0x00000008)
+		index = 0x1234
+		subindex = 0x0F
+		d = struct.pack("<BHBL", 0x21, index, subindex, 0x00000008)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x60, 0x1234, 0x0F, 0x00000000))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x60, index, subindex, 0x00000000))
 		
 		# Segment: Correct toggle bit -> Confirm
 		d = struct.pack("<B7s", 0x0A, b"\x11\x22\x00\x00\x00\x00\x00")
@@ -227,18 +239,20 @@ class SDOServerTestCase(unittest.TestCase):
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, 0x1234, 0x0F, 0x06070010))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x06070010))
 		
 		#### Test step
 		# Initiate: e = 0 & s = 1 & size in data -> Confirm
-		d = struct.pack("<BHBL", 0x21, 0x5678, 0x00, 0x00000004)
+		index = 0x5678
+		subindex = 0x00
+		d = struct.pack("<BHBL", 0x21, index, subindex, 0x00000004)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x60, 0x5678, 0x00, 0x00000000))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x60, index, subindex, 0x00000000))
 		
 		# Segment: Correct toggle bit -> Confirm
 		d = struct.pack("<B7s", 0x0A, b"\x11\x22\x00\x00\x00\x00\x00")
@@ -261,21 +275,23 @@ class SDOServerTestCase(unittest.TestCase):
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, 0x5678, 0x00, 0x06020000))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x06020000))
 		
 		# Restore Variable in dictionary
 		dictionary.append(canopen.objectdictionary.Variable("var", 0x5678, 0x00, 0x07, "rw"))
 		
 		#### Test step
 		# Initiate: e = 0 & s = 1 & size in data -> Confirm
-		d = struct.pack("<BHBL", 0x21, 0x1234, 0x0F, 0x00000004)
+		index = 0x1234
+		subindex = 0x0F
+		d = struct.pack("<BHBL", 0x21, index, subindex, 0x00000004)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x60, 0x1234, 0x0F, 0x00000000))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x60, index, subindex, 0x00000000))
 		
 		# Segment: Correct toggle bit -> Confirm
 		d = struct.pack("<B7s", 0x0A, b"\x11\x22\x00\x00\x00\x00\x00")
@@ -298,21 +314,23 @@ class SDOServerTestCase(unittest.TestCase):
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, 0x1234, 0x0F, 0x06090011))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x06090011))
 		
 		# Restore Variable in dictionary
-		dictionary["rec"].append(canopen.objectdictionary.Variable("domain", 0x1234, 0x0F, 0x0F, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("domain", 0x1234, 0x0F, canopen.objectdictionary.DOMAIN, "rw"))
 		
 		#### Test step
 		# Initiate: e = 0 & s = 1 & size in data -> Confirm
-		d = struct.pack("<BHBL", 0x21, 0x1234, 0x12, 0x00000004)
+		index = 0x1234
+		subindex = 0x12
+		d = struct.pack("<BHBL", 0x21, index, subindex, 0x00000004)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x60, 0x1234, 0x12, 0x00000000))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x60, index, subindex, 0x00000000))
 		
 		# Segment: Correct toggle bit -> Confirm
 		d = struct.pack("<B7s", 0x0A, b"\x11\x22\x00\x00\x00\x00\x00")
@@ -332,18 +350,20 @@ class SDOServerTestCase(unittest.TestCase):
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, 0x1234, 0x12, 0x06070010))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x06070010))
 		
 		#### Test step
 		# Initiate: e = 0 & s = 1 & size in data -> Confirm
-		d = struct.pack("<BHBL", 0x21, 0x1234, 0x0F, 0x00000004)
+		index = 0x1234
+		subindex = 0x0F
+		d = struct.pack("<BHBL", 0x21, index, subindex, 0x00000004)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x60, 0x1234, 0x0F, 0x00000000))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x60, index, subindex, 0x00000000))
 		
 		# Segment: Correct toggle bit -> Confirm
 		d = struct.pack("<B7s", 0x0A, b"\x11\x22\x00\x00\x00\x00\x00")
@@ -367,14 +387,16 @@ class SDOServerTestCase(unittest.TestCase):
 		
 		#### Test step
 		# Initiate: e = 0 & s = 1 & size in data -> Confirm
-		d = struct.pack("<BHBL", 0x21, 0x5678, 0x00, 0x00000004)
+		index = 0x5678
+		subindex = 0x00
+		d = struct.pack("<BHBL", 0x21, index, subindex, 0x00000004)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x60, 0x5678, 0x00, 0x00000000))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x60, index, subindex, 0x00000000))
 		
 		# Segment: Correct toggle bit -> Confirm
 		d = struct.pack("<B7s", 0x0A, b"\x11\x22\x00\x00\x00\x00\x00")
@@ -398,113 +420,133 @@ class SDOServerTestCase(unittest.TestCase):
 		
 		#### Test step
 		# Initiate: index: +, subindex: +, rw: +, e = 1 & s = 0 & n = 0 -> Abort on variable with 5 bytes or more
-		d = struct.pack("<BHBL", 0x22, 0x1234, 0x11, 0x00000000)
+		index = 0x1234
+		subindex = 0x11
+		d = struct.pack("<BHBL", 0x22, index, subindex, 0x00000000)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, 0x1234, 0x11, 0x06070010))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x06070010))
 		
 		#### Test step
 		# Initiate: index: +, subindex: +, rw: +, e = 1 & s = 0 & n = 0 -> Confirm on variable with 4 bytes length or less
-		d = struct.pack("<BHBL", 0x22, 0x5678, 0x00, 0x00000000)
+		index = 0x5678
+		subindex = 0x00
+		d = struct.pack("<BHBL", 0x22, index, subindex, 0x00000000)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x60, 0x5678, 0x00, 0x00000000))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x60, index, subindex, 0x00000000))
 		
 		#### Test step
 		# Initiate: index: +, subindex: +, rw: +, e = 1 & s = 1 & n = 0 -> Abort on variable with 5 bytes or more
-		d = struct.pack("<BHBL", 0x23, 0x1234, 0x12, 0x00000000)
+		index = 0x1234
+		subindex = 0x12
+		d = struct.pack("<BHBL", 0x23, index, subindex, 0x00000000)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, 0x1234, 0x12, 0x06070010))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x06070010))
 		
 		#### Test step
 		# Initiate: index: +, subindex: +, rw: +, e = 1 & s = 1 & n = 0 -> Confirm on variable with 4 bytes length or less
-		d = struct.pack("<BHBL", 0x23, 0x1234, 0x04, 0x00000000)
+		index = 0x1234
+		subindex = 0x04
+		d = struct.pack("<BHBL", 0x23, index, subindex, 0x00000000)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x60, 0x1234, 0x04, 0x00000000))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x60, index, subindex, 0x00000000))
 		
 		#### Test step
 		# Initiate: index: +, subindex: +, rw: +, e = 1 & s = 1 & n = 1 -> Abort on variable with 4 bytes or more
-		d = struct.pack("<BHBL", 0x27, 0x1234, 0x04, 0x00000000)
+		index = 0x1234
+		subindex = 0x04
+		d = struct.pack("<BHBL", 0x27, index, subindex, 0x00000000)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, 0x1234, 0x04, 0x06070010))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x06070010))
 		
 		#### Test step
 		# Initiate: index: +, subindex: +, rw: +, e = 1 & s = 1 & n = 1 -> Confirm on variable with 3 bytes length or less
-		d = struct.pack("<BHBL", 0x27, 0x1234, 0x10, 0x00000000)
+		index = 0x1234
+		subindex = 0x10
+		d = struct.pack("<BHBL", 0x27, index, subindex, 0x00000000)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x60, 0x1234, 0x10, 0x00000000))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x60, index, subindex, 0x00000000))
 		
 		#### Test step
 		# Initiate: index: +, subindex: +, rw: +, e = 1 & s = 1 & n = 2 -> Abort on variable with 3 bytes or more
-		d = struct.pack("<BHBL", 0x2B, 0x1234, 0x10, 0x00000000)
+		index = 0x1234
+		subindex = 0x10
+		d = struct.pack("<BHBL", 0x2B, index, subindex, 0x00000000)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, 0x1234, 0x10, 0x06070010))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x06070010))
 		
 		#### Test step
 		# Initiate: index: +, subindex: +, rw: +, e = 1 & s = 1 & n = 2 -> Confirm on variable with 2 bytes length or less
-		d = struct.pack("<BHBL", 0x2B, 0x1234, 0x03, 0x00000000)
+		index = 0x1234
+		subindex = 0x03
+		d = struct.pack("<BHBL", 0x2B, index, subindex, 0x00000000)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x60, 0x1234, 0x03, 0x00000000))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x60, index, subindex, 0x00000000))
 		
 		#### Test step
 		# Initiate: index: +, subindex: +, rw: +, e = 1 & s = 1 & n = 3 -> Abort on variable with 2 bytes or more
-		d = struct.pack("<BHBL", 0x2F, 0x1234, 0x03, 0x00000000)
+		index = 0x1234
+		subindex = 0x03
+		d = struct.pack("<BHBL", 0x2F, index, subindex, 0x00000000)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, 0x1234, 0x03, 0x06070010))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x06070010))
 		
 		#### Test step
 		# Initiate: index: +, subindex: +, rw: +, e = 1 & s = 1 & n = 3 -> Confirm on variable with 1 bytes length
-		d = struct.pack("<BHBL", 0x2F, 0x1234, 0x01, 0x00000000)
+		index = 0x1234
+		subindex = 0x01
+		d = struct.pack("<BHBL", 0x2F, index, subindex, 0x00000000)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x60, 0x1234, 0x01, 0x00000000))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x60, index, subindex, 0x00000000))
 		
 		sdoserver.detach()
 		node.detach()
@@ -518,16 +560,17 @@ class SDOServerTestCase(unittest.TestCase):
 		network = canopen.Network()
 		dictionary = canopen.ObjectDictionary()
 		dictionary.append(canopen.objectdictionary.Record("rec", 0x1234))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("boolean", 0x1234, 0x01, 0x01, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("integer8", 0x1234, 0x02, 0x02, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("integer16", 0x1234, 0x03, 0x03, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("integer32", 0x1234, 0x04, 0x04, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("unsigned8", 0x1234, 0x05, 0x05, "ro"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("unsigned16", 0x1234, 0x06, 0x06, "wo"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("domain", 0x1234, 0x0F, 0x0F, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("integer24", 0x1234, 0x10, 0x10, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("integer40", 0x1234, 0x11, 0x11, "rw"))
-		dictionary.append(canopen.objectdictionary.Variable("var", 0x5678, 0x00, 0x0007, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("boolean", 0x1234, 0x01, canopen.objectdictionary.BOOLEAN, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("integer8", 0x1234, 0x02, canopen.objectdictionary.INTEGER8, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("integer16", 0x1234, 0x03, canopen.objectdictionary.INTEGER16, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("integer32", 0x1234, 0x04, canopen.objectdictionary.INTEGER32, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("unsigned8", 0x1234, 0x05, canopen.objectdictionary.UNSIGNED8, "ro"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("unsigned16", 0x1234, 0x06, canopen.objectdictionary.UNSIGNED16, "wo"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("domain", 0x1234, 0x0F, canopen.objectdictionary.DOMAIN, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("integer24", 0x1234, 0x10, canopen.objectdictionary.INTEGER24, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("real64", 0x1234, 0x11, canopen.objectdictionary.REAL64, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("integer40", 0x1234, 0x12, canopen.objectdictionary.INTEGER40, "rw"))
+		dictionary.append(canopen.objectdictionary.Variable("var", 0x5678, 0x00, canopen.objectdictionary.UNSIGNED32, "rw"))
 		node = canopen.Node("a", 1, dictionary)
 		sdoserver = canopen.node.service.SDOServer()
 		
@@ -537,36 +580,42 @@ class SDOServerTestCase(unittest.TestCase):
 		
 		#### Test step
 		# Initiate: index: - -> Abort with index unknown
-		d = struct.pack("<BHBL", 0x40, 0x0000, 0x00, 0x00000000)
+		index = 0x0000
+		subindex = 0x00
+		d = struct.pack("<BHBL", 0x40, index, subindex, 0x00000000)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data,struct.pack("<BHBL", 0x80, 0x0000, 0x00, 0x06020000))
+		self.assertEqual(message_recv.data,struct.pack("<BHBL", 0x80, index, subindex, 0x06020000))
 		
 		#### Test step
 		# Initiate: index: +, subindex: - -> Abort with subindex unknown
-		d = struct.pack("<BHBL", 0x40, 0x1234, 0x99, 0x00000000)
+		index = 0x1234
+		subindex = 0x99
+		d = struct.pack("<BHBL", 0x40, index, subindex, 0x00000000)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, 0x1234, 0x99, 0x06090011))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x06090011))
 		
 		#### Test step
 		# Initiate: index: +, subindex: +, rw: - -> Abort with attempt to read an write only object
-		d = struct.pack("<BHBL", 0x40, 0x1234, 0x06, 0x00000000)
+		index = 0x1234
+		subindex = 0x06
+		d = struct.pack("<BHBL", 0x40, index, subindex, 0x00000000)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, 0x1234, 0x06, 0x06010001))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x06010001))
 		
 		#### Test step
 		# Segment: No active segmented transfer -> Abort
@@ -581,25 +630,29 @@ class SDOServerTestCase(unittest.TestCase):
 		
 		#### Test step
 		# Initiate: index: +, subindex: +, rw: + -> Confirm expedited transfer
-		d = struct.pack("<BHBL", 0x40, 0x5678, 0x00, 0x00000000)
+		index = 0x5678
+		subindex = 0x00
+		d = struct.pack("<BHBL", 0x40, index, subindex, 0x00000000)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x43, 0x5678, 0x00, 0x00000000))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x43, index, subindex, 0x00000000))
 		
 		#### Test step
 		# Initiate: index: +, subindex: +, rw: + -> Confirm segmented transfer
-		d = struct.pack("<BHBL", 0x40, 0x1234, 0x11, 0x00000000)
+		index = 0x1234
+		subindex = 0x11
+		d = struct.pack("<BHBL", 0x40, index, subindex, 0x00000000)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x41, 0x1234, 0x11, 0x00000008))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x41, index, subindex, 0x00000008))
 		
 		# Segment: Wrong toggle bit -> Abort
 		d = struct.pack("<B7s", 0x70, b"\x00\x00\x00\x00\x00\x00\x00")
@@ -609,18 +662,20 @@ class SDOServerTestCase(unittest.TestCase):
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, 0x1234, 0x11, 0x05030000))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x05030000))
 
 		#### Test step
 		# Initiate: index: +, subindex: +, rw: + -> Confirm segmented transfer
-		d = struct.pack("<BHBL", 0x40, 0x1234, 0x11, 0x00000000)
+		index = 0x1234
+		subindex = 0x11
+		d = struct.pack("<BHBL", 0x40, index, subindex, 0x00000000)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x41, 0x1234, 0x11, 0x00000008))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x41, index, subindex, 0x00000008))
 		
 		# Segment: Correct toggle bit -> Data segment
 		d = struct.pack("<B7s", 0x60, b"\x00\x00\x00\x00\x00\x00\x00")
@@ -640,18 +695,20 @@ class SDOServerTestCase(unittest.TestCase):
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, 0x1234, 0x11, 0x05030000))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x05030000))
 
 		#### Test step
 		# Initiate: index: +, subindex: +, rw: + -> Confirm segmented transfer
-		d = struct.pack("<BHBL", 0x40, 0x1234, 0x11, 0x00000000)
+		index = 0x1234
+		subindex = 0x11
+		d = struct.pack("<BHBL", 0x40, index, subindex, 0x00000000)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		
 		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x41, 0x1234, 0x11, 0x00000008))
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x41, index, subindex, 0x00000008))
 		
 		# Segment: Correct toggle bit -> Data segment
 		d = struct.pack("<B7s", 0x60, b"\x00\x00\x00\x00\x00\x00\x00")
