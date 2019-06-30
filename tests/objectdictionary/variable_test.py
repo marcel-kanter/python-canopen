@@ -2,6 +2,7 @@ import unittest
 import struct
 import calendar
 import canopen.objectdictionary
+from canopen.objectdictionary.datatypes import *
 
 
 class VariableTestCase(unittest.TestCase):
@@ -19,6 +20,10 @@ class VariableTestCase(unittest.TestCase):
 		with self.assertRaises(ValueError):
 			canopen.objectdictionary.Variable("var", 0, 0, canopen.objectdictionary.UNSIGNED32, "X")
 		
+		for access_type in ["rw", "wo", "ro"]:
+			examinee = canopen.objectdictionary.Variable("var", 100, 0, UNSIGNED32, access_type)
+			self.assertEqual(examinee.access_type, access_type)
+		
 		name = "var"
 		index = 100
 		subindex = 0
@@ -29,8 +34,6 @@ class VariableTestCase(unittest.TestCase):
 		self.assertEqual(variable.name, name)
 		self.assertEqual(variable.index, index)
 		self.assertEqual(variable.subindex, subindex)
-		self.assertEqual(variable.data_type, data_type)
-		self.assertEqual(variable.access_type, access_type)
 		self.assertEqual(variable.default, 0)
 		
 		with self.assertRaises(AttributeError):
@@ -43,7 +46,7 @@ class VariableTestCase(unittest.TestCase):
 			variable.data_type = data_type
 		with self.assertRaises(ValueError):
 			variable.access_type = "xx"
-		
+				
 		variable.access_type = "wo"
 		self.assertEqual(variable.access_type, "wo")
 		variable.access_type = "ro"
@@ -52,8 +55,10 @@ class VariableTestCase(unittest.TestCase):
 		variable.default = 100
 		self.assertEqual(variable.default, 100)
 		
-		canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32, "ro")
-		canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32, "wo")
+		for data_type in [BOOLEAN, INTEGER8, INTEGER16, INTEGER32, UNSIGNED8, UNSIGNED16, UNSIGNED32, REAL32, VISIBLE_STRING, OCTET_STRING, UNICODE_STRING, TIME_OF_DAY, TIME_DIFFERENCE, DOMAIN, INTEGER24, REAL64, INTEGER40, INTEGER48, INTEGER56, INTEGER64, UNSIGNED24, UNSIGNED40, UNSIGNED48, UNSIGNED56, UNSIGNED64]:
+			examinee = canopen.objectdictionary.Variable("var", 100, 0, data_type)
+			self.assertEqual(examinee.data_type, data_type)
+			self.assertEqual(examinee.default, examinee.decode(examinee.encode(examinee.default)))
 	
 	def test_encode(self):
 		variable = canopen.objectdictionary.Variable("BOOLEAN", 100, 0, canopen.objectdictionary.BOOLEAN)

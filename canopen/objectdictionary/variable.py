@@ -35,6 +35,8 @@ class Variable(object):
 			self._default = ""
 		elif self._data_type == DOMAIN:
 			self._default = b""
+		elif self._data_type == TIME_OF_DAY:
+			self._default = self._canopen_epoch
 		else:
 			self._default = 0
 	
