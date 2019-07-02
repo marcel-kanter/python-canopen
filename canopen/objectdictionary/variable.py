@@ -40,6 +40,16 @@ class Variable(object):
 		else:
 			self._default = 0
 	
+	def __eq__(self, other):
+		""" Indicates whether some other object is "equal to" this one. """
+		if self is other:
+			return True
+		if self.__class__ != other.__class__:
+			return False
+		if self._name != other._name or self._index != other.index or self._subindex != other.subindex or self._data_type != other.data_type or self._access_type != other.access_type or self._default != other.default:
+			return False
+		return True
+	
 	def decode(self, data):
 		""" Returns the value for the given byte-like CANopen representation, depending on the type of the CANopen variable. """
 		value = None

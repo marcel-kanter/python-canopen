@@ -60,6 +60,54 @@ class VariableTestCase(unittest.TestCase):
 			self.assertEqual(examinee.data_type, data_type)
 			self.assertEqual(examinee.default, examinee.decode(examinee.encode(examinee.default)))
 	
+	def test_equals(self):
+		a = canopen.objectdictionary.Variable("var", 100, 0, UNSIGNED32, "rw")
+		
+		#### Test step: Reflexivity
+		self.assertTrue(a == a)
+		
+		#### Test step: Compare same classes only (required for transitivity)
+		b = None
+		self.assertFalse(a == b)
+		b = 3
+		self.assertFalse(a == b)
+		
+		#### Test step: Consistency
+		b = canopen.objectdictionary.Variable("var", 100, 0, UNSIGNED32, "rw")
+		self.assertTrue(a == b)
+		self.assertTrue(a == b)
+		self.assertTrue(a == b)
+		
+		#### Test step: Symmetricality, Contents
+		b = canopen.objectdictionary.Variable("var", 100, 0, UNSIGNED32, "rw")
+		self.assertTrue(a == b)
+		self.assertEqual(a == b, b == a)
+		
+		b = canopen.objectdictionary.Variable("x", 100, 0, UNSIGNED32, "rw")
+		self.assertFalse(a == b)
+		self.assertEqual(a == b, b == a)
+		
+		b = canopen.objectdictionary.Variable("var", 111, 0, UNSIGNED32, "rw")
+		self.assertFalse(a == b)
+		self.assertEqual(a == b, b == a)
+		
+		b = canopen.objectdictionary.Variable("var", 100, 1, UNSIGNED32, "rw")
+		self.assertFalse(a == b)
+		self.assertEqual(a == b, b == a)
+		
+		b = canopen.objectdictionary.Variable("var", 100, 0, BOOLEAN, "rw")
+		self.assertFalse(a == b)
+		self.assertEqual(a == b, b == a)
+		
+		b = canopen.objectdictionary.Variable("var", 100, 0, UNSIGNED32, "ro")
+		self.assertFalse(a == b)
+		self.assertEqual(a == b, b == a)
+		
+		b = canopen.objectdictionary.Variable("var", 100, 0, UNSIGNED32, "rw")
+		b.default = 10
+		self.assertFalse(a == b)
+		self.assertEqual(a == b, b == a)
+	
 	def test_encode(self):
 		variable = canopen.objectdictionary.Variable("BOOLEAN", 100, 0, canopen.objectdictionary.BOOLEAN)
 		e = variable.encode(False)

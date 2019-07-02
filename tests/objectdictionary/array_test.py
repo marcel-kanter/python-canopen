@@ -21,6 +21,49 @@ class ArrayTestCase(unittest.TestCase):
 		with self.assertRaises(AttributeError):
 			array.index = index
 	
+	def test_equals(self):
+		a = canopen.objectdictionary.Array("arr", 100)
+		
+		#### Test step: Reflexivity
+		self.assertTrue(a == a)
+		
+		#### Test step: Compare same classes only (required for transitivity)
+		b = None
+		self.assertFalse(a == b)
+		b = 3
+		self.assertFalse(a == b)
+		
+		#### Test step: Consistency
+		b = canopen.objectdictionary.Array("arr", 100)
+		self.assertTrue(a == b)
+		self.assertTrue(a == b)
+		self.assertTrue(a == b)
+		
+		#### Test step: Symmetricality, Contents
+		b = canopen.objectdictionary.Array("arr", 100)
+		self.assertTrue(a == b)
+		self.assertEqual(a == b, b == a)
+		
+		b = canopen.objectdictionary.Array("x", 100)
+		self.assertFalse(a == b)
+		self.assertEqual(a == b, b == a)
+		
+		b = canopen.objectdictionary.Array("arr", 101)
+		self.assertFalse(a == b)
+		self.assertEqual(a == b, b == a)
+		
+		#### Test step: Contents
+		b = canopen.objectdictionary.Array("arr", 100)
+		b.append(canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32))
+		self.assertFalse(a == b)
+		
+		a.append(canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32))
+		self.assertTrue(a == b)
+		
+		b = canopen.objectdictionary.Array("arr", 100)
+		b.append(canopen.objectdictionary.Variable("x", 100, 0, canopen.objectdictionary.UNSIGNED32))
+		self.assertFalse(a == b)
+	
 	def test_collection(self):
 		array = canopen.objectdictionary.Array("arr", 100)
 		

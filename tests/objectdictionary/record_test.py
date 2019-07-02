@@ -21,6 +21,49 @@ class RecordTestCase(unittest.TestCase):
 		with self.assertRaises(AttributeError):
 			record.index = index
 	
+	def test_equals(self):
+		a = canopen.objectdictionary.Record("rec", 100)
+		
+		#### Test step: Reflexivity
+		self.assertTrue(a == a)
+		
+		#### Test step: Compare same classes only (required for transitivity)
+		b = None
+		self.assertFalse(a == b)
+		b = 3
+		self.assertFalse(a == b)
+		
+		#### Test step: Consistency
+		b = canopen.objectdictionary.Record("rec", 100)
+		self.assertTrue(a == b)
+		self.assertTrue(a == b)
+		self.assertTrue(a == b)
+		
+		#### Test step: Symmetricality, Contents
+		b = canopen.objectdictionary.Record("rec", 100)
+		self.assertTrue(a == b)
+		self.assertEqual(a == b, b == a)
+		
+		b = canopen.objectdictionary.Record("x", 100)
+		self.assertFalse(a == b)
+		self.assertEqual(a == b, b == a)
+		
+		b = canopen.objectdictionary.Record("rec", 101)
+		self.assertFalse(a == b)
+		self.assertEqual(a == b, b == a)
+		
+		#### Test step: Contents
+		b = canopen.objectdictionary.Record("rec", 100)
+		b.append(canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32))
+		self.assertFalse(a == b)
+		
+		a.append(canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32))
+		self.assertTrue(a == b)
+		
+		b = canopen.objectdictionary.Record("rec", 100)
+		b.append(canopen.objectdictionary.Variable("x", 100, 0, canopen.objectdictionary.UNSIGNED32))
+		self.assertFalse(a == b)
+	
 	def test_collection(self):
 		record = canopen.objectdictionary.Record("rec", 100)
 		

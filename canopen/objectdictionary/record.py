@@ -16,6 +16,18 @@ class Record(collections.abc.Collection):
 		self._items_subindex = {}
 		self._items_name = {}
 	
+	def __eq__(self, other):
+		""" Indicates whether some other object is "equal to" this one. """
+		if self is other:
+			return True
+		if self.__class__ != other.__class__:
+			return False
+		if self._name != other._name or self._index != other.index:
+			return False
+		if self._items_subindex != other._items_subindex:
+			return False
+		return True
+	
 	def __contains__(self, key):
 		""" Returns True if the record contains a variable with the specified subindex or name. """
 		try:

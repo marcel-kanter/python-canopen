@@ -15,6 +15,16 @@ class ObjectDictionary(collections.abc.Collection):
 		self._items_index = {}
 		self._items_name = {}
 	
+	def __eq__(self, other):
+		""" Indicates whether some other object is "equal to" this one. """
+		if self is other:
+			return True
+		if self.__class__ != other.__class__:
+			return False
+		if self._items_index != other._items_index:
+			return False
+		return True
+	
 	def __contains__(self, key):
 		""" Returns True if the object dictionary contains a variable, record or array with the specified index or name. """
 		try:

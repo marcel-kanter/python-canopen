@@ -6,6 +6,55 @@ class ObjectDictionaryTestCase(unittest.TestCase):
 	def test_init(self):
 		canopen.ObjectDictionary()
 	
+	def test_equals(self):
+		a = canopen.objectdictionary.ObjectDictionary()
+		
+		#### Test step: Reflexivity
+		self.assertTrue(a == a)
+		
+		#### Test step: Compare same classes only (required for transitivity)
+		b = None
+		self.assertFalse(a == b)
+		b = 3
+		self.assertFalse(a == b)
+		
+		#### Test step: Consistency
+		b = canopen.objectdictionary.ObjectDictionary()
+		self.assertTrue(a == b)
+		self.assertTrue(a == b)
+		self.assertTrue(a == b)
+		
+		#### Test step: Symmetricality, Contents
+		b = canopen.objectdictionary.ObjectDictionary()
+		self.assertTrue(a == b)
+		self.assertEqual(a == b, b == a)
+		
+		b.append(canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32))
+		self.assertFalse(a == b)
+		self.assertEqual(a == b, b == a)
+		
+		a.append(canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32))
+		self.assertTrue(a == b)
+		self.assertEqual(a == b, b == a)
+		
+		a.append(canopen.objectdictionary.Record("rec", 200))
+		b.append(canopen.objectdictionary.Record("rec", 200))
+		self.assertTrue(a == b)
+		self.assertEqual(a == b, b == a)
+		
+		b["rec"].append(canopen.objectdictionary.Variable("var", 200, 0, canopen.objectdictionary.UNSIGNED32))
+		self.assertFalse(a == b)
+		self.assertEqual(a == b, b == a)
+		
+		a["rec"].append(canopen.objectdictionary.Variable("var", 200, 0, canopen.objectdictionary.UNSIGNED32))
+		self.assertTrue(a == b)
+		self.assertEqual(a == b, b == a)
+		
+		b = canopen.objectdictionary.ObjectDictionary()
+		b.append(canopen.objectdictionary.Variable("x", 100, 0, canopen.objectdictionary.UNSIGNED32))
+		self.assertFalse(a == b)
+		self.assertEqual(a == b, b == a)
+			
 	def test_collection(self):
 		dictionary = canopen.ObjectDictionary()
 		
