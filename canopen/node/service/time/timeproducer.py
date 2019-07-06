@@ -10,6 +10,9 @@ class TIMEProducer(Service):
 	
 	def __init__(self):
 		Service.__init__(self)
+	
+	def attach(self, node):
+		Service.attach(self, node)
 		self._identifier = 0x100
 	
 	def send(self, t):

@@ -5,12 +5,12 @@ from canopen.node.service import Service
 class SYNCConsumer(Service):
 	def __init__(self):
 		Service.__init__(self)
-		self._identifier = 0x80
 		self._callbacks = {"sync": []}
 	
 	def attach(self, node):
 		""" Attaches the service to a node. It does NOT append or assign this service to the node. """
 		Service.attach(self, node)
+		self._identifier = 0x80
 		self._node.network.subscribe(self.on_sync, self._identifier)
 	
 	def detach(self):

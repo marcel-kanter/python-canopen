@@ -19,14 +19,15 @@ class SDOClient(Service):
 		""" Attaches the service to a node. It does NOT append or assign this service to the node. """
 		Service.attach(self, node)
 		self._state = 0x80
-		self._node.network.subscribe(self.on_response, 0x580 + self._node.id)
+		self._identifier_rx = 0x580 + self._node.id
+		self._identifier_tx = 0x600 + self._node.id
+		self._node.network.subscribe(self.on_response, self._identifier_rx)
 	
 	def detach(self):
 		""" Detaches the service from the node. It does NOT remove or delete the service from the node. """
 		if self._node == None:
 			raise RuntimeError()
-		
-		self._node.network.unsubscribe(self.on_response, 0x580 + self._node.id)
+		self._node.network.unsubscribe(self.on_response, self._identifier_rx)
 		Service.detach(self)
 
 	def on_response(self, message):
@@ -55,7 +56,7 @@ class SDOClient(Service):
 	def _abort(self, index, subindex, code):
 		self._state = 0x80
 		
-		message = can.Message(arbitration_id = 0x600 + self._node.id, is_extended_id = False, data = struct.pack("<BHBL", 0x80, index, subindex, code))
+		message = can.Message(arbitration_id = self._identifier_tx, is_extended_id = False, data = struct.pack("<BHBL", 0x80, index, subindex, code))
 		self._node.network.send(message)
 
 	def _on_upload_segment(self, message):

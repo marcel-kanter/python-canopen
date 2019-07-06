@@ -16,14 +16,14 @@ class NMTMaster(Service):
 		""" Attaches the service to a node. It does NOT append or assign this service to the node. """
 		Service.attach(self, node)
 		self._state = 0
-		self._node.network.subscribe(self.on_error_control, 0x700 + self._node.id)
+		self._identifier_ec = 0x700 + self._node.id
+		self._node.network.subscribe(self.on_error_control, self._identifier_ec)
 	
 	def detach(self):
 		""" Detaches the service from the node. It does NOT remove or delete the service from the node. """
 		if self._node == None:
 			raise RuntimeError()
-		
-		self._node.network.unsubscribe(self.on_error_control, 0x700 + self._node.id)
+		self._node.network.unsubscribe(self.on_error_control, self._identifier_ec)
 		Service.detach(self)
 	
 	def on_error_control(self, message):
@@ -54,5 +54,5 @@ class NMTMaster(Service):
 			command = 0x80
 		
 		d = struct.pack("<BB", command, self._node.id)
-		request = can.Message(arbitration_id = 0x00, is_extended_id = False, data = d)
+		request = can.Message(arbitration_id = 0x000, is_extended_id = False, data = d)
 		self._node.network.send(request)

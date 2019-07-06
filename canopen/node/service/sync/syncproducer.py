@@ -6,6 +6,9 @@ from canopen.node.service import Service
 class SYNCProducer(Service):
 	def __init__(self):
 		Service.__init__(self)
+	
+	def attach(self, node):
+		Service.attach(self, node)
 		self._identifier = 0x80
 	
 	def send(self, counter = None):

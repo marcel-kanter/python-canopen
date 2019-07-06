@@ -13,7 +13,6 @@ class SDOServer(Service):
 	"""
 	def __init__(self):
 		Service.__init__(self)
-		
 		self._state = 0x80
 		self._toggle_bit = 0x00
 		self._data_size = 0
@@ -24,17 +23,16 @@ class SDOServer(Service):
 	def attach(self, node):
 		""" Attaches the service to a node. It does NOT append or assign this service to the node. """
 		Service.attach(self, node)
-		
 		self._state = 0x80
-		
-		self._node.network.subscribe(self.on_request, 0x600 + self._node.id)
+		self._identifier_rx = 0x600 + self._node.id
+		self._identifier_tx = 0x580 + self._node.id
+		self._node.network.subscribe(self.on_request, self._identifier_rx)
 	
 	def detach(self):
 		""" Detaches the service from the node. It does NOT remove or delete the service from the node. """
 		if self._node == None:
 			raise RuntimeError()
-		
-		self._node.network.unsubscribe(self.on_request, 0x600 + self._node.id)
+		self._node.network.unsubscribe(self.on_request, self._identifier_rx)
 		Service.detach(self)
 	
 	def on_request(self, message):
@@ -63,7 +61,7 @@ class SDOServer(Service):
 	def _abort(self, index, subindex, code):
 		self._state = 0x80
 		
-		message = can.Message(arbitration_id = 0x580 + self._node.id, is_extended_id = False, data = struct.pack("<BHBL", 0x80, index, subindex, code))
+		message = can.Message(arbitration_id = self._identifier_tx, is_extended_id = False, data = struct.pack("<BHBL", 0x80, index, subindex, code))
 		self._node.network.send(message)
 	
 	def _on_download_segment(self, message):
@@ -124,7 +122,7 @@ class SDOServer(Service):
 		response_command = 0x20 | self._toggle_bit
 		response_data = b"\x00\x00\x00\x00\x00\x00\x00"
 		d = struct.pack("<B7s", response_command, response_data)
-		response = can.Message(arbitration_id = 0x580 + self._node.id, is_extended_id = False, data = d)
+		response = can.Message(arbitration_id = self._identifier_tx, is_extended_id = False, data = d)
 		self._node.network.send(response)
 		
 		self._toggle_bit ^= (1 << 4)
@@ -190,7 +188,7 @@ class SDOServer(Service):
 		response_command = 0x60
 		response_data = b"\x00\x00\x00\x00"
 		d = struct.pack("<BHB4s", response_command, index, subindex, response_data)
-		response = can.Message(arbitration_id = 0x580 + self._node.id, is_extended_id = False, data = d)
+		response = can.Message(arbitration_id = self._identifier_tx, is_extended_id = False, data = d)
 		self._node.network.send(response)
 	
 	def _on_initiate_upload(self, message):
@@ -237,7 +235,7 @@ class SDOServer(Service):
 			self._subindex = subindex
 		
 		d = struct.pack("<BHB4s", response_command, index, subindex, response_data)
-		response = can.Message(arbitration_id = 0x580 + self._node.id, is_extended_id = False, data = d)
+		response = can.Message(arbitration_id = self._identifier_tx, is_extended_id = False, data = d)
 		self._node.network.send(response)
 	
 	def _on_upload_segment(self, message):
@@ -264,7 +262,7 @@ class SDOServer(Service):
 		response_data = self._buffer[:7]
 		
 		d = struct.pack("<B7s", response_command, response_data)
-		response = can.Message(arbitration_id = 0x580 + self._node.id, is_extended_id = False, data = d)
+		response = can.Message(arbitration_id = self._identifier_tx, is_extended_id = False, data = d)
 		self._node.network.send(response)
 		
 		self._buffer = self._buffer[7:]

@@ -19,15 +19,15 @@ class NMTSlave(Service):
 		Service.attach(self, node)
 		self._state = 0
 		self._toggle_bit = 0
+		self._identifier_ec = 0x700 + self._node.id
 		self._node.network.subscribe(self.on_node_control, 0x000)
-		self._node.network.subscribe(self.on_error_control, 0x700 + self._node.id)
+		self._node.network.subscribe(self.on_error_control, self._identifier_ec)
 	
 	def detach(self):
 		""" Detaches the service from the node. It does NOT remove or delete the service from the node. """
 		if self._node == None:
 			raise RuntimeError()
-		
-		self._node.network.unsubscribe(self.on_error_control, 0x700 + self._node.id)
+		self._node.network.unsubscribe(self.on_error_control, self._identifier_ec)
 		self._node.network.unsubscribe(self.on_node_control, 0x000)
 		Service.detach(self)
 		
@@ -42,7 +42,7 @@ class NMTSlave(Service):
 		if self._state == 0x00:
 			return
 		
-		response = can.Message(arbitration_id = 0x700 + self._node.id, is_extended_id = False, data = [self._toggle_bit | self._state])
+		response = can.Message(arbitration_id = self._identifier_ec, is_extended_id = False, data = [self._toggle_bit | self._state])
 		self._node.network.send(response)
 		
 		self._toggle_bit ^= 0x80
