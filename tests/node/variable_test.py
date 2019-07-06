@@ -1,21 +1,8 @@
 import unittest
-from unittest.mock import Mock
 import canopen.objectdictionary
 import canopen.node
 
-
-class InspectionNode(canopen.Node):
-	def __init__(self, name, node_id, dictionary):
-		canopen.Node.__init__(self, name, node_id, dictionary)
-		self._data = {}
-		self.get_data = Mock(side_effect = self._sideeffect_get_data)
-		self.set_data = Mock(side_effect = self._sideeffect_set_data)
-	
-	def _sideeffect_get_data(self, index, subindex):
-		return self._data[(index, subindex)]
-	
-	def _sideeffect_set_data(self, index, subindex, data):
-		self._data[(index, subindex)] = data
+from tests.node.inspectionnode import InspectionNode
 
 
 class VariableTestCase(unittest.TestCase):

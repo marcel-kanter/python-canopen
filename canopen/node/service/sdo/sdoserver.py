@@ -107,11 +107,16 @@ class SDOServer(Service):
 			
 			try:
 				data = item.decode(self._buffer)
-				# TODO: Write data to node
-				# self._node.set_data(self._index, self._subindex, data)
 			except:
 				# 0x06070010 Data type does not match; length of service parameter does not match.
 				self._abort(self._index, self._subindex, 0x06070010)
+				return
+			
+			try:
+				self._node.set_data(self._index, self._subindex, data)
+			except:
+				# 0x08000020 Data cannot be transferred or stored to the application.
+				self._abort(self._index, self._subindex, 0x08000020)
 				return
 				
 			self._state = 0x80
@@ -157,12 +162,18 @@ class SDOServer(Service):
 			
 			try:
 				data = item.decode(request_data[:size])
-				# TODO: Write data to node
-				# self._node.set_data(self._index, self._subindex, data
 			except:
 				# 0x06070010 Data type does not match; length of service parameter does not match.
 				self._abort(index, subindex, 0x06070010)
 				return
+			
+			try:
+				self._node.set_data(index, subindex, data)
+			except:
+				# 0x08000020 Data cannot be transferred or stored to the application.
+				self._abort(index, subindex, 0x08000020)
+				return
+		
 		else: # Segmented transfer
 			if request_command & (1 << 0): # Size indicated
 				self._state = 0x20
@@ -205,22 +216,23 @@ class SDOServer(Service):
 			self._abort(index, subindex, 0x06010001)
 			return
 		
-		# TODO: Read data from node
-		data = item.encode(0)
+		try:
+			self._buffer = item.encode(self._node.get_data(index, subindex))
+			self._data_size = len(self._buffer)
+		except:
+			# 0x08000024 No data available.
+			self._abort(index, subindex, 0x08000024)
+			return
 		
-		size = len(data)
-		
-		if size > 0 and size <= 4: # Expedited transfer
-			response_command = 0x40 | ((4 - size) << 2) | (1 << 1) | (1 << 0)
-			response_data = data
+		if self._data_size > 0 and self._data_size <= 4: # Expedited transfer
+			response_command = 0x40 | ((4 - self._data_size) << 2) | (1 << 1) | (1 << 0)
+			response_data = self._buffer
 			self._state = 0x80
 		else: # Segmented transfer
 			response_command = 0x40 | (1 << 0)
-			response_data = struct.pack("<L", size)
+			response_data = struct.pack("<L", self._data_size)
 			self._state = 0x40
 			self._toggle_bit = 0x00
-			self._data_size = size
-			self._buffer = data
 			self._index = index
 			self._subindex = subindex
 		
@@ -235,7 +247,7 @@ class SDOServer(Service):
 			# 0x05040001 Client/server command specifier not valid or unknown.
 			self._abort(self._index, self._subindex, 0x05040001)
 			return
-	
+		
 		if self._toggle_bit != (request_command & (1 << 4)):
 			# 0x05030000 Toggle bit not alternated.
 			self._abort(self._index, self._subindex, 0x05030000)
@@ -248,7 +260,7 @@ class SDOServer(Service):
 		else:
 			response_command = 0x00 | self._toggle_bit | ((7 - size) << 1) | (1 << 0)
 			self._state = 0x80
-
+		
 		response_data = self._buffer[:7]
 		
 		d = struct.pack("<B7s", response_command, response_data)
