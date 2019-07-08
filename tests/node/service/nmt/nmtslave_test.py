@@ -2,12 +2,13 @@ import unittest
 import time
 import can
 import canopen.node.service
+import canopen.nmt.states
 
 
 class NMTSlaveTestCase(unittest.TestCase):
 	def test_init(self):
 		nmt = canopen.node.service.NMTSlave()
-		self.assertEqual(nmt.state, 0x00)
+		self.assertEqual(nmt.state, canopen.nmt.states.INITIALIZATION)
 		
 		#### Test step: Check if unallowed values raise a ValueError
 		with self.assertRaises(ValueError):
@@ -15,35 +16,35 @@ class NMTSlaveTestCase(unittest.TestCase):
 		
 		#### Test step: Check if only transition to pre-operational state is allowed
 		with self.assertRaises(ValueError):
-			nmt.state = 0x04
+			nmt.state = canopen.nmt.states.STOPPED
 		
 		with self.assertRaises(ValueError):
-			nmt.state = 0x05
+			nmt.state = canopen.nmt.states.OPERATIONAL
 		
-		nmt.state = 0x7F
-		self.assertEqual(nmt.state, 0x7F)
+		nmt.state = canopen.nmt.states.PRE_OPERATIONAL
+		self.assertEqual(nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
 		
 		#### Test step: Check if all transitions are possible
-		nmt.state = 0x7F
-		self.assertEqual(nmt.state, 0x7F)
+		nmt.state = canopen.nmt.states.PRE_OPERATIONAL
+		self.assertEqual(nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
 		
-		nmt.state = 0x05
-		self.assertEqual(nmt.state, 0x05)
+		nmt.state = canopen.nmt.states.OPERATIONAL
+		self.assertEqual(nmt.state, canopen.nmt.states.OPERATIONAL)
 		
-		nmt.state = 0x04
-		self.assertEqual(nmt.state, 0x04)
+		nmt.state = canopen.nmt.states.STOPPED
+		self.assertEqual(nmt.state, canopen.nmt.states.STOPPED)
 		
-		nmt.state = 0x7F
-		self.assertEqual(nmt.state, 0x7F)
+		nmt.state = canopen.nmt.states.PRE_OPERATIONAL
+		self.assertEqual(nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
 		
-		nmt.state = 0x04
-		self.assertEqual(nmt.state, 0x04)
+		nmt.state = canopen.nmt.states.STOPPED
+		self.assertEqual(nmt.state, canopen.nmt.states.STOPPED)
 		
-		nmt.state = 0x05
-		self.assertEqual(nmt.state, 0x05)
+		nmt.state = canopen.nmt.states.OPERATIONAL
+		self.assertEqual(nmt.state, canopen.nmt.states.OPERATIONAL)
 		
-		nmt.state = 0x7F
-		self.assertEqual(nmt.state, 0x7F)
+		nmt.state = canopen.nmt.states.PRE_OPERATIONAL
+		self.assertEqual(nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
 	
 	def test_callback(self):
 		nmt = canopen.node.service.NMTSlave()
@@ -134,90 +135,90 @@ class NMTSlaveTestCase(unittest.TestCase):
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x00")
 		bus.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, 0x00)
+		self.assertEqual(node.nmt.state, canopen.nmt.states.INITIALIZATION)
 		
 		#### Test step: Wrong node id
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x01\x10")
 		bus.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, 0x00)
+		self.assertEqual(node.nmt.state, canopen.nmt.states.INITIALIZATION)
 		
 		#### Test step: Unknown command with direct addressing
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x00\x0A")
 		bus.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, 0x00)
+		self.assertEqual(node.nmt.state, canopen.nmt.states.INITIALIZATION)
 		
 		#### Test step: Unknwon command with broadcast
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x00\x00")
 		bus.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, 0x00)
+		self.assertEqual(node.nmt.state, canopen.nmt.states.INITIALIZATION)
 		
 		#### Test step: Addressing with node id
 		# Application somewhen finishes start-up and changes the node's nmt state to pre-operational
-		node.nmt.state = 0x7F
+		node.nmt.state = canopen.nmt.states.PRE_OPERATIONAL
 		
 		# Start (enter NMT operational)
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x01\x0A")
 		bus.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, 0x05)
+		self.assertEqual(node.nmt.state, canopen.nmt.states.OPERATIONAL)
 		
 		# Enter NMT pre-operational
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x80\x0A")
 		bus.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, 0x7F)
+		self.assertEqual(node.nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
 		
 		# Enter NMT reset application
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x81\x0A")
 		bus.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, 0x7F)
+		self.assertEqual(node.nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
 		
 		# Stop (enter to NMT stopped)
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x02\x0A")
 		bus.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, 0x04)
+		self.assertEqual(node.nmt.state, canopen.nmt.states.STOPPED)
 		
 		# Enter NMT reset communication
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x82\x0A")
 		bus.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, 0x7F)
+		self.assertEqual(node.nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
 		
 		#### Test step: Addressing with broadcast
 		# Start (enter NMT operational)
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x01\x00")
 		bus.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, 0x05)
+		self.assertEqual(node.nmt.state, canopen.nmt.states.OPERATIONAL)
 		
 		# Enter NMT pre-operational
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x80\x00")
 		bus.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, 0x7F)
+		self.assertEqual(node.nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
 		
 		# Enter NMT reset application
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x81\x00")
 		bus.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, 0x7F)
+		self.assertEqual(node.nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
 		
 		# Stop (enter to NMT stopped)
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x02\x00")
 		bus.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, 0x04)
+		self.assertEqual(node.nmt.state, canopen.nmt.states.STOPPED)
 		
 		# Enter NMT reset communication
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x82\x00")
 		bus.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, 0x7F)
+		self.assertEqual(node.nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
 		
 		network.detach()
 		bus.shutdown()
@@ -248,7 +249,7 @@ class NMTSlaveTestCase(unittest.TestCase):
 		time.sleep(0.001)
 		
 		#### Test step: Error control should not respond in initialization state
-		self.assertEqual(node.nmt.state, 0x00)
+		self.assertEqual(node.nmt.state, canopen.nmt.states.INITIALIZATION)
 		
 		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
@@ -259,12 +260,12 @@ class NMTSlaveTestCase(unittest.TestCase):
 		
 		#### Test step: Check toggle bit in operational state
 		# Application somewhen finishes start-up and changes the node's nmt state to pre-operational
-		node.nmt.state = 0x7F
+		node.nmt.state = canopen.nmt.states.PRE_OPERATIONAL
 		
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x01\x0A")
 		bus2.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, 0x05)
+		self.assertEqual(node.nmt.state, canopen.nmt.states.OPERATIONAL)
 		
 		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
@@ -294,7 +295,7 @@ class NMTSlaveTestCase(unittest.TestCase):
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x82\x0A")
 		bus2.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, 0x7F)
+		self.assertEqual(node.nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
 		
 		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
@@ -308,7 +309,7 @@ class NMTSlaveTestCase(unittest.TestCase):
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x82\x0A")
 		bus2.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, 0x7F)
+		self.assertEqual(node.nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
 		
 		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
@@ -338,10 +339,10 @@ class NMTSlaveTestCase(unittest.TestCase):
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x81\x0A")
 		bus2.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, 0x7F)
+		self.assertEqual(node.nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
 		
-		node.nmt.state = 0x05
-		self.assertEqual(node.nmt.state, 0x05)
+		node.nmt.state = canopen.nmt.states.OPERATIONAL
+		self.assertEqual(node.nmt.state, canopen.nmt.states.OPERATIONAL)
 		
 		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
@@ -356,16 +357,16 @@ class NMTSlaveTestCase(unittest.TestCase):
 		bus2.shutdown()
 	
 	def __callback_start(self, event, node, *args):
-		node.nmt.state = 0x05
+		node.nmt.state = canopen.nmt.states.OPERATIONAL
 	
 	def __callback_stop(self, event, node, *args):
-		node.nmt.state = 0x04
+		node.nmt.state = canopen.nmt.states.STOPPED
 	
 	def __callback_pause(self, event, node, *args):
-		node.nmt.state = 0x7F
+		node.nmt.state = canopen.nmt.states.PRE_OPERATIONAL
 	
 	def __callback_reset(self, event, node, *args):
-		node.nmt.state = 0x7F
+		node.nmt.state = canopen.nmt.states.PRE_OPERATIONAL
 	
 	def __callback_raises(self, event, node, *args):
 		raise Exception()

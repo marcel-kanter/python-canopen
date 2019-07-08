@@ -1,6 +1,7 @@
 import struct
 import can
 from canopen.node.service import Service
+from canopen.nmt.states import *
 
 
 class NMTMaster(Service):
@@ -41,16 +42,16 @@ class NMTMaster(Service):
 	
 	@state.setter
 	def state(self, value):
-		if value not in [0x00, 0x04, 0x05, 0x7F]:
+		if value not in [INITIALIZATION, STOPPED, OPERATIONAL, PRE_OPERATIONAL]:
 			raise ValueError()
 		
-		if value == 0x00: # NMT reset application
+		if value == INITIALIZATION:
 			command = 0x81
-		if value == 0x04: # NMT stopped
+		if value == STOPPED:
 			command = 0x02
-		if value == 0x05: # NMT Operational
+		if value == OPERATIONAL:
 			command = 0x01
-		if value == 0x7F: # NMT pre-operational
+		if value == PRE_OPERATIONAL:
 			command = 0x80
 		
 		d = struct.pack("<BB", command, self._node.id)

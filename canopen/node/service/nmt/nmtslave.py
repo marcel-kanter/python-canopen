@@ -1,6 +1,7 @@
 import struct
 import can
 from canopen.node.service import Service
+from canopen.nmt.states import *
 
 
 class NMTSlave(Service):
@@ -39,7 +40,7 @@ class NMTSlave(Service):
 			return
 		
 		# Do not respond to error control request in initialization state
-		if self._state == 0x00:
+		if self._state == INITIALIZATION:
 			return
 		
 		response = can.Message(arbitration_id = self._identifier_ec, is_extended_id = False, data = [self._toggle_bit | self._state])
@@ -62,11 +63,11 @@ class NMTSlave(Service):
 			if command == 0x80: # Enter NMT pre-operational
 				self.notify("pause", self._node)
 			if command == 0x81: # Enter NMT reset application
-				self.state = 0x00
+				self.state = INITIALIZATION
 				self.notify("reset", self._node)
 			if command == 0x82: # Enter NMT reset communication
-				self.state = 0x00
-				self.state = 0x7F
+				self.state = INITIALIZATION
+				self.state = PRE_OPERATIONAL
 	
 	@property
 	def state(self):
@@ -74,12 +75,12 @@ class NMTSlave(Service):
 	
 	@state.setter
 	def state(self, value):
-		if value not in [0x00, 0x04, 0x05, 0x7F]:
+		if value not in [INITIALIZATION, STOPPED, OPERATIONAL, PRE_OPERATIONAL]:
 			raise ValueError()
 		
-		if self._state == 0x00:
+		if self._state == INITIALIZATION:
 			# In initialization state, only the transition to pre-operational state is allowed.
-			if value != 0x7F: 
+			if value != PRE_OPERATIONAL: 
 				raise ValueError()
 			self._toggle_bit = 0x00
 		
