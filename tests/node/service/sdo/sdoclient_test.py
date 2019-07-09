@@ -59,46 +59,6 @@ class SDOClientTestCase(unittest.TestCase):
 		bus2.send(message_send)
 		time.sleep(0.001)
 		
-		# Segment upload -> Currently abort
-		d = struct.pack("<BHB4s", 0x00, 0x0000, 0x00, b"\x00\x00\x00\x00")
-		message = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
-		bus2.send(message)
-		
-		message_recv = bus2.recv(1)
-		self.assertEqual(message_recv.arbitration_id, 0x601)
-		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, 0x0000, 0x00, 0x05040001))
-		
-		# Segment download -> Currently abort
-		d = struct.pack("<BHB4s", 0x20, 0x0000, 0x00, b"\x00\x00\x00\x00")
-		message = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
-		bus2.send(message)
-		
-		message_recv = bus2.recv(1)
-		self.assertEqual(message_recv.arbitration_id, 0x601)
-		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, 0x0000, 0x00, 0x05040001))
-		
-		# Initiate upload -> Currently abort
-		d = struct.pack("<BHB4s", 0x40, 0x0000, 0x00, b"\x00\x00\x00\x00")
-		message = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
-		bus2.send(message)
-		
-		message_recv = bus2.recv(1)
-		self.assertEqual(message_recv.arbitration_id, 0x601)
-		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, 0x0000, 0x00, 0x05040001))
-		
-		# Initiate download -> Currently abort
-		d = struct.pack("<BHB4s", 0x60, 0x0000, 0x00, b"\x00\x00\x00\x00")
-		message = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
-		bus2.send(message)
-		
-		message_recv = bus2.recv(1)
-		self.assertEqual(message_recv.arbitration_id, 0x601)
-		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, 0x0000, 0x00, 0x05040001))
-		
 		# Abort transfer -> No response
 		d = struct.pack("<BHB4s", 0x80, 0x0000, 0x00, b"\x00\x00\x00\x00")
 		message = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
@@ -139,7 +99,83 @@ class SDOClientTestCase(unittest.TestCase):
 		network.detach()
 		bus1.shutdown()
 		bus2.shutdown()
+	
+	def test_download(self):
+		bus1 = can.Bus(interface = "virtual", channel = 0)
+		bus2 = can.Bus(interface = "virtual", channel = 0)
+		network = canopen.Network()
+		dictionary = canopen.ObjectDictionary()
+		node = canopen.Node("a", 1, dictionary)
+		sdoclient = canopen.node.service.SDOClient()
 		
+		network.attach(bus1)
+		node.attach(network)
+		sdoclient.attach(node)
+		
+		# Segment download -> Currently abort
+		d = struct.pack("<BHB4s", 0x20, 0x0000, 0x00, b"\x00\x00\x00\x00")
+		message = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
+		bus2.send(message)
+		
+		message_recv = bus2.recv(1)
+		self.assertEqual(message_recv.arbitration_id, 0x601)
+		self.assertEqual(message_recv.is_extended_id, False)
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, 0x0000, 0x00, 0x05040001))
+		
+		# Initiate download -> Currently abort
+		d = struct.pack("<BHB4s", 0x60, 0x0000, 0x00, b"\x00\x00\x00\x00")
+		message = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
+		bus2.send(message)
+		
+		message_recv = bus2.recv(1)
+		self.assertEqual(message_recv.arbitration_id, 0x601)
+		self.assertEqual(message_recv.is_extended_id, False)
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, 0x0000, 0x00, 0x05040001))
+		
+		sdoclient.detach()
+		node.detach()
+		network.detach()
+		bus1.shutdown()
+		bus2.shutdown()
+	
+	def test_upload(self):
+		bus1 = can.Bus(interface = "virtual", channel = 0)
+		bus2 = can.Bus(interface = "virtual", channel = 0)
+		network = canopen.Network()
+		dictionary = canopen.ObjectDictionary()
+		node = canopen.Node("a", 1, dictionary)
+		sdoclient = canopen.node.service.SDOClient()
+		
+		network.attach(bus1)
+		node.attach(network)
+		sdoclient.attach(node)
+		
+		# Segment upload -> Currently abort
+		d = struct.pack("<BHB4s", 0x00, 0x0000, 0x00, b"\x00\x00\x00\x00")
+		message = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
+		bus2.send(message)
+		
+		message_recv = bus2.recv(1)
+		self.assertEqual(message_recv.arbitration_id, 0x601)
+		self.assertEqual(message_recv.is_extended_id, False)
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, 0x0000, 0x00, 0x05040001))
+		
+		# Initiate upload -> Currently abort
+		d = struct.pack("<BHB4s", 0x40, 0x0000, 0x00, b"\x00\x00\x00\x00")
+		message = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
+		bus2.send(message)
+		
+		message_recv = bus2.recv(1)
+		self.assertEqual(message_recv.arbitration_id, 0x601)
+		self.assertEqual(message_recv.is_extended_id, False)
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, 0x0000, 0x00, 0x05040001))
+		
+		sdoclient.detach()
+		node.detach()
+		network.detach()
+		bus1.shutdown()
+		bus2.shutdown()
+
 
 if __name__ == "__main__":
 	unittest.main()
