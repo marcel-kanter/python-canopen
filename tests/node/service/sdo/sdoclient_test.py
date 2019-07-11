@@ -41,7 +41,7 @@ class SDOClientTestCase(unittest.TestCase):
 		
 		node1.detach()
 		node2.detach()
-
+	
 	def test_on_response(self):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
@@ -64,6 +64,9 @@ class SDOClientTestCase(unittest.TestCase):
 		message = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
 		bus2.send(message)
 		time.sleep(0.001)
+		
+		message_recv = bus2.recv(1)
+		self.assertEqual(message_recv, None)
 		
 		# Block download -> Not implemented and thus the response is an abort
 		d = struct.pack("<BHB4s", 0xA0, 0x0000, 0x00, b"\x00\x00\x00\x00")
@@ -112,18 +115,10 @@ class SDOClientTestCase(unittest.TestCase):
 		node.attach(network)
 		sdoclient.attach(node)
 		
+		# TODO: test download
+		
 		# Segment download -> Currently abort
 		d = struct.pack("<BHB4s", 0x20, 0x0000, 0x00, b"\x00\x00\x00\x00")
-		message = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
-		bus2.send(message)
-		
-		message_recv = bus2.recv(1)
-		self.assertEqual(message_recv.arbitration_id, 0x601)
-		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, 0x0000, 0x00, 0x05040001))
-		
-		# Initiate download -> Currently abort
-		d = struct.pack("<BHB4s", 0x60, 0x0000, 0x00, b"\x00\x00\x00\x00")
 		message = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
 		bus2.send(message)
 		
@@ -150,18 +145,10 @@ class SDOClientTestCase(unittest.TestCase):
 		node.attach(network)
 		sdoclient.attach(node)
 		
+		# TODO: Test upload
+		
 		# Segment upload -> Currently abort
 		d = struct.pack("<BHB4s", 0x00, 0x0000, 0x00, b"\x00\x00\x00\x00")
-		message = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
-		bus2.send(message)
-		
-		message_recv = bus2.recv(1)
-		self.assertEqual(message_recv.arbitration_id, 0x601)
-		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, 0x0000, 0x00, 0x05040001))
-		
-		# Initiate upload -> Currently abort
-		d = struct.pack("<BHB4s", 0x40, 0x0000, 0x00, b"\x00\x00\x00\x00")
 		message = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
 		bus2.send(message)
 		

@@ -28,7 +28,7 @@ class RemoteNode(Node):
 		Node.detach(self)
 	
 	def get_data(self, index, subindex):
-		raise NotImplementedError()
+		return self.sdo.upload(index, subindex)
 	
 	def set_data(self, index, subindex, value):
-		raise NotImplementedError()
+		self.sdo.download(index, subindex, value)

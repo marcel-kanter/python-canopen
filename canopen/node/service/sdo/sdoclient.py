@@ -30,6 +30,54 @@ class SDOClient(Service):
 		self._node.network.unsubscribe(self.on_response, self._identifier_rx)
 		Service.detach(self)
 
+	def upload(self, index, subindex):
+		item = self._node.dictionary[index]
+		
+		if not isinstance(item, canopen.objectdictionary.Variable):
+			item = item[subindex]
+		
+		self._index = index
+		self._subindex = subindex
+		self._buffer = b""
+		self._data_size = 0
+		self._state = 0x40
+		self._toggle_bit = 0x00
+		
+		request_command = 0x40
+		request_data = b"\x00\x00\x00\x00"
+		
+		d = struct.pack("<BHB4s", request_command, index, subindex, request_data)
+		request = can.Message(arbitration_id = self._identifier_tx, is_extended_id = False, data = d)
+		self._node.network.send(request)
+		
+		# TODO: wait for response
+	
+	def download(self, index, subindex, value):
+		item = self._node.dictionary[index]
+		
+		if not isinstance(item, canopen.objectdictionary.Variable):
+			item = item[subindex]
+		
+		self._index = index
+		self._subindex = subindex
+		self._buffer = item.encode(value)
+		self._data_size = len(self._buffer)
+		
+		if self._data_size > 0 and self._data_size <= 4: # Expedited transfer
+			request_command = 0x20 | ((4 - self._data_size) << 2) | (1 << 1) | (1 << 0)
+			request_data = self._buffer
+		else: # Segmented transfer
+			request_command = 0x20 | (1 << 0)
+			request_data = struct.pack("<L", self._data_size)
+			self._state = 0x20
+			self._toggle_bit = 0x00
+		
+		d = struct.pack("<BHB4s", request_command, index, subindex, request_data)
+		request = can.Message(arbitration_id = self._identifier_tx, is_extended_id = False, data = d)
+		self._node.network.send(request)
+		
+		# TODO: wait for response
+	
 	def on_response(self, message):
 		""" Handler for upload and download responses from the SDO server. """
 		if message.dlc != 8:
@@ -77,15 +125,11 @@ class SDOClient(Service):
 		response_command, index, subindex, response_data = struct.unpack("<BHB4s", message.data)
 		
 		# TODO: Implement
-		# 0x05040001 Client/server command specifier not valid or unknown.
-		self._abort(0, 0, 0x05040001)
 		
 	def _on_initiate_download(self, message):
 		response_command, index, subindex, response_data = struct.unpack("<BHB4s", message.data)
 		
 		# TODO: Implement
-		# 0x05040001 Client/server command specifier not valid or unknown.
-		self._abort(0, 0, 0x05040001)
 	
 	def _on_abort(self, message):
 		self._state = 0x80

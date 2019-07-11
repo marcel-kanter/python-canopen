@@ -1,4 +1,7 @@
 import unittest
+import struct
+import time
+import can
 import canopen
 import canopen.objectdictionary
 
@@ -58,17 +61,87 @@ class RemoteNodeTestCase(unittest.TestCase):
 		node.detach()
 	
 	def test_data_access(self):
+		bus1 = can.Bus(interface = "virtual", channel = 0)
+		bus2 = can.Bus(interface = "virtual", channel = 0)
+		network = canopen.Network()
 		dictionary = canopen.ObjectDictionary()
 		dictionary.append(canopen.objectdictionary.Record("rec", 0x1234))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("integer32", 0x1234, 0x04, canopen.objectdictionary.INTEGER32, "rw"))
+		dictionary["rec"].append(canopen.objectdictionary.Variable("unicode", 0x1234, 0x0B, canopen.objectdictionary.UNICODE_STRING, "rw"))
 		dictionary.append(canopen.objectdictionary.Variable("var", 0x5678, 0x00, canopen.objectdictionary.UNSIGNED32, "rw"))
 		examinee = canopen.RemoteNode("n", 1, dictionary)
 		
-		#### Test step: get_data and set_data not implemented
-		with self.assertRaises(NotImplementedError):
-			examinee.get_data(0x5678, 0x00)
-		with self.assertRaises(NotImplementedError):
-			examinee.set_data(0x5678, 0x00, 0x00)
+		network.attach(bus1)
+		network.append(examinee)
+		
+		#### Test step: get_data, expedited tansfer
+		index = 0x5678
+		subindex = 0x00
+		examinee.get_data(index, subindex)
+		
+		message_recv = bus2.recv(0.5)
+		self.assertEqual(message_recv.arbitration_id, 0x601)
+		self.assertEqual(message_recv.is_remote_frame, False)
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x40, index, subindex, 0x00000000))
+		
+		# TODO: send response
+		d = struct.pack("<BHBL", 0x40, index, subindex, 1234)
+		message_send = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
+		bus2.send(message_send)
+		time.sleep(0.001)
+		
+		#### Test step: get_data, segmented tansfer
+		index = 0x1234
+		subindex = 0x0B
+		examinee.get_data(index, subindex)
+		
+		message_recv = bus2.recv(0.5)
+		self.assertEqual(message_recv.arbitration_id, 0x601)
+		self.assertEqual(message_recv.is_remote_frame, False)
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x40, index, subindex, 0x00000000))
+		
+		# TODO: send response
+		d = struct.pack("<BHBL", 0x40, index, subindex, 1234)
+		message_send = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
+		bus2.send(message_send)
+		time.sleep(0.001)
+		
+		#### Test step: set_data, expedited transfer
+		index = 0x5678
+		subindex = 0x00
+		value = 0
+		examinee.set_data(index, subindex, value)
+		
+		message_recv = bus2.recv(0.5)
+		self.assertEqual(message_recv.arbitration_id, 0x601)
+		self.assertEqual(message_recv.is_remote_frame, False)
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x23, index, subindex, 0x00000000))
+		
+		# TODO: send response
+		d = struct.pack("<BHBL", 0x60, index, subindex, 0x00000000)
+		message_send = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
+		bus2.send(message_send)
+		time.sleep(0.001)
+		
+		#### Test step: set_data, expedited transfer
+		index = 0x1234
+		subindex = 0x0B
+		value = "123456"
+		examinee.set_data(index, subindex, value)
+		
+		message_recv = bus2.recv(0.5)
+		self.assertEqual(message_recv.arbitration_id, 0x601)
+		self.assertEqual(message_recv.is_remote_frame, False)
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x21, index, subindex, 0x0000000C))
+		
+		# TODO: send response
+		d = struct.pack("<BHBL", 0x60, index, subindex, 0x00000000)
+		message_send = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
+		bus2.send(message_send)
+		time.sleep(0.001)
+		
+		network.detach()
+		bus1.shutdown()
+		bus2.shutdown()
 
 
 if __name__ == "__main__":
