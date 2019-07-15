@@ -151,8 +151,6 @@ class SDOServer(Service):
 			return
 		
 		if request_command & (1 << 1): # Expedited transfer
-			self._state = 0x80
-			
 			if request_command & (1 << 0): # Size indicated
 				size = 4 - ((request_command >> 2) & 0x03)
 			else:
@@ -171,15 +169,16 @@ class SDOServer(Service):
 				# 0x08000020 Data cannot be transferred or stored to the application.
 				self._abort(index, subindex, 0x08000020)
 				return
-		
+			
+			self._state = 0x80
 		else: # Segmented transfer
 			if request_command & (1 << 0): # Size indicated
-				self._state = 0x20
 				self._toggle_bit = 0x00
 				self._data_size = struct.unpack("<L", request_data)[0]
 				self._buffer = b""
 				self._index = index
 				self._subindex = subindex
+				self._state = 0x20
 			else:
 				# 0x05040001 Client/server command specifier not valid or unknown.
 				self._abort(index, subindex, 0x05040001)
