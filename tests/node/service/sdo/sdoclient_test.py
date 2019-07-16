@@ -40,7 +40,18 @@ class Vehicle_Download(threading.Thread):
 		else:
 			assert(False)
 		
-		#### Test step: download, expedited transfer, , wrong index in initiate response
+		#### Test step: download, expedited transfer, wrong index in initiate response
+		index = 0x5678
+		subindex = 0x00
+		value = 0x12345678
+		try:
+			examinee.download(index, subindex, value)
+		except:
+			pass
+		else:
+			assert(False)
+		
+		#### Test step: download, expedited transfer, timeout
 		index = 0x5678
 		subindex = 0x00
 		value = 0x12345678
@@ -143,6 +154,17 @@ class Vehicle_Upload(threading.Thread):
 		else:
 			assert(False)
 		
+		#### Test step: Upload, expedited transfer, timeout
+		index = 0x5678
+		subindex = 0x00
+		# An exception should be raised
+		try:
+			value = examinee.upload(index, subindex)
+		except:
+			pass
+		else:
+			assert(False)
+		
 		#### Test step: Upload, expedited transfer
 		index = 0x5678
 		subindex = 0x00
@@ -202,7 +224,19 @@ class Vehicle_Upload(threading.Thread):
 
 class SDOClientTestCase(unittest.TestCase):
 	def test_init(self):
-		canopen.node.service.SDOClient()
+		examinee = canopen.node.service.SDOClient(timeout = 2)
+		
+		examinee.timeout = None
+		self.assertEqual(examinee.timeout, None)
+		
+		examinee.timeout = 1.0
+		self.assertEqual(examinee.timeout, 1.0)
+		
+		with self.assertRaises(ValueError):
+			examinee.timeout = 0
+		
+		with self.assertRaises(ValueError):
+			examinee.timeout = -1 
 	
 	def test_attach_detach(self):
 		network = canopen.Network()
@@ -377,6 +411,23 @@ class SDOClientTestCase(unittest.TestCase):
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index ^ 0xFF, subindex, 0x08000000))
+		
+		#### Test step: download, expedited transfer, timeout
+		index = 0x5678
+		subindex = 0x00
+		value = 0x12345678
+		
+		message_recv = bus2.recv(0.5)
+		self.assertEqual(message_recv.arbitration_id, 0x601)
+		self.assertEqual(message_recv.is_remote_frame, False)
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x23, index, subindex, value))
+		
+		time.sleep(2)
+		
+		message_recv = bus2.recv()
+		self.assertEqual(message_recv.arbitration_id, 0x601)
+		self.assertEqual(message_recv.is_remote_frame, False)
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x05040000))
 		
 		#### Test step: download, expedited transfer
 		index = 0x5678
@@ -570,6 +621,23 @@ class SDOClientTestCase(unittest.TestCase):
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index ^ 0xFF, subindex, 0x08000000))
+
+		#### Test step: Upload, expedited transfer, timeout
+		index = 0x5678
+		subindex = 0x00
+		value = 1234
+		# Initiation
+		message_recv = bus2.recv()
+		self.assertEqual(message_recv.arbitration_id, 0x601)
+		self.assertEqual(message_recv.is_remote_frame, False)
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x40, index, subindex, 0x00000000))
+		
+		time.sleep(2)
+		
+		message_recv = bus2.recv()
+		self.assertEqual(message_recv.arbitration_id, 0x601)
+		self.assertEqual(message_recv.is_remote_frame, False)
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x05040000))
 		
 		#### Test step: Upload, expedited transfer
 		index = 0x5678

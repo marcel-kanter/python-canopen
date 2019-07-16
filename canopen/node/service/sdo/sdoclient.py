@@ -12,7 +12,7 @@ class SDOClient(Service):
 	Block upload and download is not implemented.
 	Network indication is not implemented.
 	"""
-	def __init__(self):
+	def __init__(self, timeout = 1):
 		Service.__init__(self)
 		self._state = 0x80
 		self._toggle_bit = 0x00
@@ -21,6 +21,7 @@ class SDOClient(Service):
 		self._index = 0
 		self._subindex = 0
 		self._condition = threading.Condition()
+		self._timeout = timeout
 	
 	def attach(self, node):
 		""" Attaches the service to a node. It does NOT append or assign this service to the node. """
@@ -59,8 +60,11 @@ class SDOClient(Service):
 		request = can.Message(arbitration_id = self._identifier_tx, is_extended_id = False, data = d)
 		self._node.network.send(request)
 		
-		# TODO: Implement timeout
-		self._condition.wait()
+		if not self._condition.wait(self._timeout):
+			# 0x05040000 Timeout.
+			self._abort(index, subindex, 0x05040000)
+			self._condition.release()
+			raise Exception()
 		
 		if self._state == 0x40:
 			try:
@@ -106,8 +110,11 @@ class SDOClient(Service):
 		request = can.Message(arbitration_id = self._identifier_tx, is_extended_id = False, data = d)
 		self._node.network.send(request)
 		
-		# TODO: Implement timeout
-		self._condition.wait()
+		if not self._condition.wait(self._timeout):
+			# 0x05040000 Timeout.
+			self._abort(index, subindex, 0x05040000)
+			self._condition.release()
+			raise Exception()
 		
 		if self._state & 0xE0 == 0x20:
 			self._state = 0x80
@@ -312,3 +319,13 @@ class SDOClient(Service):
 	def _on_network_indication(self, message):
 		# 0x05040001 Client/server command specifier not valid or unknown.
 		self._abort(0, 0, 0x05040001)
+	
+	@property
+	def timeout(self):
+		return self._timeout
+	
+	@timeout.setter
+	def timeout(self, x):
+		if x != None and x <= 0:
+			raise ValueError()
+		self._timeout = x

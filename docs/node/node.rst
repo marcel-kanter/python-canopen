@@ -1,9 +1,10 @@
 Node
 ====
 
-This class is a basic representation of a CANopen node. It is an immutable auto-associative list and may contain zero or more variables, records or arrays.
+This class is the base class for CANopen nodes. It is an immutable auto-associative list and may contain zero or more variables, records or arrays.
 The structure of the objects is defined with an object dictionary. Since the object dictionary only describes the structure, it can be used for multiple nodes.
-The data of each object is held by the node itself.
+
+The functions for data access are not implemented.
 
 Access to objects
 -----------------
