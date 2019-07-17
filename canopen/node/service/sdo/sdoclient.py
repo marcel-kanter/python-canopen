@@ -1,6 +1,7 @@
 import struct
 import can
 import threading
+from canopen.sdo.abortcodes import *
 from canopen.node.service import Service
 import canopen.objectdictionary
 
@@ -61,8 +62,7 @@ class SDOClient(Service):
 		self._node.network.send(request)
 		
 		if not self._condition.wait(self._timeout):
-			# 0x05040000 Timeout.
-			self._abort(index, subindex, 0x05040000)
+			self._abort(index, subindex, SDO_PROTOCOL_TIMED_OUT)
 			self._condition.release()
 			raise Exception()
 		
@@ -111,8 +111,7 @@ class SDOClient(Service):
 		self._node.network.send(request)
 		
 		if not self._condition.wait(self._timeout):
-			# 0x05040000 Timeout.
-			self._abort(index, subindex, 0x05040000)
+			self._abort(index, subindex, SDO_PROTOCOL_TIMED_OUT)
 			self._condition.release()
 			raise Exception()
 		
@@ -160,13 +159,11 @@ class SDOClient(Service):
 		response_command, response_data = struct.unpack_from("<B7s", message.data)
 		
 		if self._state != 0x40:
-			# 0x05040001 Client/server command specifier not valid or unknown.
-			self._abort(0, 0, 0x05040001)
+			self._abort(0, 0, COMMAND_SPECIFIER_NOT_VALID)
 			return
 		
 		if self._toggle_bit != (response_command & (1 << 4)):
-			# 0x05030000 Toggle bit not alternated.
-			self._abort(self._index, self._subindex, 0x05030000)
+			self._abort(self._index, self._subindex, TOGGLE_BIT_NOT_ALTERNATED)
 			return
 		
 		size = 7 - ((response_command & 0x0E) >> 1)
@@ -195,17 +192,14 @@ class SDOClient(Service):
 		response_command, response_data = struct.unpack_from("<B7s", message.data)
 		
 		if self._state & 0xE0 != 0x20:
-			# 0x05040001 Client/server command specifier not valid or unknown.
-			self._abort(0, 0, 0x05040001)
+			self._abort(0, 0, COMMAND_SPECIFIER_NOT_VALID)
 			return
 		
 		if self._toggle_bit != (response_command & (1 << 4)):
-			# 0x05030000 Toggle bit not alternated.
-			self._abort(self._index, self._subindex, 0x05030000)
+			self._abort(self._index, self._subindex, TOGGLE_BIT_NOT_ALTERNATED)
 			return
 		
 		size = len(self._buffer)
-		# TODO: Alter state at last segment and check size == 0 and state & (1 << 0)
 		
 		if size == 0:
 			self._condition.acquire()
@@ -230,14 +224,12 @@ class SDOClient(Service):
 		response_command, index, subindex, response_data = struct.unpack("<BHB4s", message.data)
 		
 		if self._state != 0x40:
-			# 0x05040001 Client/server command specifier not valid or unknown.
-			self._abort(index, subindex, 0x05040001)
+			self._abort(index, subindex, COMMAND_SPECIFIER_NOT_VALID)
 			return
 		
 		# The server responds with differend index or subindex
 		if self._index != index or self._subindex != subindex:
-			# 0x08000000 General error.
-			self._abort(index, subindex, 0x08000000)
+			self._abort(index, subindex, canopen.sdo.GENERAL_ERROR)
 			return
 		
 		if response_command & (1 << 1): # expedited transfer
@@ -263,22 +255,19 @@ class SDOClient(Service):
 				request = can.Message(arbitration_id = self._identifier_tx, is_extended_id = False, data = d)
 				self._node.network.send(request)
 			else:
-				# 0x05040001 Client/server command specifier not valid or unknown.
-				self._abort(index, subindex, 0x05040001)
+				self._abort(index, subindex, COMMAND_SPECIFIER_NOT_VALID)
 				return
 		
 	def _on_initiate_download(self, message):
 		response_command, index, subindex, response_data = struct.unpack("<BHB4s", message.data)
 		
 		if self._state & 0xE0 != 0x20:
-			# 0x05040001 Client/server command specifier not valid or unknown.
-			self._abort(index, subindex, 0x05040001)
+			self._abort(index, subindex, COMMAND_SPECIFIER_NOT_VALID)
 			return
 		
 		# The server responds with differend index or subindex
 		if self._index != index or self._subindex != subindex:
-			# 0x08000000 General error.
-			self._abort(index, subindex, 0x08000000)
+			self._abort(index, subindex, canopen.sdo.GENERAL_ERROR)
 			return
 		
 		if self._state & (1 << 1): # Expedited transfer
@@ -309,16 +298,13 @@ class SDOClient(Service):
 		self._condition.release()
 	
 	def _on_block_upload(self, message):
-		# 0x05040001 Client/server command specifier not valid or unknown.
-		self._abort(0, 0, 0x05040001)
+		self._abort(0, 0, COMMAND_SPECIFIER_NOT_VALID)
 	
 	def _on_block_download(self, message):
-		# 0x05040001 Client/server command specifier not valid or unknown.
-		self._abort(0, 0, 0x05040001)
+		self._abort(0, 0, COMMAND_SPECIFIER_NOT_VALID)
 	
 	def _on_network_indication(self, message):
-		# 0x05040001 Client/server command specifier not valid or unknown.
-		self._abort(0, 0, 0x05040001)
+		self._abort(0, 0, COMMAND_SPECIFIER_NOT_VALID)
 	
 	@property
 	def timeout(self):

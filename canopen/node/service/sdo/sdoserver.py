@@ -1,5 +1,6 @@
 import struct
 import can
+from canopen.sdo.abortcodes import *
 from canopen.node.service import Service
 import canopen.objectdictionary
 
@@ -68,13 +69,11 @@ class SDOServer(Service):
 		request_command, request_data = struct.unpack_from("<B7s", message.data)
 		
 		if self._state != 0x20:
-			# 0x05040001 Client/server command specifier not valid or unknown.
-			self._abort(self._index, self._subindex, 0x05040001)
+			self._abort(self._index, self._subindex, COMMAND_SPECIFIER_NOT_VALID)
 			return
 	
 		if self._toggle_bit != (request_command & (1 << 4)):
-			# 0x05030000 Toggle bit not alternated.
-			self._abort(self._index, self._subindex, 0x05030000)
+			self._abort(self._index, self._subindex, TOGGLE_BIT_NOT_ALTERNATED)
 			return
 		
 		size = 7 - ((request_command & 0x0E) >> 1)
@@ -91,16 +90,14 @@ class SDOServer(Service):
 			try:
 				item = self._node.dictionary[self._index]
 			except:
-				# 0x06020000 Object does not exist in the object dictionary.
-				self._abort(self._index, self._subindex, 0x06020000)
+				self._abort(self._index, self._subindex, OBJECT_DOES_NOT_EXIST)
 				return
 			
 			if not isinstance(item, canopen.objectdictionary.Variable):
 				try:
 					item = item[self._subindex]
 				except:
-					# 0x06090011 Sub-index does not exist.
-					self._abort(self._index, self._subindex, 0x06090011)
+					self._abort(self._index, self._subindex, SUBINDEX_DOES_NOT_EXIST)
 					return
 			
 			try:
@@ -133,16 +130,14 @@ class SDOServer(Service):
 		try:
 			item = self._node.dictionary[index]
 		except:
-			# 0x06020000 Object does not exist in the object dictionary.
-			self._abort(index, subindex, 0x06020000)
+			self._abort(index, subindex, OBJECT_DOES_NOT_EXIST)
 			return
 		
 		if not isinstance(item, canopen.objectdictionary.Variable):
 			try:
 				item = item[subindex]
 			except:
-				# 0x06090011 Sub-index does not exist.
-				self._abort(index, subindex, 0x06090011)
+				self._abort(index, subindex, SUBINDEX_DOES_NOT_EXIST)
 				return
 		
 		if "w" not in item.access_type:
@@ -180,8 +175,7 @@ class SDOServer(Service):
 				self._subindex = subindex
 				self._state = 0x20
 			else:
-				# 0x05040001 Client/server command specifier not valid or unknown.
-				self._abort(index, subindex, 0x05040001)
+				self._abort(index, subindex, COMMAND_SPECIFIER_NOT_VALID)
 				return
 		
 		response_command = 0x60
@@ -196,16 +190,14 @@ class SDOServer(Service):
 		try:
 			item = self._node.dictionary[index]
 		except:
-			# 0x06020000 Object does not exist in the object dictionary.
-			self._abort(index, subindex, 0x06020000)
+			self._abort(index, subindex, OBJECT_DOES_NOT_EXIST)
 			return
 		
 		if not isinstance(item, canopen.objectdictionary.Variable):
 			try:
 				item = item[subindex]
 			except:
-				# 0x06090011 Sub-index does not exist.
-				self._abort(index, subindex, 0x06090011)
+				self._abort(index, subindex, SUBINDEX_DOES_NOT_EXIST)
 				return
 		
 		if "r" not in item.access_type:
@@ -217,8 +209,7 @@ class SDOServer(Service):
 			self._buffer = item.encode(self._node.get_data(index, subindex))
 			self._data_size = len(self._buffer)
 		except:
-			# 0x08000024 No data available.
-			self._abort(index, subindex, 0x08000024)
+			self._abort(index, subindex, NO_DATA_AVAILABLE)
 			return
 		
 		if self._data_size > 0 and self._data_size <= 4: # Expedited transfer
@@ -241,13 +232,11 @@ class SDOServer(Service):
 		request_command, request_data = struct.unpack_from("<B7s", message.data)
 		
 		if self._state != 0x40:
-			# 0x05040001 Client/server command specifier not valid or unknown.
-			self._abort(self._index, self._subindex, 0x05040001)
+			self._abort(self._index, self._subindex, COMMAND_SPECIFIER_NOT_VALID)
 			return
 		
 		if self._toggle_bit != (request_command & (1 << 4)):
-			# 0x05030000 Toggle bit not alternated.
-			self._abort(self._index, self._subindex, 0x05030000)
+			self._abort(self._index, self._subindex, TOGGLE_BIT_NOT_ALTERNATED)
 			return
 		
 		size = len(self._buffer)
@@ -272,13 +261,10 @@ class SDOServer(Service):
 		self._state = 0x80
 	
 	def _on_block_upload(self, message):
-		# 0x05040001 Client/server command specifier not valid or unknown.
-		self._abort(0, 0, 0x05040001)
+		self._abort(0, 0, COMMAND_SPECIFIER_NOT_VALID)
 	
 	def _on_block_download(self, message):
-		# 0x05040001 Client/server command specifier not valid or unknown.
-		self._abort(0, 0, 0x05040001)
+		self._abort(0, 0, COMMAND_SPECIFIER_NOT_VALID)
 	
 	def _on_network_indication(self, message):
-		# 0x05040001 Client/server command specifier not valid or unknown.
-		self._abort(0, 0, 0x05040001)
+		self._abort(0, 0, COMMAND_SPECIFIER_NOT_VALID)
