@@ -65,6 +65,29 @@ class PDOConsumerTest(unittest.TestCase):
 		network.detach()
 		bus1.shutdown()
 		bus2.shutdown()
+	
+	def test_sync(self):
+		bus1 = can.Bus(interface = "virtual", channel = 0)
+		bus2 = can.Bus(interface = "virtual", channel = 0)
+		network = canopen.Network()
+		dictionary = canopen.ObjectDictionary()
+		node = canopen.Node("a", 1, dictionary)
+		examinee = PDOConsumer()
+		
+		network.attach(bus1)
+		node.attach(network)
+		examinee.attach(node)
+				
+		#### Test step: Sync message
+		message = can.Message(arbitration_id = 0x80, is_extended_id = False, data = b"\x01")
+		bus2.send(message)
+		time.sleep(0.001)
+		
+		examinee.detach()
+		node.detach()
+		network.detach()
+		bus1.shutdown()
+		bus2.shutdown()
 
 
 if __name__ == "__main__":
