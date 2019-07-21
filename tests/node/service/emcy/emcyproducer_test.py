@@ -1,5 +1,8 @@
 import unittest
+import struct
+import can
 import canopen.node.service
+from canopen.emcy.errorcodes import *
 
 
 class EMCYProducerTestCase(unittest.TestCase):
@@ -38,6 +41,75 @@ class EMCYProducerTestCase(unittest.TestCase):
 		
 		node1.detach()
 		node2.detach()
+	
+	def test_send(self):
+		bus1 = can.Bus(interface = "virtual", channel = 0)
+		bus2 = can.Bus(interface = "virtual", channel = 0)
+		network = canopen.Network()
+		dictionary = canopen.ObjectDictionary()
+		node = canopen.Node("a", 1, dictionary)
+		examinee = canopen.node.service.EMCYProducer()
+		
+		network.attach(bus1)
+		node.attach(network)
+		examinee.attach(node)
+		
+		#### Test step: Invalid value ranges
+		error_register = 0
+		data = None
+		for error_code in [-1, -100, 0x10000]:
+			with self.assertRaises(ValueError):
+				examinee.send(error_code, error_register, data)
+		
+		error_code = 0
+		data = None
+		for error_register in [-1, -100, 0x100]:
+			with self.assertRaises(ValueError):
+				examinee.send(error_code, error_register, data)
+		
+		error_code = 0
+		error_register = 0
+		data = b"\x01\x02\x03\x04\x05\x06"
+		with self.assertRaises(ValueError):
+			examinee.send(error_code, error_register, data)
+		
+		#### Test step: Send error without data
+		error_code = 0
+		error_register = 0
+		data = None
+		examinee.send(error_code, error_register, data)
+		message_recv = bus2.recv(1)
+		self.assertEqual(message_recv.arbitration_id, 0x80 + node.id)
+		self.assertEqual(message_recv.is_extended_id, False)
+		self.assertEqual(message_recv.data, struct.pack("<HB5s", error_code, error_register, b"\x00\x00\x00\x00\x00"))
+		
+		#### Test step: Send error with some data
+		error_code = 0
+		error_register = 0
+		data = b"\x01\x02"
+		examinee.send(error_code, error_register, data)
+		message_recv = bus2.recv(1)
+		self.assertEqual(message_recv.arbitration_id, 0x80 + node.id)
+		self.assertEqual(message_recv.is_extended_id, False)
+		self.assertEqual(message_recv.data, struct.pack("<HB5s", error_code, error_register, b"\x01\x02\x00\x00\x00"))
+		
+		
+		#### Test step: Send some error_codes
+		for test_data in [(NO_ERROR, 0x00), (GENERIC_ERROR, 0x10), (SOFTWARE_ERROR, 0x14)]:
+			error_code = test_data[0]
+			error_register = test_data[1]
+			data = b"\x01\x02"
+			examinee.send(error_code, error_register, data)
+			message_recv = bus2.recv(1)
+			self.assertEqual(message_recv.arbitration_id, 0x80 + node.id)
+			self.assertEqual(message_recv.is_extended_id, False)
+			self.assertEqual(message_recv.data, struct.pack("<HB5s", error_code, error_register, b"\x01\x02\x00\x00\x00"))
+		
+		examinee.detach()
+		node.detach()
+		network.detach()
+		bus1.shutdown()
+		bus2.shutdown()
 
 
 if __name__ == "__main__":
