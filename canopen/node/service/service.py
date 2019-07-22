@@ -28,7 +28,7 @@ class Service(object):
 		
 		self._node = None
 	
-	def add_callback(self, callback, event):
+	def add_callback(self, event, callback):
 		""" Adds the given callback for the event. """
 		if not callable(callback):
 			raise TypeError()
@@ -37,7 +37,7 @@ class Service(object):
 		
 		self._callbacks[event].append(callback)
 	
-	def remove_callback(self, callback, event):
+	def remove_callback(self, event, callback):
 		""" Removes the callback for the event. """
 		if not callable(callback):
 			raise TypeError()

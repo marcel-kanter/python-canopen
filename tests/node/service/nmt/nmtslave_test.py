@@ -52,17 +52,17 @@ class NMTSlaveTestCase(unittest.TestCase):
 		# TODO: Use Mock to assert each callback is called only once
 		
 		with self.assertRaises(TypeError):
-			nmt.add_callback(None, "start")
+			nmt.add_callback("start", None)
 		
 		with self.assertRaises(ValueError):
-			nmt.add_callback(self.__callback_start, "xxx")
+			nmt.add_callback("xxx", self.__callback_start)
 		
-		nmt.add_callback(self.__callback_start, "start")
-		nmt.add_callback(self.__callback_stop, "stop")
-		nmt.add_callback(self.__callback_pause, "pause")
-		nmt.add_callback(self.__callback_reset, "reset")
+		nmt.add_callback("start", self.__callback_start)
+		nmt.add_callback("stop", self.__callback_stop)
+		nmt.add_callback("pause", self.__callback_pause)
+		nmt.add_callback("reset", self.__callback_reset)
 		
-		nmt.add_callback(self.__callback_raises, "start")
+		nmt.add_callback("start", self.__callback_raises)
 		
 		with self.assertRaises(ValueError):
 			nmt.notify("xxx", None)
@@ -70,17 +70,17 @@ class NMTSlaveTestCase(unittest.TestCase):
 		nmt.notify("start", None)
 		
 		with self.assertRaises(TypeError):
-			nmt.remove_callback(None, "start")
+			nmt.remove_callback("start", None)
 		
 		with self.assertRaises(ValueError):
-			nmt.remove_callback(self.__callback_start, "xxx")
+			nmt.remove_callback("xxx", self.__callback_start)
 		
-		nmt.remove_callback(self.__callback_start, "start")
-		nmt.remove_callback(self.__callback_stop, "stop")
-		nmt.remove_callback(self.__callback_pause, "pause")
-		nmt.remove_callback(self.__callback_reset, "reset")
+		nmt.remove_callback("start", self.__callback_start)
+		nmt.remove_callback("stop", self.__callback_stop)
+		nmt.remove_callback("pause", self.__callback_pause)
+		nmt.remove_callback("reset", self.__callback_reset)
 		
-		nmt.remove_callback(self.__callback_raises, "start")
+		nmt.remove_callback("start", self.__callback_raises)
 	
 	def test_attach_detach(self):
 		network = canopen.Network()
@@ -121,10 +121,10 @@ class NMTSlaveTestCase(unittest.TestCase):
 		dictionary = canopen.ObjectDictionary()
 		node = canopen.LocalNode("a", 0x0A, dictionary)
 		
-		node.nmt.add_callback(self.__callback_start, "start")
-		node.nmt.add_callback(self.__callback_stop, "stop")
-		node.nmt.add_callback(self.__callback_pause, "pause")
-		node.nmt.add_callback(self.__callback_reset, "reset")
+		node.nmt.add_callback("start", self.__callback_start)
+		node.nmt.add_callback("stop", self.__callback_stop)
+		node.nmt.add_callback("pause", self.__callback_pause)
+		node.nmt.add_callback("reset", self.__callback_reset)
 		
 		network.attach(bus)
 		network.append(node)
@@ -230,10 +230,10 @@ class NMTSlaveTestCase(unittest.TestCase):
 		dictionary = canopen.ObjectDictionary()
 		node = canopen.LocalNode("a", 0x0A, dictionary)
 		
-		node.nmt.add_callback(self.__callback_start, "start")
-		node.nmt.add_callback(self.__callback_stop, "stop")
-		node.nmt.add_callback(self.__callback_pause, "pause")
-		node.nmt.add_callback(self.__callback_reset, "reset")
+		node.nmt.add_callback("start", self.__callback_start)
+		node.nmt.add_callback("stop", self.__callback_stop)
+		node.nmt.add_callback("pause", self.__callback_pause)
+		node.nmt.add_callback("reset", self.__callback_reset)
 		
 		network.attach(bus1)
 		network.append(node)

@@ -257,7 +257,7 @@ canopenspy/node/spynode.py
 			canopen.Node.__init__(self, name, node_id, canopen.ObjectDictionary())
 			self.nmt = NMTSpy()
 			self.sync = SYNCSpy()
-			self.sync.add_callback(self.sync_callback, "sync")
+			self.sync.add_callback("sync", self.sync_callback)
 		
 		def attach(self, network):
 			canopen.Node.attach(self, network)

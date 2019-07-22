@@ -51,17 +51,17 @@ class EMCYConsumerTestCase(unittest.TestCase):
 		
 		#### Test step: Callback is not callable
 		with self.assertRaises(TypeError):
-			consumer.add_callback(None, "emcy")
+			consumer.add_callback("emcy", None)
 		
 		#### Test step: Event not known
 		with self.assertRaises(ValueError):
-			consumer.add_callback(cb1, "xxx")
+			consumer.add_callback("xxx", cb1)
 		
 		#### Test step: Add callbacks, one which raises an exception
-		consumer.add_callback(cb1, "emcy")
-		consumer.add_callback(self.__callback_raise, "emcy")
-		consumer.add_callback(self.__callback_emcy, "emcy")
-		consumer.add_callback(cb2, "emcy")
+		consumer.add_callback("emcy", cb1)
+		consumer.add_callback("emcy", self.__callback_raise)
+		consumer.add_callback("emcy", self.__callback_emcy)
+		consumer.add_callback("emcy", cb2)
 		
 		#### Test step: Try to notify an unknown event
 		with self.assertRaises(ValueError):
@@ -75,15 +75,15 @@ class EMCYConsumerTestCase(unittest.TestCase):
 		
 		#### Test step: Remove callbacks
 		with self.assertRaises(TypeError):
-			consumer.remove_callback(None, "emcy")
+			consumer.remove_callback("emcy", None)
 		
 		with self.assertRaises(ValueError):
-			consumer.remove_callback(cb1, "xxx")
+			consumer.remove_callback("xxx", cb1)
 		
-		consumer.remove_callback(cb1, "emcy")
-		consumer.remove_callback(cb2, "emcy")
-		consumer.remove_callback(self.__callback_raise, "emcy")
-		consumer.remove_callback(self.__callback_emcy, "emcy")
+		consumer.remove_callback("emcy", cb1)
+		consumer.remove_callback("emcy", cb2)
+		consumer.remove_callback("emcy", self.__callback_raise)
+		consumer.remove_callback("emcy", self.__callback_emcy)
 	
 	def test_on_emcy(self):
 		bus1 = can.Bus(interface = "virtual", channel = 0)

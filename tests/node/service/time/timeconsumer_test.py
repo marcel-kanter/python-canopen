@@ -57,7 +57,7 @@ class TIMEConsumerTestCase(unittest.TestCase):
 		examinee.attach(node)
 		
 		cb = Mock()
-		examinee.add_callback(cb, "time")
+		examinee.add_callback("time", cb)
 		
 		#### Test step: Message with time of CANopen epoch
 		cb.reset_mock()

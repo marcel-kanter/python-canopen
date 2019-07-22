@@ -56,7 +56,7 @@ class SYNCConsumerTestCase(unittest.TestCase):
 		examinee.attach(node)
 		
 		cb = Mock()
-		examinee.add_callback(cb, "sync")
+		examinee.add_callback("sync", cb)
 		
 		#### Test step: Legacy sync message without counter
 		cb.reset_mock()

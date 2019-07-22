@@ -9,8 +9,8 @@ class SpyNode(canopen.Node):
 		self.nmt = NMTSpy()
 		self.sync = SYNCSpy()
 		self.time = TIMESpy()
-		self.sync.add_callback(self.sync_callback, "sync")
-		self.time.add_callback(self.time_callback, "time")
+		self.sync.add_callback("sync", self.sync_callback)
+		self.time.add_callback("time", self.time_callback)
 	
 	def attach(self, network):
 		canopen.Node.attach(self, network)
