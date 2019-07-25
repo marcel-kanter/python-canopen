@@ -12,7 +12,7 @@ class SDOServer(Service):
 	Block upload and download is not implemented.
 	Network indication is not implemented.
 	"""
-	def __init__(self):
+	def __init__(self, timeout = 1):
 		Service.__init__(self)
 		self._state = 0x80
 		self._toggle_bit = 0x00
@@ -20,6 +20,7 @@ class SDOServer(Service):
 		self._buffer = b""
 		self._index = 0
 		self._subindex = 0
+		self._timeout = timeout
 	
 	def attach(self, node):
 		""" Attaches the service to a node. It does NOT append or assign this service to the node. """
@@ -268,3 +269,13 @@ class SDOServer(Service):
 	
 	def _on_network_indication(self, message):
 		self._abort(0, 0, COMMAND_SPECIFIER_NOT_VALID)
+	
+	@property
+	def timeout(self):
+		return self._timeout
+	
+	@timeout.setter
+	def timeout(self, x):
+		if x != None and x <= 0:
+			raise ValueError()
+		self._timeout = x

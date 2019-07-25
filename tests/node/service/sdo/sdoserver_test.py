@@ -11,7 +11,19 @@ from tests.node.inspectionnode import InspectionNode
 
 class SDOServerTestCase(unittest.TestCase):
 	def test_init(self):
-		canopen.node.service.SDOServer()
+		examinee = canopen.node.service.SDOServer()
+		
+		examinee.timeout = None
+		self.assertEqual(examinee.timeout, None)
+		
+		examinee.timeout = 1.0
+		self.assertEqual(examinee.timeout, 1.0)
+		
+		with self.assertRaises(ValueError):
+			examinee.timeout = 0
+		
+		with self.assertRaises(ValueError):
+			examinee.timeout = -1 
 	
 	def test_attach_detach(self):
 		network = canopen.Network()

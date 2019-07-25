@@ -229,7 +229,7 @@ class SDOClient(Service):
 		
 		# The server responds with differend index or subindex
 		if self._index != index or self._subindex != subindex:
-			self._abort(index, subindex, canopen.sdo.GENERAL_ERROR)
+			self._abort(index, subindex, GENERAL_ERROR)
 			return
 		
 		if response_command & (1 << 1): # expedited transfer
@@ -267,7 +267,7 @@ class SDOClient(Service):
 		
 		# The server responds with differend index or subindex
 		if self._index != index or self._subindex != subindex:
-			self._abort(index, subindex, canopen.sdo.GENERAL_ERROR)
+			self._abort(index, subindex, GENERAL_ERROR)
 			return
 		
 		if self._state & (1 << 1): # Expedited transfer
