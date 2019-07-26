@@ -1,5 +1,6 @@
 from .datatypes import UNSIGNED8, UNSIGNED16
 from .deftype import DefType
+from .domain import Domain
 from .record import Record
 from .variable import Variable
 
@@ -11,7 +12,7 @@ class DefStruct(Record):
 	"""
 	def append(self, value):
 		""" Appends a variable to the record. It may be accessed later by the name or the subindex. """
-		if not isinstance(value, Variable) or isinstance(value, DefType):
+		if not isinstance(value, Variable) or isinstance(value, (DefType, Domain)):
 			raise TypeError()
 		if value.data_type != UNSIGNED8 and value.data_type != UNSIGNED16:
 			raise ValueError()

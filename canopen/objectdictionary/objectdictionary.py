@@ -2,6 +2,7 @@ import collections
 from .array import Array
 from .defstruct import DefStruct
 from .deftype import DefType
+from .domain import Domain
 from .record import Record
 from .variable import Variable
 
@@ -58,7 +59,7 @@ class ObjectDictionary(collections.abc.Collection):
 	
 	def append(self, value):
 		""" Appends a variable, record or array to the object dictionary. It may be accessed later by the name or the index. """
-		if not isinstance(value, (Array, DefStruct, DefType, Record, Variable)):
+		if not isinstance(value, (Array, DefStruct, DefType, Domain, Record, Variable)):
 			raise TypeError()
 		if value.index in self._items_index or value.name in self._items_name:
 			raise ValueError()

@@ -1,4 +1,6 @@
 import collections
+from .deftype import DefType
+from .domain import Domain
 from .variable import Variable
 
 
@@ -61,7 +63,7 @@ class Record(collections.abc.Collection):
 	
 	def append(self, value):
 		""" Appends a variable to the record. It may be accessed later by the name or the subindex. """
-		if not isinstance(value, Variable):
+		if not isinstance(value, Variable) or isinstance(value, (DefType, Domain)):
 			raise TypeError()
 		if value.subindex in self._items_subindex or value.name in self._items_name:
 			raise ValueError()

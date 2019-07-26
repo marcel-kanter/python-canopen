@@ -5,6 +5,7 @@ from .record import Record
 from .variable import Variable
 from .defstruct import DefStruct
 from .deftype import DefType
+from .domain import Domain
 
 
 class Node(collections.abc.Collection):
@@ -42,6 +43,8 @@ class Node(collections.abc.Collection):
 			return DefType(self, item)
 		if isinstance(item, canopen.objectdictionary.DefStruct):
 			return DefStruct(self, item)
+		if isinstance(item, canopen.objectdictionary.Domain):
+			return Domain(self, item)
 		if isinstance(item, canopen.objectdictionary.Variable):
 			return Variable(self, item)
 		if isinstance(item, canopen.objectdictionary.Array):
