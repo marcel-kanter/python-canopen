@@ -37,6 +37,7 @@ class ArrayTestCase(unittest.TestCase):
 			canopen.node.array.Array(node, dictionary["var"])
 		
 		#### Test step: property forwarding
+		self.assertEqual(node["arr"].object_type, dictionary["arr"].object_type)
 		self.assertEqual(node["arr"].name, dictionary["arr"].name)
 		self.assertEqual(node["arr"].index, dictionary["arr"].index)
 	

@@ -21,6 +21,7 @@ class Variable(object):
 		if access_type not in ["rw", "wo", "ro"]:
 			raise ValueError()
 		
+		self._object_type = 7
 		self._name = str(name)
 		self._index = index
 		self._subindex = subindex
@@ -247,6 +248,10 @@ class Variable(object):
 			raise ValueError()
 		
 		return data
+	
+	@property
+	def object_type(self):
+		return self._object_type
 	
 	@property
 	def index(self):

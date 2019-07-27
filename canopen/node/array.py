@@ -30,6 +30,10 @@ class Array(collections.abc.Collection):
 		return Variable(self._node, item)
 	
 	@property
+	def object_type(self):
+		return self._entry.object_type
+	
+	@property
 	def index(self):
 		return self._entry.index
 	

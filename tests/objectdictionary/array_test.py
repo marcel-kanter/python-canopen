@@ -13,6 +13,7 @@ class ArrayTestCase(unittest.TestCase):
 		index = 100
 		array = canopen.objectdictionary.Array(name, index)
 		
+		self.assertEqual(array.object_type, 8)
 		self.assertEqual(array.name, name)
 		self.assertEqual(array.index, index)
 		

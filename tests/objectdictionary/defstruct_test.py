@@ -13,6 +13,7 @@ class DefStructTestCase(unittest.TestCase):
 		index = 0x40
 		ds = canopen.objectdictionary.DefStruct(name, index)
 		
+		self.assertEqual(ds.object_type, 6)
 		self.assertEqual(ds.name, name)
 		self.assertEqual(ds.index, index)
 		

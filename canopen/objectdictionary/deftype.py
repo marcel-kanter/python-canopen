@@ -10,6 +10,7 @@ class DefType(Variable):
 	"""
 	def __init__(self, name, index):
 		Variable.__init__(self, name, index, 0, UNSIGNED32, "ro")
+		self._object_type = 5
 	
 	@property
 	def access_type(self):

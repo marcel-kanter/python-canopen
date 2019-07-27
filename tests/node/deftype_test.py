@@ -39,6 +39,7 @@ class DefTypeTestCase(unittest.TestCase):
 		canopen.node.deftype.DefType(node, dictionary["deftype"])
 		
 		#### Test step: property forwarding
+		self.assertEqual(node["deftype"].object_type, dictionary["deftype"].object_type)
 		self.assertEqual(node["deftype"].name, dictionary["deftype"].name)
 		self.assertEqual(node["deftype"].index, dictionary["deftype"].index)
 		self.assertEqual(node["deftype"].subindex, dictionary["deftype"].subindex)

@@ -9,3 +9,4 @@ class Domain(Variable):
 	"""
 	def __init__(self, name, index, access_type = "rw"):
 		Variable.__init__(self, name, index, 0, DOMAIN, access_type)
+		self._object_type = 2

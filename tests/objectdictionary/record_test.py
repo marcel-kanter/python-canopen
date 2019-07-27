@@ -13,6 +13,7 @@ class RecordTestCase(unittest.TestCase):
 		index = 100
 		record = canopen.objectdictionary.Record(name, index)
 		
+		self.assertEqual(record.object_type, 9)
 		self.assertEqual(record.name, name)
 		self.assertEqual(record.index, index)
 		

@@ -10,3 +10,7 @@ class Domain(Variable):
 			raise TypeError()
 		self._node = node
 		self._entry = entry
+	
+	@property
+	def object_type(self):
+		return self._entry.object_type

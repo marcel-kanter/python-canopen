@@ -37,6 +37,7 @@ class RecordTestCase(unittest.TestCase):
 			canopen.node.record.Record(node, dictionary["var"])
 		
 		#### Test step: property forwarding
+		self.assertEqual(node["rec"].object_type, dictionary["rec"].object_type)
 		self.assertEqual(node["rec"].name, dictionary["rec"].name)
 		self.assertEqual(node["rec"].index, dictionary["rec"].index)
 	

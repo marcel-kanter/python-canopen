@@ -19,6 +19,10 @@ class Variable(object):
 		self._node.set_data(self._entry.index, self._entry.subindex, x)
 	
 	@property
+	def object_type(self):
+		return self._entry.object_type
+	
+	@property
 	def index(self):
 		return self._entry.index
 	

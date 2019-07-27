@@ -19,6 +19,7 @@ class VariableTestCase(unittest.TestCase):
 		examinee = canopen.node.variable.Variable(node, entry)
 		
 		#### Test step: property forwarding
+		self.assertEqual(examinee.object_type, entry.object_type)
 		self.assertEqual(examinee.name, entry.name)
 		self.assertEqual(examinee.index, entry.index)
 		self.assertEqual(examinee.subindex, entry.subindex)

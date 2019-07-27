@@ -39,6 +39,7 @@ class DefStructTestCase(unittest.TestCase):
 		canopen.node.defstruct.DefStruct(node, dictionary["defstruct"])
 		
 		#### Test step: property forwarding
+		self.assertEqual(node["defstruct"].object_type, dictionary["defstruct"].object_type)
 		self.assertEqual(node["defstruct"].name, dictionary["defstruct"].name)
 		self.assertEqual(node["defstruct"].index, dictionary["defstruct"].index)
 	

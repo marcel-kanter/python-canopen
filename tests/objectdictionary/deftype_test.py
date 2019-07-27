@@ -13,6 +13,7 @@ class DefTypeTestCase(unittest.TestCase):
 		index = 100
 		deftype = canopen.objectdictionary.DefType(name, index)
 		
+		self.assertEqual(deftype.object_type, 5)
 		self.assertEqual(deftype.name, name)
 		self.assertEqual(deftype.index, index)
 		self.assertEqual(deftype.subindex, 0)

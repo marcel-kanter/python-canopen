@@ -10,6 +10,10 @@ class DefStruct(Record):
 	
 	This class is the representation of a DefStruct of an object dictionary. It is a mutable auto-associative list and may contain zero or more variables.
 	"""
+	def __init__(self, name, index):
+		Record.__init__(self, name, index)
+		self._object_type = 6
+	
 	def append(self, value):
 		""" Appends a variable to the record. It may be accessed later by the name or the subindex. """
 		if not isinstance(value, Variable) or isinstance(value, (DefType, Domain)):

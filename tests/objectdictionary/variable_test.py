@@ -31,6 +31,7 @@ class VariableTestCase(unittest.TestCase):
 		access_type = "rw"
 		variable = canopen.objectdictionary.Variable(name, index, subindex, data_type, access_type)
 		
+		self.assertEqual(variable.object_type, 7)
 		self.assertEqual(variable.name, name)
 		self.assertEqual(variable.index, index)
 		self.assertEqual(variable.subindex, subindex)

@@ -12,22 +12,23 @@ class DomainTest(unittest.TestCase):
 		name = "domain"
 		index = 100
 		access_type = "rw"
-		deftype = canopen.objectdictionary.Domain(name, index, access_type)
+		examinee = canopen.objectdictionary.Domain(name, index, access_type)
 		
-		self.assertEqual(deftype.name, name)
-		self.assertEqual(deftype.index, index)
-		self.assertEqual(deftype.subindex, 0)
-		self.assertEqual(deftype.data_type, canopen.objectdictionary.DOMAIN)
-		self.assertEqual(deftype.access_type, access_type)
+		self.assertEqual(examinee.object_type, 2)
+		self.assertEqual(examinee.name, name)
+		self.assertEqual(examinee.index, index)
+		self.assertEqual(examinee.subindex, 0)
+		self.assertEqual(examinee.data_type, canopen.objectdictionary.DOMAIN)
+		self.assertEqual(examinee.access_type, access_type)
 		
 		with self.assertRaises(AttributeError):
-			deftype.name = name
+			examinee.name = name
 		with self.assertRaises(AttributeError):
-			deftype.index = index
+			examinee.index = index
 		with self.assertRaises(AttributeError):
-			deftype.subindex = 0
+			examinee.subindex = 0
 		with self.assertRaises(AttributeError):
-			deftype.data_type = canopen.objectdictionary.UNSIGNED32
+			examinee.data_type = canopen.objectdictionary.DOMAIN
 
 
 if __name__ == "__main__":

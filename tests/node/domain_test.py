@@ -40,6 +40,7 @@ class DomainTest(unittest.TestCase):
 		canopen.node.domain.Domain(node, dictionary["domain"])
 		
 		#### Test step: property forwarding
+		self.assertEqual(node["domain"].object_type, dictionary["domain"].object_type)
 		self.assertEqual(node["domain"].name, dictionary["domain"].name)
 		self.assertEqual(node["domain"].index, dictionary["domain"].index)
 		self.assertEqual(node["domain"].subindex, dictionary["domain"].subindex)

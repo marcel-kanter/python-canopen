@@ -13,6 +13,7 @@ class Array(collections.abc.Collection):
 		if index < 0 or index > 65535:
 			raise ValueError()
 		
+		self._object_type = 8
 		self._name = name
 		self._index = index
 		self._items_subindex = {}
@@ -72,6 +73,10 @@ class Array(collections.abc.Collection):
 		
 		self._items_subindex[value.subindex] = value
 		self._items_name[value.name] = value
+	
+	@property
+	def object_type(self):
+		return self._object_type
 	
 	@property
 	def index(self):
