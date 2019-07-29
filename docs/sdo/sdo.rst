@@ -1,7 +1,7 @@
 SDO
 ===
 
-The DS301 standard defines 29 abort codes.
+The DS301 standard defines 29 abort codes. A list is given in DS301 v4.02 "Table 22: SDO abort codes".
 
 For some of the SDO abort codes there are constants defined: 
 

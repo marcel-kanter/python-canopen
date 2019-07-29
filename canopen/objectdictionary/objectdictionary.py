@@ -10,7 +10,7 @@ from .variable import Variable
 class ObjectDictionary(collections.abc.Collection):
 	""" Representation of a CANopen object dictionary.
 	
-	This class is the representation of one CANopen object dictionary. It is a mutable auto-associative list and may contain zero or more elements of type Array, DefStruct, DefType, Record or Variable.
+	This class is the representation of one CANopen object dictionary. It is a mutable auto-associative mapping and may contain zero or more elements of type Array, DefStruct, DefType, Record or Variable.
 	"""
 	def __init__(self):
 		self._items_index = {}

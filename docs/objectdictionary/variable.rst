@@ -7,7 +7,7 @@ It describes only the object in the dictionary and does not hold any actual data
 The most properties of the ``Variable`` are immutable and cannot be changed after creation of the variable.
 Only access_type and default can be changed after creation.
 
-Each variable has a data type. The data types are defined in DS301 and the following data types are supported.
+Each variable has a data type. The data types are defined in DS301 "Table 44: Object dictionary data types" and the following data types are supported.
 
 * BOOLEAN
 * INTEGER8
@@ -35,11 +35,13 @@ Each variable has a data type. The data types are defined in DS301 and the follo
 * UNSIGNED56
 * UNSIGNED64
 
-Each variable has an access type. The access types as defined in DS301 and the follwing access types are supported.
+Each variable has an access type. The access types as defined in DS301 "Table 43: Access attributes for data objects" and the follwing access types are supported.
 
 * rw
 * wo
 * ro
+
+A ``Variable`` has a default value. Depending on the data type, the default value is set to False, 0 or empty data at creation of the Variable object. It can be changed if needed.
 
 Encode/Decode
 -------------

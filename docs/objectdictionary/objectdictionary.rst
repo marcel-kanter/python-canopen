@@ -1,7 +1,7 @@
 ObjectDictionary
 ================
 
-This class is the representation of an object dictionary. It is a mutable auto-associative list and may contain zero or more ``Arrays``, ``Records`` and ``Variables``.
+This class is the representation of an object dictionary. It is a mutable auto-associative mapping and may contain zero or more of ``Array``, ``Record`` and ``Variable``.
 
 Auto-associative list
 ---------------------

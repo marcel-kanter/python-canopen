@@ -1,7 +1,7 @@
 EMCY
 ====
 
-The DS301 standard defines error codes.
+The DS301 standard defines error codes. A list is given in DS301 v4.02 "Table 25: Emergency error code classes".
 
 For some of the EMCY error codes there are constants defined:
 

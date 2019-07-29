@@ -7,7 +7,7 @@ from .variable import Variable
 class Array(collections.abc.Collection):
 	""" Representation of an array of a CANopen object dictionary.
 	
-	This class is the representation of an array of a CANopen object dictionary. It is a mutable auto-associative list and may contain zero or more variables.
+	This class is the representation of an array of a CANopen object dictionary. It is a mutable auto-associative mapping and may contain zero or more variables.
 	"""
 	def __init__(self, name, index):
 		if index < 0 or index > 65535:
@@ -76,6 +76,9 @@ class Array(collections.abc.Collection):
 	
 	@property
 	def object_type(self):
+		"""
+		Returns the object type as defined in DS301 v4.02 Table 42: Object code usage.
+		"""
 		return self._object_type
 	
 	@property

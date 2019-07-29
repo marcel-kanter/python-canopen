@@ -1,7 +1,7 @@
 Array
 =====
 
-This class is the representation of an array of an object dictionary. It is a mutable auto-associative list and may contain zero or more ``Variables``.
+This class is the representation of an array of an object dictionary. It is a mutable auto-associative mapping and may contain zero or more of ``Variable``.
 
 Auto-associative list
 ---------------------

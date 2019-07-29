@@ -251,6 +251,9 @@ class Variable(object):
 	
 	@property
 	def object_type(self):
+		"""
+		Returns the object type as defined in DS301 v4.02 Table 42: Object code usage.
+		"""
 		return self._object_type
 	
 	@property
@@ -267,10 +270,16 @@ class Variable(object):
 	
 	@property
 	def data_type(self):
+		"""
+		Returns the data type as defined in DS301 v4.02 Table 44: Object dictionary data types.
+		"""
 		return self._data_type
 	
 	@property
 	def access_type(self):
+		"""
+		Returns the access type as defined in DS301 v4.02 Table 43: Access attributes for data objects.
+		"""
 		return self._access_type
 	
 	@access_type.setter
@@ -281,6 +290,9 @@ class Variable(object):
 	
 	@property
 	def default(self):
+		"""
+		Returns the default value for this Variable.
+		"""
 		return self._default
 	
 	@default.setter
