@@ -2,8 +2,19 @@ import threading
 
 
 class Timer(threading.Thread):
-	def __init__(self):
+	def __init__(self, function, args = None, kwargs = None):
+		if not callable(function):
+			raise ValueError()
+		if args == None:
+			args = []
+		if kwargs == None:
+			kwargs = {}
+		
 		threading.Thread.__init__(self)
+		
+		self._function = function
+		self._args = args
+		self._kwargs = kwargs
 		
 		self._terminate = threading.Event()
 		self._trigger = threading.Event()
@@ -17,6 +28,7 @@ class Timer(threading.Thread):
 		self._trigger.wait()
 		self._trigger.clear()
 		while not self._terminate.is_set():
+			self._function(*self._args, **self._kwargs)
 			self._trigger.wait()
 			self._trigger.clear()
 	
