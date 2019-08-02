@@ -44,29 +44,101 @@ class TimerTest(unittest.TestCase):
 		
 		#### Test step: Start with interval from init
 		m.reset_mock()
-		examinee.start()
+		t_start = time.time()
+		self.assertEqual(examinee.start(), True)
 		time.sleep(0.08)
 		m.assert_not_called()
 		time.sleep(0.04)
 		m.assert_called()
+		self.assertLess(time.time() - t_start, 0.15)
 		
 		#### Test step: Overwrite interval with new value
 		m.reset_mock()
-		examinee.start(0.2)
-		time.sleep(0.18)
+		t_start = time.time()
+		self.assertEqual(examinee.start(0.15), True)
+		time.sleep(0.13)
 		m.assert_not_called()
 		time.sleep(0.04)
 		m.assert_called()
+		self.assertLess(time.time() - t_start, 0.2)
+		
+		#### Test step: Cancel, start -> normal operation
+		m.reset_mock()
+		t_start = time.time()
+		examinee.cancel()
+		self.assertEqual(examinee.start(0.1), True)
+		time.sleep(0.08)
+		m.assert_not_called()
+		time.sleep(0.04)
+		m.assert_called()
+		self.assertLess(time.time() - t_start, 0.15)
+		
+		m.reset_mock()
+		t_start = time.time()
+		examinee.cancel()
+		time.sleep(0.05)
+		self.assertEqual(examinee.start(0.1), True)
+		time.sleep(0.08)
+		m.assert_not_called()
+		time.sleep(0.04)
+		m.assert_called()
+		self.assertLess(time.time() - t_start, 0.2)
+		
+		#### Test step: Start, cancel -> no call
+		m.reset_mock()
+		t_start = time.time()
+		examinee.start(0.1)
+		time.sleep(0.08)
+		examinee.cancel()
+		time.sleep(0.05)
+		m.assert_not_called()
+		self.assertLess(time.time() - t_start, 0.15)
+		
+		m.reset_mock()
+		t_start = time.time()
+		examinee.start(0.1)
+		examinee.cancel()
+		time.sleep(0.15)
+		m.assert_not_called()
+		self.assertLess(time.time() - t_start, 0.2)
+		
+		#### Test step: Start, start, cancel -> no call
+		m.reset_mock()
+		t_start = time.time()
+		self.assertEqual(examinee.start(0.1), True)
+		time.sleep(0.03)
+		self.assertEqual(examinee.start(0.1), False)
+		time.sleep(0.03)
+		examinee.cancel()
+		time.sleep(0.05)
+		m.assert_not_called()
+		self.assertLess(time.time() - t_start, 0.15)
+		
+		#### Test step: Start, cancel, start -> normal
+		m.reset_mock()
+		t_start = time.time()
+		examinee.start(0.1)
+		time.sleep(0.05)
+		examinee.cancel()
+		time.sleep(0.1)
+		m.assert_not_called()
+		examinee.start(0.1)
+		time.sleep(0.08)
+		m.assert_not_called()
+		time.sleep(0.04)
+		m.assert_called()
+		self.assertLess(time.time() - t_start, 0.3)
 		
 		#### Test step: Stop, no call at the end
 		m.reset_mock()
+		t_start = time.time()
 		examinee.start(0.2)
 		time.sleep(0.1)
 		examinee.stop()
 		time.sleep(0.2)
 		m.assert_not_called()
-		
 		self.assertFalse(examinee.is_alive())
+		self.assertLess(time.time() - t_start, 0.35)
 
 
 if __name__ == "__main__":
