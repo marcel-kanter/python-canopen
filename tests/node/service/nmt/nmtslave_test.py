@@ -1,8 +1,10 @@
 import unittest
+from unittest.mock import Mock
 import time
 import can
 import canopen.node.service
 import canopen.nmt.states
+from more_itertools.more import side_effect
 
 
 class NMTSlaveTestCase(unittest.TestCase):
@@ -47,40 +49,75 @@ class NMTSlaveTestCase(unittest.TestCase):
 		self.assertEqual(nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
 	
 	def test_callback(self):
-		nmt = canopen.node.service.NMTSlave()
-		
-		# TODO: Use Mock to assert each callback is called only once
+		examinee = canopen.node.service.NMTSlave()
 		
 		with self.assertRaises(TypeError):
-			nmt.add_callback("start", None)
+			examinee.add_callback("start", None)
 		
 		with self.assertRaises(ValueError):
-			nmt.add_callback("xxx", self.__callback_start)
+			examinee.add_callback("xxx", self.__callback_start)
 		
-		nmt.add_callback("start", self.__callback_start)
-		nmt.add_callback("stop", self.__callback_stop)
-		nmt.add_callback("pause", self.__callback_pause)
-		nmt.add_callback("reset", self.__callback_reset)
+		m_start = Mock(side_effect = self.__callback_start)
+		m_stop = Mock(side_effect = self.__callback_start)
+		m_pause = Mock(side_effect = self.__callback_start)
+		m_reset = Mock(side_effect = self.__callback_start)
+		m_raises = Mock(side_effect = self.__callback_raises)
 		
-		nmt.add_callback("start", self.__callback_raises)
+		#### Test step: add callback
+		examinee.add_callback("start", m_start)
+		examinee.add_callback("stop", m_stop)
+		examinee.add_callback("pause", m_pause)
+		examinee.add_callback("reset", m_reset)
 		
+		examinee.add_callback("start", m_raises)
+		
+		#### Test step: notify
 		with self.assertRaises(ValueError):
-			nmt.notify("xxx", None)
+			examinee.notify("xxx", None)
 		
-		nmt.notify("start", None)
+		examinee.notify("start", None)
+		m_start.assert_called_once()
+		m_stop.assert_not_called()
+		m_pause.assert_not_called()
+		m_reset.assert_not_called()
+		m_raises.assert_called_once()
 		
+		examinee.notify("stop", None)
+		m_start.assert_called_once()
+		m_stop.assert_called_once()
+		m_pause.assert_not_called()
+		m_reset.assert_not_called()
+		m_raises.assert_called_once()
+		
+		examinee.notify("pause", None)
+		m_start.assert_called_once()
+		m_stop.assert_called_once()
+		m_pause.assert_called_once()
+		m_reset.assert_not_called()
+		m_raises.assert_called_once()
+		
+		examinee.notify("reset", None)
+		m_start.assert_called_once()
+		m_stop.assert_called_once()
+		m_pause.assert_called_once()
+		m_reset.assert_called_once()
+		m_raises.assert_called_once()
+		
+		#### Test step: remove callback
 		with self.assertRaises(TypeError):
-			nmt.remove_callback("start", None)
+			examinee.remove_callback("start", None)
 		
 		with self.assertRaises(ValueError):
-			nmt.remove_callback("xxx", self.__callback_start)
+			examinee.remove_callback("xxx", m_start)
 		
-		nmt.remove_callback("start", self.__callback_start)
-		nmt.remove_callback("stop", self.__callback_stop)
-		nmt.remove_callback("pause", self.__callback_pause)
-		nmt.remove_callback("reset", self.__callback_reset)
+		with self.assertRaises(ValueError):
+			examinee.remove_callback("start", self.test_callback)
 		
-		nmt.remove_callback("start", self.__callback_raises)
+		examinee.remove_callback("start", m_start)
+		examinee.remove_callback("stop", m_stop)
+		examinee.remove_callback("pause", m_pause)
+		examinee.remove_callback("reset", m_reset)
+		examinee.remove_callback("start", m_raises)
 	
 	def test_attach_detach(self):
 		network = canopen.Network()

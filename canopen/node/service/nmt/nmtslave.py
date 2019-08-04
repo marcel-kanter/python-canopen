@@ -31,7 +31,7 @@ class NMTSlave(Service):
 		self._node.network.unsubscribe(self.on_error_control, self._identifier_ec)
 		self._node.network.unsubscribe(self.on_node_control, 0x000)
 		Service.detach(self)
-		
+	
 	def on_error_control(self, message):
 		""" Handler for received error control requests. """
 		if not message.is_remote_frame:
@@ -43,7 +43,7 @@ class NMTSlave(Service):
 		if self._state == INITIALIZATION:
 			return
 		
-		response = can.Message(arbitration_id = self._identifier_ec, is_extended_id = False, data = [self._toggle_bit | self._state])
+		response = can.Message(arbitration_id = self._identifier_ec, is_extended_id = False, data = [self._toggle_bit | (self._state & 0x7F)])
 		self._node.network.send(response)
 		
 		self._toggle_bit ^= 0x80
