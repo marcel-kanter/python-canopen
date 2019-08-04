@@ -129,6 +129,19 @@ class TimerTest(unittest.TestCase):
 		m.assert_called()
 		self.assertLess(time.time() - t_start, 0.3)
 		
+		m.reset_mock()
+		t_start = time.time()
+		examinee.start(0.1)
+		time.sleep(0.05)
+		examinee.cancel()
+		m.assert_not_called()
+		examinee.start(0.1)
+		time.sleep(0.08)
+		m.assert_not_called()
+		time.sleep(0.04)
+		m.assert_called()
+		self.assertLess(time.time() - t_start, 0.3)
+		
 		#### Test step: Stop, no call at the end
 		m.reset_mock()
 		t_start = time.time()

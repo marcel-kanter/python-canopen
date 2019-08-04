@@ -47,6 +47,9 @@ class Timer(threading.Thread):
 		Cancels the current timer cycle.
 		"""
 		self._condition.set()
+		# wait until the canceled timer cycle has passed by and a restart is possible
+		self._trigger.acquire()
+		self._trigger.release()
 	
 	def run(self):
 		self._trigger.acquire()
