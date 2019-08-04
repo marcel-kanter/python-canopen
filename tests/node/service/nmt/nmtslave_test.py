@@ -389,6 +389,21 @@ class NMTSlaveTestCase(unittest.TestCase):
 		self.assertEqual(message.is_remote_frame, False)
 		self.assertEqual(message.data, b"\x05")
 		
+		#### Test step: Send heartbeat message
+		node.nmt.send_heartbeat()
+		
+		message = bus2.recv(1)
+		self.assertEqual(message.arbitration_id, 0x70A)
+		self.assertEqual(message.is_remote_frame, False)
+		self.assertEqual(message.data, b"\x05")
+		
+		node.nmt.send_heartbeat()
+		
+		message = bus2.recv(1)
+		self.assertEqual(message.arbitration_id, 0x70A)
+		self.assertEqual(message.is_remote_frame, False)
+		self.assertEqual(message.data, b"\x05")
+		
 		network.detach()
 		bus1.shutdown()
 		bus2.shutdown()
