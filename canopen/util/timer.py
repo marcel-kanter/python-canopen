@@ -14,7 +14,7 @@ class Timer(threading.Thread):
 		if kwargs == None:
 			kwargs = {}
 		
-		threading.Thread.__init__(self)
+		threading.Thread.__init__(self, daemon = True)
 		
 		self._interval = 0.0
 		self._periodic = False
