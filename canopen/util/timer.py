@@ -1,4 +1,5 @@
 import threading
+import time
 
 
 class Timer(threading.Thread):
@@ -22,6 +23,7 @@ class Timer(threading.Thread):
 		self._args = args
 		self._kwargs = kwargs
 		
+		self._execute_time = 0.0
 		self._terminate = threading.Event()
 		self._trigger = threading.Condition(threading.Lock())
 		self._condition = threading.Event()
@@ -36,6 +38,7 @@ class Timer(threading.Thread):
 			raise ValueError()
 		if not self._trigger.acquire(False):
 			return False
+		self._execute_time = time.time() + interval
 		self._interval = interval
 		self._periodic = periodic
 		self._condition.clear()
@@ -58,9 +61,10 @@ class Timer(threading.Thread):
 		while not self._terminate.is_set():
 			if not self._periodic:
 				self._trigger.wait()
-			self._condition.wait(self._interval)
+			self._condition.wait(self._execute_time - time.time())
 			if not self._condition.is_set():
 				self._function(*self._args, **self._kwargs)
+			self._execute_time += self._interval
 		self._trigger.release()
 	
 	def stop(self):
