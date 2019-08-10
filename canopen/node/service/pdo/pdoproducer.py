@@ -6,7 +6,7 @@ class PDOProducer(Service):
 		Service.__init__(self)
 	
 	def attach(self, node):
-		""" Attaches the service to a node. It does NOT append or assign this service to the node. """
+		""" Attaches the ``PDOProducer`` to a ``Node``. It does NOT append or assign this ``PDOProducer`` to the ``Node``. """
 		Service.attach(self, node)
 		self._identifier_sync = 0x80
 		self._identifier_tx = 0x180 + self._node.id
@@ -14,7 +14,7 @@ class PDOProducer(Service):
 		self._node.network.subscribe(self.on_pdo, self._identifier_tx)
 		
 	def detach(self):
-		""" Detaches the service from the node. It does NOT remove or delete the service from the node. """
+		""" Detaches the ``PDOProducer`` from the ``Node``. It does NOT remove or delete the ``PDOProducer`` from the ``Node``. """
 		if self._node == None:
 			raise RuntimeError()
 		self._node.network.unsubscribe(self.on_sync, self._identifier_sync)

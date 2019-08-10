@@ -23,7 +23,7 @@ class SDOServer(Service):
 		self._timeout = timeout
 	
 	def attach(self, node):
-		""" Attaches the service to a node. It does NOT append or assign this service to the node. """
+		""" Attaches the ``SDOServer`` to a ``Node``. It does NOT append or assign this ``SDOServer`` to the ``Node``. """
 		Service.attach(self, node)
 		self._state = 0x80
 		self._identifier_rx = 0x600 + self._node.id
@@ -31,7 +31,7 @@ class SDOServer(Service):
 		self._node.network.subscribe(self.on_request, self._identifier_rx)
 	
 	def detach(self):
-		""" Detaches the service from the node. It does NOT remove or delete the service from the node. """
+		""" Detaches the ``SDOServer`` from the ``Node``. It does NOT remove or delete the ``SDOServer`` from the ``Node``. """
 		if self._node == None:
 			raise RuntimeError()
 		self._node.network.unsubscribe(self.on_request, self._identifier_rx)

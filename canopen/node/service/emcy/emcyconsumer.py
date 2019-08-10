@@ -12,13 +12,13 @@ class EMCYConsumer(Service):
 		self._callbacks = {"emcy": []}
 	
 	def attach(self, node):
-		""" Attaches the service to a node. It does NOT append or assign this service to the node. """
+		""" Attaches the ``EMCYConsumer`` to a ``Node``. It does NOT append or assign this ``EMCYConsumer`` to the ``Node``. """
 		Service.attach(self, node)
 		self._identifier_rx = 0x80 + self._node.id
 		self._node.network.subscribe(self.on_emcy, self._identifier_rx)
 	
 	def detach(self):
-		""" Detaches the service from the node. It does NOT remove or delete the service from the node. """
+		""" Detaches the ``EMCYConsumer`` from the ``Node``. It does NOT remove or delete the ``EMCYConsumer`` from the ``Node``. """
 		if self._node == None:
 			raise RuntimeError()
 		self._node.network.unsubscribe(self.on_emcy, self._identifier_rx)

@@ -8,13 +8,13 @@ class SYNCConsumer(Service):
 		self._callbacks = {"sync": []}
 	
 	def attach(self, node):
-		""" Attaches the service to a node. It does NOT append or assign this service to the node. """
+		""" Attaches the ``SYNCConsumer`` to a ``Node``. It does NOT append or assign this ``SYNCConsumer`` to the ``Node``. """
 		Service.attach(self, node)
 		self._identifier = 0x80
 		self._node.network.subscribe(self.on_sync, self._identifier)
 	
 	def detach(self):
-		""" Detaches the service from the node. It does NOT remove or delete the service from the node. """
+		""" Detaches the ``SYNCConsumer`` from the ``Node``. It does NOT remove or delete the ``SYNCConsumer`` from the ``Node``. """
 		if self._node == None:
 			raise RuntimeError()
 		self._node.network.unsubscribe(self.on_sync, self._identifier)

@@ -25,7 +25,7 @@ class SDOClient(Service):
 		self._timeout = timeout
 	
 	def attach(self, node):
-		""" Attaches the service to a node. It does NOT append or assign this service to the node. """
+		""" Attaches the ``SDOClient`` to a ``Node``. It does NOT append or assign this ``SDOClient`` to the ``Node``. """
 		Service.attach(self, node)
 		self._state = 0x80
 		self._identifier_rx = 0x580 + self._node.id
@@ -33,7 +33,7 @@ class SDOClient(Service):
 		self._node.network.subscribe(self.on_response, self._identifier_rx)
 	
 	def detach(self):
-		""" Detaches the service from the node. It does NOT remove or delete the service from the node. """
+		""" Detaches the ``SDOClient`` from the ``Node``. It does NOT remove or delete the ``SDOClient`` from the ``Node``. """
 		if self._node == None:
 			raise RuntimeError()
 		self._node.network.unsubscribe(self.on_response, self._identifier_rx)

@@ -11,7 +11,7 @@ class Service(object):
 		self._callbacks = {}
 	
 	def attach(self, node):
-		""" Attaches the service to a node. It does NOT append or assign this service to the node. """
+		""" Attaches the ``Service`` to a ``Node``. It does NOT append or assign this ``Service`` to the ``Node``. """
 		if not isinstance(node, canopen.node.Node):
 			raise TypeError()
 		if self._node == node:
@@ -22,7 +22,7 @@ class Service(object):
 		self._node = node
 	
 	def detach(self):
-		""" Detaches the service from the node. It does NOT remove or delete the service from the node. """
+		""" Detaches the ``Service`` from the ``Node``. It does NOT remove or delete the ``Service`` from the ``Node``. """
 		if self._node == None:
 			raise RuntimeError()
 		

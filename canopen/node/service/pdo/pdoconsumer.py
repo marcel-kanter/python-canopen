@@ -6,7 +6,7 @@ class PDOConsumer(Service):
 		Service.__init__(self)
 	
 	def attach(self, node):
-		""" Attaches the service to a node. It does NOT append or assign this service to the node. """
+		""" Attaches the ``PDOConsumer`` to a ``Node``. It does NOT append or assign this ``PDOConsumer`` to the ``Node``. """
 		Service.attach(self, node)
 		self._identifier_sync = 0x80
 		self._identifier_rx = 0x200 + self._node.id
@@ -14,7 +14,7 @@ class PDOConsumer(Service):
 		self._node.network.subscribe(self.on_pdo, self._identifier_rx)
 		
 	def detach(self):
-		""" Detaches the service from the node. It does NOT remove or delete the service from the node. """
+		""" Detaches the ``PDOConsumer`` from the ``Node``. It does NOT remove or delete the ``PDOConsumer`` from the ``Node``. """
 		if self._node == None:
 			raise RuntimeError()
 		self._node.network.unsubscribe(self.on_sync, self._identifier_sync)

@@ -12,6 +12,7 @@ class TIMEProducer(Service):
 		Service.__init__(self)
 	
 	def attach(self, node):
+		""" Attaches the ``TIMEProducer`` to a ``Node``. It does NOT append or assign this ``TIMEProducer`` to the ``Node``. """
 		Service.attach(self, node)
 		self._identifier = 0x100
 	

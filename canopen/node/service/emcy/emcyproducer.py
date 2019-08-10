@@ -8,10 +8,12 @@ class EMCYProducer(Service):
 		Service.__init__(self)
 	
 	def attach(self, node):
+		""" Attaches the ``EMCYProducer`` to a ``Node``. It does NOT append or assign this ``EMCYProducer`` to the ``Node``. """
 		Service.attach(self, node)
 		self._identifier_tx = 0x80 + self._node.id
 	
 	def detach(self):
+		""" Detaches the ``EMCYProducer`` from the ``Node``. It does NOT remove or delete the ``EMCYProducer`` from the ``Node``. """
 		Service.detach(self)
 	
 	def send(self, error_code, error_register, data = None):

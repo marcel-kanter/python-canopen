@@ -16,7 +16,7 @@ class NMTSlave(Service):
 		self._callbacks = {"start": [], "stop": [], "pause": [], "reset": []}
 	
 	def attach(self, node):
-		""" Attaches the service to a node. It does NOT append or assign this service to the node. """
+		""" Attaches the ``NMTSlave`` to a ``Node``. It does NOT append or assign this ``NMTSlave`` to the ``Node``. """
 		Service.attach(self, node)
 		self._state = 0
 		self._toggle_bit = 0
@@ -25,7 +25,7 @@ class NMTSlave(Service):
 		self._node.network.subscribe(self.on_error_control, self._identifier_ec)
 	
 	def detach(self):
-		""" Detaches the service from the node. It does NOT remove or delete the service from the node. """
+		""" Detaches the ``NMTSlave`` from the ``Node``. It does NOT remove or delete the ``NMTSlave`` from the ``Node``. """
 		if self._node == None:
 			raise RuntimeError()
 		self._node.network.unsubscribe(self.on_error_control, self._identifier_ec)

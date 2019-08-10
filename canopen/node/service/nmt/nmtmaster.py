@@ -14,14 +14,14 @@ class NMTMaster(Service):
 		self._state = 0
 
 	def attach(self, node):
-		""" Attaches the service to a node. It does NOT append or assign this service to the node. """
+		""" Attaches the ``NMTMaster`` to a ``Node``. It does NOT append or assign this ``NMTMaster`` to the ``Node``. """
 		Service.attach(self, node)
 		self._state = 0
 		self._identifier_ec = 0x700 + self._node.id
 		self._node.network.subscribe(self.on_error_control, self._identifier_ec)
 	
 	def detach(self):
-		""" Detaches the service from the node. It does NOT remove or delete the service from the node. """
+		""" Detaches the ``NMTMaster`` from the ``Node``. It does NOT remove or delete the ``NMTMaster`` from the ``Node``. """
 		if self._node == None:
 			raise RuntimeError()
 		self._node.network.unsubscribe(self.on_error_control, self._identifier_ec)

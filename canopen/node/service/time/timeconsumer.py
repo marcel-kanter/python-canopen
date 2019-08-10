@@ -13,12 +13,12 @@ class TIMEConsumer(Service):
 		self._callbacks = {"time": []}
 	
 	def attach(self, node):
-		""" Attaches the service to a node. It does NOT append or assign this service to the node. """
+		""" Attaches the ``TIMEConsumer`` to a ``Node``. It does NOT append or assign this ``TIMEConsumer`` to the ``Node``. """
 		Service.attach(self, node)
 		self._node.network.subscribe(self.on_time, self._identifier)
 	
 	def detach(self):
-		""" Detaches the service from the node. It does NOT remove or delete the service from the node. """
+		""" Detaches the ``TIMEConsumer`` from the ``Node``. It does NOT remove or delete the ``TIMEConsumer`` from the ``Node``. """
 		if self._node == None:
 			raise RuntimeError()
 		self._node.network.unsubscribe(self.on_time, self._identifier)

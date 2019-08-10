@@ -8,6 +8,7 @@ class SYNCProducer(Service):
 		Service.__init__(self)
 	
 	def attach(self, node):
+		""" Attaches the ``SYNCProducer`` to a ``Node``. It does NOT append or assign this ``SYNCProducer`` to the ``Node``. """
 		Service.attach(self, node)
 		self._identifier = 0x80
 	
