@@ -408,6 +408,47 @@ class NMTSlaveTestCase(unittest.TestCase):
 		bus1.shutdown()
 		bus2.shutdown()
 	
+	def test_heartbeat(self):
+		bus1 = can.Bus(interface = "virtual", channel = 0)
+		bus2 = can.Bus(interface = "virtual", channel = 0)
+		network = canopen.Network()
+		dictionary = canopen.ObjectDictionary()
+		node = canopen.LocalNode("a", 0x0A, dictionary)
+		
+		network.attach(bus1)
+		network.append(node)
+		
+		node.nmt.send_heartbeat()
+		node.nmt.state = canopen.nmt.states.PRE_OPERATIONAL
+		node.nmt.start_heartbeat(0.2)
+		
+		time.sleep(0.05)
+		
+		message = bus2.recv(0.2)
+		self.assertEqual(message.arbitration_id, 0x70A)
+		self.assertEqual(message.is_remote_frame, False)
+		self.assertEqual(message.data, b"\x00")
+		
+		time.sleep(0.2)
+		
+		message = bus2.recv(0.2)
+		self.assertEqual(message.arbitration_id, 0x70A)
+		self.assertEqual(message.is_remote_frame, False)
+		self.assertEqual(message.data, b"\x7F")
+		
+		time.sleep(0.2)
+		
+		message = bus2.recv(0.2)
+		self.assertEqual(message.arbitration_id, 0x70A)
+		self.assertEqual(message.is_remote_frame, False)
+		self.assertEqual(message.data, b"\x7F")
+		
+		node.nmt.stop_heartbeat()
+		
+		network.detach()
+		bus1.shutdown()
+		bus2.shutdown()
+	
 	def __callback_start(self, event, node, *args):
 		node.nmt.state = canopen.nmt.states.OPERATIONAL
 	
