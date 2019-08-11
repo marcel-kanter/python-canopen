@@ -64,7 +64,7 @@ class SDOClient(Service):
 		if not self._condition.wait(self._timeout):
 			self._abort(index, subindex, SDO_PROTOCOL_TIMED_OUT)
 			self._condition.release()
-			raise Exception()
+			raise TimeoutError()
 		
 		if self._state == 0x40:
 			try:
@@ -113,7 +113,7 @@ class SDOClient(Service):
 		if not self._condition.wait(self._timeout):
 			self._abort(index, subindex, SDO_PROTOCOL_TIMED_OUT)
 			self._condition.release()
-			raise Exception()
+			raise TimeoutError()
 		
 		if self._state & 0xE0 == 0x20:
 			self._state = 0x80

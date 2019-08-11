@@ -57,7 +57,7 @@ class Vehicle_Download(threading.Thread):
 		value = 0x12345678
 		try:
 			examinee.download(index, subindex, value)
-		except:
+		except TimeoutError:
 			pass
 		else:
 			assert(False)
@@ -160,7 +160,7 @@ class Vehicle_Upload(threading.Thread):
 		# An exception should be raised
 		try:
 			value = examinee.upload(index, subindex)
-		except:
+		except TimeoutError:
 			pass
 		else:
 			assert(False)
