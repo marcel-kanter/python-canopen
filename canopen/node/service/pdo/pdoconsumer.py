@@ -5,6 +5,7 @@ class PDOConsumer(Service):
 	def __init__(self):
 		Service.__init__(self)
 		self._callbacks = {"sync": [], "pdo": []}
+		self._data = None
 	
 	def attach(self, node):
 		""" Attaches the ``PDOConsumer`` to a ``Node``. It does NOT append or assign this ``PDOConsumer`` to the ``Node``. """
@@ -23,7 +24,16 @@ class PDOConsumer(Service):
 		Service.detach(self)
 	
 	def on_pdo(self, message):
+		self._data = message.data
 		self.notify("pdo")
 	
 	def on_sync(self, message):
 		self.notify("sync")
+	
+	@property
+	def data(self):
+		return self._data
+	
+	@data.setter
+	def data(self, data):
+		self._data = data

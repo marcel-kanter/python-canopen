@@ -11,6 +11,11 @@ class PDOConsumerTest(unittest.TestCase):
 		examinee = PDOConsumer()
 		
 		self.assertEqual(examinee.node, None)
+		
+		test_data = [None, b"\x22", b"\x11\x00"]
+		for value in test_data:
+			examinee.data = value
+			self.assertEqual(examinee.data, value)
 	
 	def test_attach_detach(self):
 		network = canopen.Network()
@@ -61,11 +66,13 @@ class PDOConsumerTest(unittest.TestCase):
 		examinee.attach(node)
 		
 		#### Test step: PDO message
-		message = can.Message(arbitration_id = 0x201, is_extended_id = False, data = b"\x00\x00\x00\x00\x00\x00\x00\x00")
+		message = can.Message(arbitration_id = 0x201, is_extended_id = False, data = b"\x11\x22\x33\x44\x55\x66\x77\x88")
 		bus2.send(message)
 		time.sleep(0.001)
 		
 		m.assert_called()
+		
+		self.assertEqual(examinee.data, b"\x11\x22\x33\x44\x55\x66\x77\x88")
 		
 		examinee.detach()
 		node.detach()

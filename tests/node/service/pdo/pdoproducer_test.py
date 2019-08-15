@@ -11,6 +11,11 @@ class PDOProducerTest(unittest.TestCase):
 		examinee = PDOProducer()
 		
 		self.assertEqual(examinee.node, None)
+		
+		test_data = [None, b"\x22", b"\x11\x00"]
+		for value in test_data:
+			examinee.data = value
+			self.assertEqual(examinee.data, value)
 	
 	def test_attach_detach(self):
 		network = canopen.Network()
