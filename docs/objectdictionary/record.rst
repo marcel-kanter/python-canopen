@@ -3,13 +3,13 @@ Record
 
 This class is the representation of a record of an object dictionary. It is a mutable auto-associative mapping and may contain zero or more of ``Variable``.
 
-Auto-associative list
----------------------
+Auto-associative mapping
+------------------------
 
-The ``Record`` class is a mutable auto-associative list of Variables and the properties for association are subindex and name.
-It's possible to get a ``Variable`` by subindex or name from the list.
+The ``Record`` class is a mutable auto-associative mapping of Variables and the properties for association are subindex and name.
+It's possible to get a ``Variable`` by subindex or name from the mapping.
 
-To add a element to the list, the ``append`` function is used. The subindex and the name of the elements inside the list must be unique.
+To add a element to the mapping, the ``append`` function is used. The subindex and the name of the elements inside the mapping must be unique.
 Additionally, the index of the variable must match the index of the record.
 
 .. code:: python

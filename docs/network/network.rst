@@ -1,18 +1,24 @@
 Network
 =======
 
-This class is the representation of a CANopen network. It is a mutable auto-associative list and may contain zero or more CANopen nodes.
+This class is the representation of a CANopen network. It is a mutable auto-associative mapping and may contain zero or more CANopen nodes.
 
 To use Network together with a CAN bus, first the CAN bus instance must be created and then the network attached to the bus.
 In the end, the network may be detached from the CAN bus.
 
-Auto-associative list
----------------------
+Attach/detach
+-------------
 
-The ``Network`` class is a mutable auto-associative list of nodes and the properties for association are id and name.
-It's possible to get a node by id or name from the list.
+The attach/detach pattern is used create a link from the ``Network`` (child) to the ``Bus`` (parent). It only creates a functional relationship between them.
+The structural relation between the child and the parent is handled by other means.
 
-To add a node to the list, the ``append`` function is used. The id and the name of the nodes inside the list must be unique.
+Auto-associative mapping
+------------------------
+
+The ``Network`` class is a mutable auto-associative mapping of nodes and the properties for association are id and name.
+It's possible to get a node by id or name from the mapping.
+
+To add a node to the mapping, the ``append`` function is used. The id and the name of the nodes inside the mapping must be unique.
 
 .. code:: python
 

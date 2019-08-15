@@ -3,13 +3,13 @@ ObjectDictionary
 
 This class is the representation of an object dictionary. It is a mutable auto-associative mapping and may contain zero or more of ``Array``, ``Record`` and ``Variable``.
 
-Auto-associative list
----------------------
+Auto-associative mapping
+------------------------
 
-The ``ObjectDictionary`` class is a mutable auto-associative list of Arrays, Records and Variables and the properties for association are index and name.
-It's possible to get a ``Array``, ``Record`` or ``Variable`` by index or name from the list.
+The ``ObjectDictionary`` class is a mutable auto-associative mapping of Arrays, Records and Variables and the properties for association are index and name.
+It's possible to get a ``Array``, ``DefStruct``, ``DefType``, ``Domain``, ``Record`` or ``Variable`` by index or name from the mapping.
 
-To add a element to the list, the ``append`` function is used. The index and the name of the elements inside the list must be unique.
+To add a element to the mapping, the ``append`` function is used. The index and the name of the elements inside the mapping must be unique.
 
 .. code:: python
 
