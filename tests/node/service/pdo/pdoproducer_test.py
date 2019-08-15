@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import Mock
 import time
 import can
 import canopen
@@ -52,6 +53,9 @@ class PDOProducerTest(unittest.TestCase):
 		node = canopen.Node("a", 1, dictionary)
 		examinee = PDOProducer()
 		
+		m = Mock()
+		examinee.add_callback("pdo", m)
+		
 		network.attach(bus1)
 		node.attach(network)
 		examinee.attach(node)
@@ -61,10 +65,14 @@ class PDOProducerTest(unittest.TestCase):
 		bus2.send(message)
 		time.sleep(0.001)
 		
+		m.assert_not_called()
+		
 		#### Test step: Remote transmission of PDO
 		message = can.Message(arbitration_id = 0x181, is_extended_id = False, is_remote_frame = True, dlc = 8)
 		bus2.send(message)
 		time.sleep(0.001)
+		
+		m.assert_called()
 		
 		examinee.detach()
 		node.detach()
@@ -80,6 +88,9 @@ class PDOProducerTest(unittest.TestCase):
 		node = canopen.Node("a", 1, dictionary)
 		examinee = PDOProducer()
 		
+		m = Mock()
+		examinee.add_callback("sync", m)
+		
 		network.attach(bus1)
 		node.attach(network)
 		examinee.attach(node)
@@ -88,6 +99,8 @@ class PDOProducerTest(unittest.TestCase):
 		message = can.Message(arbitration_id = 0x80, is_extended_id = False, data = b"\x01")
 		bus2.send(message)
 		time.sleep(0.001)
+		
+		m.assert_called()
 		
 		examinee.detach()
 		node.detach()

@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import Mock
 import time
 import can
 import canopen
@@ -52,13 +53,19 @@ class PDOConsumerTest(unittest.TestCase):
 		node = canopen.Node("a", 1, dictionary)
 		examinee = PDOConsumer()
 		
+		m = Mock()
+		examinee.add_callback("pdo", m)
+		
 		network.attach(bus1)
 		node.attach(network)
 		examinee.attach(node)
 		
+		#### Test step: PDO message
 		message = can.Message(arbitration_id = 0x201, is_extended_id = False, data = b"\x00\x00\x00\x00\x00\x00\x00\x00")
 		bus2.send(message)
 		time.sleep(0.001)
+		
+		m.assert_called()
 		
 		examinee.detach()
 		node.detach()
@@ -73,6 +80,9 @@ class PDOConsumerTest(unittest.TestCase):
 		dictionary = canopen.ObjectDictionary()
 		node = canopen.Node("a", 1, dictionary)
 		examinee = PDOConsumer()
+
+		m = Mock()
+		examinee.add_callback("sync", m)
 		
 		network.attach(bus1)
 		node.attach(network)
@@ -82,6 +92,8 @@ class PDOConsumerTest(unittest.TestCase):
 		message = can.Message(arbitration_id = 0x80, is_extended_id = False, data = b"\x01")
 		bus2.send(message)
 		time.sleep(0.001)
+		
+		m.assert_called()
 		
 		examinee.detach()
 		node.detach()

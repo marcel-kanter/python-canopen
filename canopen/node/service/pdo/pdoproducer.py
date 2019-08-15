@@ -4,6 +4,7 @@ from canopen.node.service import Service
 class PDOProducer(Service):
 	def __init__(self):
 		Service.__init__(self)
+		self._callbacks = {"sync": [], "pdo": []}
 	
 	def attach(self, node):
 		""" Attaches the ``PDOProducer`` to a ``Node``. It does NOT append or assign this ``PDOProducer`` to the ``Node``. """
@@ -24,7 +25,7 @@ class PDOProducer(Service):
 	def on_pdo(self, message):
 		if not message.is_remote_frame:
 			return
-		pass
+		self.notify("pdo")
 	
 	def on_sync(self, message):
-		pass
+		self.notify("sync")

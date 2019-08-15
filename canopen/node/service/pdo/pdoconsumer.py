@@ -4,6 +4,7 @@ from canopen.node.service import Service
 class PDOConsumer(Service):
 	def __init__(self):
 		Service.__init__(self)
+		self._callbacks = {"sync": [], "pdo": []}
 	
 	def attach(self, node):
 		""" Attaches the ``PDOConsumer`` to a ``Node``. It does NOT append or assign this ``PDOConsumer`` to the ``Node``. """
@@ -22,7 +23,7 @@ class PDOConsumer(Service):
 		Service.detach(self)
 	
 	def on_pdo(self, message):
-		pass
+		self.notify("pdo")
 	
 	def on_sync(self, message):
-		pass
+		self.notify("sync")
