@@ -73,34 +73,34 @@ class NMTSlaveTestCase(unittest.TestCase):
 		
 		#### Test step: notify
 		with self.assertRaises(ValueError):
-			examinee.notify("xxx", None)
+			examinee.notify("xxx", examinee)
 		
-		examinee.notify("start", None)
-		m_start.assert_called_once()
+		examinee.notify("start", examinee)
+		m_start.assert_called_once_with("start", examinee)
 		m_stop.assert_not_called()
 		m_pause.assert_not_called()
 		m_reset.assert_not_called()
-		m_raises.assert_called_once()
+		m_raises.assert_called_once_with("start", examinee)
 		
-		examinee.notify("stop", None)
+		examinee.notify("stop", examinee)
 		m_start.assert_called_once()
-		m_stop.assert_called_once()
+		m_stop.assert_called_once_with("stop", examinee)
 		m_pause.assert_not_called()
 		m_reset.assert_not_called()
 		m_raises.assert_called_once()
 		
-		examinee.notify("pause", None)
+		examinee.notify("pause", examinee)
 		m_start.assert_called_once()
 		m_stop.assert_called_once()
-		m_pause.assert_called_once()
+		m_pause.assert_called_once_with("pause", examinee)
 		m_reset.assert_not_called()
 		m_raises.assert_called_once()
 		
-		examinee.notify("reset", None)
+		examinee.notify("reset", examinee)
 		m_start.assert_called_once()
 		m_stop.assert_called_once()
 		m_pause.assert_called_once()
-		m_reset.assert_called_once()
+		m_reset.assert_called_once_with("reset", examinee)
 		m_raises.assert_called_once()
 		
 		#### Test step: remove callback
@@ -449,19 +449,19 @@ class NMTSlaveTestCase(unittest.TestCase):
 		bus1.shutdown()
 		bus2.shutdown()
 	
-	def __callback_start(self, event, node, *args):
-		node.nmt.state = canopen.nmt.states.OPERATIONAL
+	def __callback_start(self, event, service, *args):
+		service.node.nmt.state = canopen.nmt.states.OPERATIONAL
 	
-	def __callback_stop(self, event, node, *args):
-		node.nmt.state = canopen.nmt.states.STOPPED
+	def __callback_stop(self, event, service, *args):
+		service.node.nmt.state = canopen.nmt.states.STOPPED
 	
-	def __callback_pause(self, event, node, *args):
-		node.nmt.state = canopen.nmt.states.PRE_OPERATIONAL
+	def __callback_pause(self, event, service, *args):
+		service.node.nmt.state = canopen.nmt.states.PRE_OPERATIONAL
 	
-	def __callback_reset(self, event, node, *args):
-		node.nmt.state = canopen.nmt.states.PRE_OPERATIONAL
+	def __callback_reset(self, event, service, *args):
+		service.node.nmt.state = canopen.nmt.states.PRE_OPERATIONAL
 	
-	def __callback_raises(self, event, node, *args):
+	def __callback_raises(self, event, service, *args):
 		raise Exception()
 
 

@@ -65,7 +65,7 @@ class TIMEConsumerTestCase(unittest.TestCase):
 		message = can.Message(arbitration_id = 0x100, is_extended_id = False, data = d)
 		bus2.send(message)
 		time.sleep(0.001)
-		cb.assert_called_with("time", node, calendar.timegm((1984, 1, 1, 0, 0, 0)))
+		cb.assert_called_with("time", examinee, calendar.timegm((1984, 1, 1, 0, 0, 0)))
 		
 		#### Test step: Too short message
 		cb.reset_mock()
@@ -87,7 +87,7 @@ class TIMEConsumerTestCase(unittest.TestCase):
 		message = can.Message(arbitration_id = 0x100, is_extended_id = False, data = d)
 		bus2.send(message)
 		time.sleep(0.001)
-		cb.assert_called_with("time", node, calendar.timegm((1984, 3, 1, 0, 0, 0)))
+		cb.assert_called_with("time", examinee, calendar.timegm((1984, 3, 1, 0, 0, 0)))
 		
 		examinee.detach()
 		node.detach()

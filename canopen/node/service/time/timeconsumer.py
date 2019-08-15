@@ -32,4 +32,4 @@ class TIMEConsumer(Service):
 			return
 		
 		t = self._helper_variable.decode(message.data)
-		self.notify("time", self._node, t)
+		self.notify("time", self, t)

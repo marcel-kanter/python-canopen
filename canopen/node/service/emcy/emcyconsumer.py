@@ -27,4 +27,4 @@ class EMCYConsumer(Service):
 	def on_emcy(self, message):
 		error_code, error_register, data = struct.unpack("<HB5s", message.data)
 		
-		self.notify("emcy", self._node, error_code, error_register, data)
+		self.notify("emcy", self, error_code, error_register, data)

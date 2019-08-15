@@ -28,4 +28,4 @@ class SYNCConsumer(Service):
 			counter, = struct.unpack_from("<B", message.data)
 		else:
 			counter = None
-		self.notify("sync", self._node, counter)
+		self.notify("sync", self, counter)

@@ -74,14 +74,14 @@ class NMTSlave(Service):
 		
 		if address == self._node.id or address == 0:
 			if command == 0x01: # Start (enter NMT operational)
-				self.notify("start", self._node)
+				self.notify("start", self)
 			if command == 0x02: # Stop (enter to NMT stopped)
-				self.notify("stop", self._node)
+				self.notify("stop", self)
 			if command == 0x80: # Enter NMT pre-operational
-				self.notify("pause", self._node)
+				self.notify("pause", self)
 			if command == 0x81: # Enter NMT reset application
 				self.state = INITIALIZATION
-				self.notify("reset", self._node)
+				self.notify("reset", self)
 			if command == 0x82: # Enter NMT reset communication
 				self.state = INITIALIZATION
 				self.state = PRE_OPERATIONAL

@@ -25,10 +25,10 @@ class PDOConsumer(Service):
 	
 	def on_pdo(self, message):
 		self._data = message.data
-		self.notify("pdo")
+		self.notify("pdo", self)
 	
 	def on_sync(self, message):
-		self.notify("sync")
+		self.notify("sync", self)
 	
 	@property
 	def data(self):

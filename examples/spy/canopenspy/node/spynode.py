@@ -24,11 +24,11 @@ class SpyNode(canopen.Node):
 		self.nmt.detach()
 		canopen.Node.detach(self)
 	
-	def sync_callback(self, event, node, counter):
+	def sync_callback(self, event, service, counter):
 		if counter == None:
 			print("SYNC: no counter")
 		else:
 			print("SYNC: counter=" + str(counter))
 	
-	def time_callback(self, event, node, t):
+	def time_callback(self, event, service, t):
 		print("TIME: time=" + time.ctime(t))

@@ -26,10 +26,10 @@ class PDOProducer(Service):
 	def on_pdo(self, message):
 		if not message.is_remote_frame:
 			return
-		self.notify("pdo")
+		self.notify("pdo", self)
 	
 	def on_sync(self, message):
-		self.notify("sync")
+		self.notify("sync", self)
 	
 	@property
 	def data(self):

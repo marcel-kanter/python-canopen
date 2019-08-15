@@ -63,7 +63,7 @@ class SYNCConsumerTestCase(unittest.TestCase):
 		message = can.Message(arbitration_id = 0x80, is_extended_id = False, dlc = 0)
 		bus2.send(message)
 		time.sleep(0.001)
-		cb.assert_called_with("sync", node, None)
+		cb.assert_called_with("sync", examinee, None)
 		
 		#### Test step: Ignore RTR
 		cb.reset_mock()
@@ -79,7 +79,7 @@ class SYNCConsumerTestCase(unittest.TestCase):
 		message = can.Message(arbitration_id = 0x80, is_extended_id = False, data = d)
 		bus2.send(message)
 		time.sleep(0.001)
-		cb.assert_called_with("sync", node, value)
+		cb.assert_called_with("sync", examinee, value)
 		
 		examinee.detach()
 		node.detach()

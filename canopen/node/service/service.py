@@ -47,7 +47,8 @@ class Service(object):
 		self._callbacks[event].remove(callback)
 	
 	def notify(self, event, *args):
-		""" Call the callbacks for the given event. """
+		""" Call the callbacks for the given event. First argument for each callback is event.
+		If a callback raises an exception, it will be dropped. """
 		if not event in self._callbacks:
 			raise ValueError()
 		

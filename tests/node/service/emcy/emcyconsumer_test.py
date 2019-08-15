@@ -65,13 +65,13 @@ class EMCYConsumerTestCase(unittest.TestCase):
 		
 		#### Test step: Try to notify an unknown event
 		with self.assertRaises(ValueError):
-			consumer.notify("xxx", None, 0x1000, 0x00, b"\x00\x00\x00\x00\x00")
+			consumer.notify("xxx", consumer, 0x1000, 0x00, b"\x00\x00\x00\x00\x00")
 		
 		#### Test step: Notify a known event
-		consumer.notify("emcy", None, 0x1000, 0x00, b"\x00\x00\x00\x00\x00")
+		consumer.notify("emcy", consumer, 0x1000, 0x00, b"\x00\x00\x00\x00\x00")
 		
-		cb1.assert_called_once()
-		cb2.assert_called_once()
+		cb1.assert_called_once_with("emcy", consumer, 0x1000, 0x00, b"\x00\x00\x00\x00\x00")
+		cb2.assert_called_once_with("emcy", consumer, 0x1000, 0x00, b"\x00\x00\x00\x00\x00")
 		
 		#### Test step: Remove callbacks
 		with self.assertRaises(TypeError):
