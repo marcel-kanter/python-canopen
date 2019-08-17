@@ -553,6 +553,7 @@ class SDOClientTestCase(unittest.TestCase):
 		message_send = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
 		bus2.send(message_send)
 		
+		#### The vehicle should not have been crashed
 		self.assertTrue(vehicle.is_alive())
 		vehicle.stop()
 		vehicle.join()
@@ -784,6 +785,7 @@ class SDOClientTestCase(unittest.TestCase):
 		bus2.send(message_send)
 		time.sleep(0.001)
 		
+		#### The vehicle should not have been crashed
 		self.assertTrue(vehicle.is_alive())	
 		vehicle.stop()
 		vehicle.join()
