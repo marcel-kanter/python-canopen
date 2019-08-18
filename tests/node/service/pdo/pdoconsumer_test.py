@@ -14,8 +14,9 @@ class PDOConsumerTest(unittest.TestCase):
 		
 		test_data = [None, b"\x22", b"\x11\x00"]
 		for value in test_data:
-			examinee.data = value
-			self.assertEqual(examinee.data, value)
+			with self.subTest(value = value):
+				examinee.data = value
+				self.assertEqual(examinee.data, value)
 	
 	def test_attach_detach(self):
 		network = canopen.Network()
@@ -49,7 +50,7 @@ class PDOConsumerTest(unittest.TestCase):
 		
 		del network[node1.name]
 		del network[node2.name]
-
+	
 	def test_pdo(self):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
@@ -87,14 +88,14 @@ class PDOConsumerTest(unittest.TestCase):
 		dictionary = canopen.ObjectDictionary()
 		node = canopen.Node("a", 1, dictionary)
 		examinee = PDOConsumer()
-
+		
 		m = Mock()
 		examinee.add_callback("sync", m)
 		
 		network.attach(bus1)
 		node.attach(network)
 		examinee.attach(node)
-				
+		
 		#### Test step: Sync message
 		message = can.Message(arbitration_id = 0x80, is_extended_id = False, data = b"\x01")
 		bus2.send(message)

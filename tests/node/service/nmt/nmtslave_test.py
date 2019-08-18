@@ -26,27 +26,12 @@ class NMTSlaveTestCase(unittest.TestCase):
 		nmt.state = canopen.nmt.states.PRE_OPERATIONAL
 		self.assertEqual(nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
 		
-		#### Test step: Check if all transitions are possible
-		nmt.state = canopen.nmt.states.PRE_OPERATIONAL
-		self.assertEqual(nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
-		
-		nmt.state = canopen.nmt.states.OPERATIONAL
-		self.assertEqual(nmt.state, canopen.nmt.states.OPERATIONAL)
-		
-		nmt.state = canopen.nmt.states.STOPPED
-		self.assertEqual(nmt.state, canopen.nmt.states.STOPPED)
-		
-		nmt.state = canopen.nmt.states.PRE_OPERATIONAL
-		self.assertEqual(nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
-		
-		nmt.state = canopen.nmt.states.STOPPED
-		self.assertEqual(nmt.state, canopen.nmt.states.STOPPED)
-		
-		nmt.state = canopen.nmt.states.OPERATIONAL
-		self.assertEqual(nmt.state, canopen.nmt.states.OPERATIONAL)
-		
-		nmt.state = canopen.nmt.states.PRE_OPERATIONAL
-		self.assertEqual(nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
+		#### Test step: Check if all transitions are possible - the test cycles one time completely through all states in both directions
+		test_data = [canopen.nmt.states.PRE_OPERATIONAL, canopen.nmt.states.OPERATIONAL, canopen.nmt.states.STOPPED, canopen.nmt.states.PRE_OPERATIONAL, canopen.nmt.states.STOPPED, canopen.nmt.states.OPERATIONAL, canopen.nmt.states.PRE_OPERATIONAL]
+		for value in test_data:
+			with self.subTest(value = value):
+				nmt.state = value
+				self.assertEqual(nmt.state, value)
 	
 	def test_callback(self):
 		examinee = canopen.node.service.NMTSlave()

@@ -1,4 +1,5 @@
 import unittest
+import sys
 import struct
 import threading
 import time
@@ -8,8 +9,9 @@ import canopen.objectdictionary
 
 
 class Vehicle(threading.Thread):
-	def __init__(self, bus):
+	def __init__(self, testcase, bus):
 		threading.Thread.__init__(self)
+		self._testcase = testcase
 		self._bus = bus
 		self._terminate = threading.Event()
 	
@@ -17,26 +19,38 @@ class Vehicle(threading.Thread):
 		self._terminate.set()
 		
 	def run(self):
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		dictionary.append(canopen.objectdictionary.Variable("var", 0x5678, 0x00, canopen.objectdictionary.UNSIGNED32, "rw"))
-		examinee = canopen.RemoteNode("examinee", 1, dictionary)
-		
-		network.attach(self._bus)
-		network.append(examinee)
-		
-		examinee.set_data(0x5678, 0x00, 0x12345678)
-		
-		assert(examinee.get_data(0x5678, 0x00) == 1234)
-		
-		while not self._terminate.is_set():
-			self._terminate.wait(0.1)
-		
-		del network["examinee"]
-		
-		network.detach()
+		try:
+			network = canopen.Network()
+			dictionary = canopen.ObjectDictionary()
+			dictionary.append(canopen.objectdictionary.Variable("var", 0x5678, 0x00, canopen.objectdictionary.UNSIGNED32, "rw"))
+			examinee = canopen.RemoteNode("examinee", 1, dictionary)
+			
+			network.attach(self._bus)
+			network.append(examinee)
+			
+			examinee.set_data(0x5678, 0x00, 0x12345678)
+			
+			assert(examinee.get_data(0x5678, 0x00) == 1234)
+			
+			del network["examinee"]
+			
+			network.detach()
+		except AssertionError:
+			self._testcase.result.addFailure(self._testcase, sys.exc_info())
+		except:
+			self._testcase.result.addError(self._testcase, sys.exc_info())
 
 class RemoteNodeTestCase(unittest.TestCase):
+	def run(self, result = None):
+		if result == None:
+			self.result = self.defaultTestResult()
+		else:
+			self.result = result
+		
+		unittest.TestCase.run(self, self.result)
+		
+		return self.result
+	
 	def test_init(self):
 		dictionary = canopen.ObjectDictionary()
 		
@@ -94,7 +108,7 @@ class RemoteNodeTestCase(unittest.TestCase):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
 		
-		vehicle = Vehicle(bus1)
+		vehicle = Vehicle(self, bus1)
 		vehicle.start()
 		
 		#### Test step: set_data (download, expedited transfer)
@@ -102,7 +116,7 @@ class RemoteNodeTestCase(unittest.TestCase):
 		subindex = 0x00
 		value = 0x12345678
 		
-		message_recv = bus2.recv(0.5)
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x23, index, subindex, value))
@@ -116,7 +130,7 @@ class RemoteNodeTestCase(unittest.TestCase):
 		subindex = 0x00
 		value = 1234
 		
-		message_recv = bus2.recv()
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x40, index, subindex, 0x00000000))
@@ -126,9 +140,6 @@ class RemoteNodeTestCase(unittest.TestCase):
 		bus2.send(message_send)
 		time.sleep(0.001)
 		
-		#### The vehicle should not have been crashed
-		self.assertTrue(vehicle.is_alive())	
-		vehicle.stop()
 		vehicle.join()
 		
 		bus1.shutdown()

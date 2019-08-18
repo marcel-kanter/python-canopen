@@ -1,4 +1,5 @@
 import unittest
+import sys
 import time
 import struct
 import threading
@@ -8,221 +9,227 @@ import canopen.node.service
 
 
 class Vehicle_Download(threading.Thread):
-	def __init__(self, bus):
+	def __init__(self, testcase, bus):
 		threading.Thread.__init__(self)
+		self._testcase = testcase
 		self._bus = bus
-		self._terminate = threading.Event()
-	
-	def stop(self):
-		self._terminate.set()
 	
 	def run(self):
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		dictionary.append(canopen.objectdictionary.Record("rec", 0x1234))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("unicode", 0x1234, 0x0B, canopen.objectdictionary.UNICODE_STRING, "rw"))
-		dictionary.append(canopen.objectdictionary.Variable("var", 0x5678, 0x00, canopen.objectdictionary.UNSIGNED32, "rw"))
-		node = canopen.Node("a", 1, dictionary)
-		examinee = canopen.node.service.SDOClient()
-		
-		network.attach(self._bus)
-		node.attach(network)
-		examinee.attach(node)
-		
-		#### Test step: download, expedited transfer, abort
-		index = 0x5678
-		subindex = 0x00
-		value = 0x12345678
 		try:
+			network = canopen.Network()
+			dictionary = canopen.ObjectDictionary()
+			dictionary.append(canopen.objectdictionary.Record("rec", 0x1234))
+			dictionary["rec"].append(canopen.objectdictionary.Variable("unicode", 0x1234, 0x0B, canopen.objectdictionary.UNICODE_STRING, "rw"))
+			dictionary.append(canopen.objectdictionary.Variable("var", 0x5678, 0x00, canopen.objectdictionary.UNSIGNED32, "rw"))
+			node = canopen.Node("a", 1, dictionary)
+			examinee = canopen.node.service.SDOClient()
+			
+			network.attach(self._bus)
+			node.attach(network)
+			examinee.attach(node)
+			
+			#### Test step: download, expedited transfer, abort
+			index = 0x5678
+			subindex = 0x00
+			value = 0x12345678
+			try:
+				examinee.download(index, subindex, value)
+			except:
+				pass
+			else:
+				assert(False)
+			
+			#### Test step: download, expedited transfer, wrong index in initiate response
+			index = 0x5678
+			subindex = 0x00
+			value = 0x12345678
+			try:
+				examinee.download(index, subindex, value)
+			except:
+				pass
+			else:
+				assert(False)
+			
+			#### Test step: download, expedited transfer, timeout
+			index = 0x5678
+			subindex = 0x00
+			value = 0x12345678
+			try:
+				examinee.download(index, subindex, value)
+			except TimeoutError:
+				pass
+			else:
+				assert(False)
+			
+			#### Test step: download, expedited transfer
+			index = 0x5678
+			subindex = 0x00
+			value = 0x12345678
 			examinee.download(index, subindex, value)
+			
+			#### Test step: download, segmented transfer, toggle bit error
+			index = 0x1234
+			subindex = 0x0B
+			value = "123456"
+			try:
+				examinee.download(index, subindex, value)
+			except:
+				pass
+			else:
+				assert(False)
+			
+			#### Test step: download, segmented transfer only one segment
+			index = 0x1234
+			subindex = 0x0B
+			value = "123"
+			examinee.download(index, subindex, value)
+			
+			#### Test step: download, segmented transfer
+			index = 0x1234
+			subindex = 0x0B
+			value = "123456789ABCDE"
+			examinee.download(index, subindex, value)
+			
+			examinee.detach()
+			node.detach()
+			network.detach()
+		except AssertionError:
+			self._testcase.result.addFailure(self._testcase, sys.exc_info())
 		except:
-			pass
-		else:
-			assert(False)
-		
-		#### Test step: download, expedited transfer, wrong index in initiate response
-		index = 0x5678
-		subindex = 0x00
-		value = 0x12345678
-		try:
-			examinee.download(index, subindex, value)
-		except:
-			pass
-		else:
-			assert(False)
-		
-		#### Test step: download, expedited transfer, timeout
-		index = 0x5678
-		subindex = 0x00
-		value = 0x12345678
-		try:
-			examinee.download(index, subindex, value)
-		except TimeoutError:
-			pass
-		else:
-			assert(False)
-		
-		#### Test step: download, expedited transfer
-		index = 0x5678
-		subindex = 0x00
-		value = 0x12345678
-		examinee.download(index, subindex, value)
-		
-		#### Test step: download, segmented transfer, toggle bit error
-		index = 0x1234
-		subindex = 0x0B
-		value = "123456"
-		try:
-			examinee.download(index, subindex, value)
-		except:
-			pass
-		else:
-			assert(False)
-		
-		#### Test step: download, segmented transfer only one segment
-		index = 0x1234
-		subindex = 0x0B
-		value = "123"
-		examinee.download(index, subindex, value)
-		
-		#### Test step: download, segmented transfer
-		index = 0x1234
-		subindex = 0x0B
-		value = "123456789ABCDE"
-		examinee.download(index, subindex, value)
-		
-		while not self._terminate.is_set():
-			self._terminate.wait(0.1)
-		
-		examinee.detach()
-		node.detach()
-		network.detach()
+			self._testcase.result.addError(self._testcase, sys.exc_info())
 
 
 class Vehicle_Upload(threading.Thread):
-	def __init__(self, bus):
+	def __init__(self, testcase, bus):
 		threading.Thread.__init__(self)
+		self._testcase = testcase
 		self._bus = bus
-		self._terminate = threading.Event()
-	
-	def stop(self):
-		self._terminate.set()
 	
 	def run(self):
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		dictionary.append(canopen.objectdictionary.Record("rec", 0x1234))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("unicode", 0x1234, 0x0B, canopen.objectdictionary.UNICODE_STRING, "rw"))
-		dictionary.append(canopen.objectdictionary.Variable("var", 0x5678, 0x00, canopen.objectdictionary.UNSIGNED32, "rw"))
-		node = canopen.Node("a", 1, dictionary)
-		examinee = canopen.node.service.SDOClient()
-		
-		network.attach(self._bus)
-		node.attach(network)
-		examinee.attach(node)
-		
-		#### Test step: Upload, expedited transfer, only one valid byte sent
-		index = 0x5678
-		subindex = 0x00
-		# An exception should be raised
 		try:
+			network = canopen.Network()
+			dictionary = canopen.ObjectDictionary()
+			dictionary.append(canopen.objectdictionary.Record("rec", 0x1234))
+			dictionary["rec"].append(canopen.objectdictionary.Variable("unicode", 0x1234, 0x0B, canopen.objectdictionary.UNICODE_STRING, "rw"))
+			dictionary.append(canopen.objectdictionary.Variable("var", 0x5678, 0x00, canopen.objectdictionary.UNSIGNED32, "rw"))
+			node = canopen.Node("a", 1, dictionary)
+			examinee = canopen.node.service.SDOClient()
+			
+			network.attach(self._bus)
+			node.attach(network)
+			examinee.attach(node)
+			
+			#### Test step: Upload, expedited transfer, only one valid byte sent
+			index = 0x5678
+			subindex = 0x00
+			# An exception should be raised
+			try:
+				value = examinee.upload(index, subindex)
+			except:
+				pass
+			else:
+				assert(False)
+			
+			#### Test step: Upload, expedited transfer, abort
+			index = 0x5678
+			subindex = 0x00
+			# An exception should be raised
+			try:
+				value = examinee.upload(index, subindex)
+			except:
+				pass
+			else:
+				assert(False)
+			
+			#### Test step: Upload, expedited transfer, wrong index in initiate response
+			index = 0x5678
+			subindex = 0x00
+			# An exception should be raised
+			try:
+				value = examinee.upload(index, subindex)
+			except:
+				pass
+			else:
+				assert(False)
+			
+			#### Test step: Upload, expedited transfer, timeout
+			index = 0x5678
+			subindex = 0x00
+			# An exception should be raised
+			try:
+				value = examinee.upload(index, subindex)
+			except TimeoutError:
+				pass
+			else:
+				assert(False)
+			
+			#### Test step: Upload, expedited transfer
+			index = 0x5678
+			subindex = 0x00
 			value = examinee.upload(index, subindex)
+			
+			assert(value == 1234)
+			
+			#### Test step: Upload, segmented transfer, size not indicated
+			index = 0x1234
+			subindex = 0x0B
+			# An exception should be raised
+			try:
+				value = examinee.upload(index, subindex)
+			except:
+				pass
+			else:
+				assert(False)
+			
+			#### Test step: Upload, segmented transfer, toggle bit error
+			index = 0x1234
+			subindex = 0x0B
+			# An exception should be raised
+			try:
+				value = examinee.upload(index, subindex)
+			except:
+				pass
+			else:
+				assert(False)
+			
+			#### Test step: Upload, segmented transfer, size does not match indicated size
+			index = 0x1234
+			subindex = 0x0B
+			# An exception should be raised
+			try:
+				value = examinee.upload(index, subindex)
+			except:
+				pass
+			else:
+				assert(False)
+			
+			#### Test step: Upload, segmented transfer
+			index = 0x1234
+			subindex = 0x0B
+			value = examinee.upload(index, subindex)
+			
+			assert(value == "123456")
+			
+			examinee.detach()
+			node.detach()
+			network.detach()
+		except AssertionError:
+			self._testcase.result.addFailure(self._testcase, sys.exc_info())
 		except:
-			pass
-		else:
-			assert(False)
-		
-		#### Test step: Upload, expedited transfer, abort
-		index = 0x5678
-		subindex = 0x00
-		# An exception should be raised
-		try:
-			value = examinee.upload(index, subindex)
-		except:
-			pass
-		else:
-			assert(False)
-		
-		#### Test step: Upload, expedited transfer, wrong index in initiate response
-		index = 0x5678
-		subindex = 0x00
-		# An exception should be raised
-		try:
-			value = examinee.upload(index, subindex)
-		except:
-			pass
-		else:
-			assert(False)
-		
-		#### Test step: Upload, expedited transfer, timeout
-		index = 0x5678
-		subindex = 0x00
-		# An exception should be raised
-		try:
-			value = examinee.upload(index, subindex)
-		except TimeoutError:
-			pass
-		else:
-			assert(False)
-		
-		#### Test step: Upload, expedited transfer
-		index = 0x5678
-		subindex = 0x00
-		value = examinee.upload(index, subindex)
-		
-		# TODO: make asserting visible in test case
-		assert(value == 1234)
-		
-		#### Test step: Upload, segmented transfer, size not indicated
-		index = 0x1234
-		subindex = 0x0B
-		# An exception should be raised
-		try:
-			value = examinee.upload(index, subindex)
-		except:
-			pass
-		else:
-			assert(False)
-		
-		#### Test step: Upload, segmented transfer, toggle bit error
-		index = 0x1234
-		subindex = 0x0B
-		# An exception should be raised
-		try:
-			value = examinee.upload(index, subindex)
-		except:
-			pass
-		else:
-			assert(False)
-		
-		#### Test step: Upload, segmented transfer, size does not match indicated size
-		index = 0x1234
-		subindex = 0x0B
-		# An exception should be raised
-		try:
-			value = examinee.upload(index, subindex)
-		except:
-			pass
-		else:
-			assert(False)
-		
-		#### Test step: Upload, segmented transfer
-		index = 0x1234
-		subindex = 0x0B
-		value = examinee.upload(index, subindex)
-		
-		# TODO: make asserting visible in test case
-		assert(value == "123456")
-		
-		while not self._terminate.is_set():
-			self._terminate.wait(0.1)
-		
-		examinee.detach()
-		node.detach()
-		network.detach()
+			self._testcase.result.addError(self._testcase, sys.exc_info())
 
 
 class SDOClientTestCase(unittest.TestCase):
+	def run(self, result = None):
+		if result == None:
+			self.result = self.defaultTestResult()
+		else:
+			self.result = result
+		
+		unittest.TestCase.run(self, self.result)
+		
+		return self.result
+	
 	def test_init(self):
 		examinee = canopen.node.service.SDOClient(timeout = 2)
 		
@@ -376,7 +383,7 @@ class SDOClientTestCase(unittest.TestCase):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
 		
-		vehicle = Vehicle_Download(bus1)
+		vehicle = Vehicle_Download(self, bus1)
 		vehicle.start()
 
 		#### Test step: download, expedited transfer, abort
@@ -384,7 +391,7 @@ class SDOClientTestCase(unittest.TestCase):
 		subindex = 0x00
 		value = 0x12345678
 		
-		message_recv = bus2.recv(0.5)
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x23, index, subindex, value))
@@ -398,7 +405,7 @@ class SDOClientTestCase(unittest.TestCase):
 		subindex = 0x00
 		value = 0x12345678
 		
-		message_recv = bus2.recv(0.5)
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x23, index, subindex, value))
@@ -407,7 +414,7 @@ class SDOClientTestCase(unittest.TestCase):
 		message_send = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
 		bus2.send(message_send)
 		
-		message_recv = bus2.recv()
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index ^ 0xFF, subindex, 0x08000000))
@@ -417,14 +424,14 @@ class SDOClientTestCase(unittest.TestCase):
 		subindex = 0x00
 		value = 0x12345678
 		
-		message_recv = bus2.recv(0.5)
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x23, index, subindex, value))
 		
 		time.sleep(2)
 		
-		message_recv = bus2.recv()
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x05040000))
@@ -434,7 +441,7 @@ class SDOClientTestCase(unittest.TestCase):
 		subindex = 0x00
 		value = 0x12345678
 		
-		message_recv = bus2.recv(0.5)
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x23, index, subindex, value))
@@ -468,7 +475,7 @@ class SDOClientTestCase(unittest.TestCase):
 		message_send = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
 		bus2.send(message_send)
 
-		message_recv = bus2.recv()
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x05030000))
@@ -553,9 +560,6 @@ class SDOClientTestCase(unittest.TestCase):
 		message_send = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
 		bus2.send(message_send)
 		
-		#### The vehicle should not have been crashed
-		self.assertTrue(vehicle.is_alive())
-		vehicle.stop()
 		vehicle.join()
 		
 		bus1.shutdown()
@@ -565,15 +569,15 @@ class SDOClientTestCase(unittest.TestCase):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
 		
-		vehicle = Vehicle_Upload(bus1)
+		vehicle = Vehicle_Upload(self, bus1)
 		vehicle.start()
-				
+		
 		#### Test step: Upload, expedited transfer, only one valid byte sent
 		index = 0x5678
 		subindex = 0x00
 		value = 1234
 		# Initiation
-		message_recv = bus2.recv()
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x40, index, subindex, 0x00000000))
@@ -583,7 +587,7 @@ class SDOClientTestCase(unittest.TestCase):
 		bus2.send(message_send)
 		time.sleep(0.001)
 		
-		message_recv = bus2.recv()
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x06070010))
@@ -593,7 +597,7 @@ class SDOClientTestCase(unittest.TestCase):
 		subindex = 0x00
 		value = 1234
 		# Initiation
-		message_recv = bus2.recv()
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x40, index, subindex, 0x00000000))
@@ -608,7 +612,7 @@ class SDOClientTestCase(unittest.TestCase):
 		subindex = 0x00
 		value = 1234
 		# Initiation
-		message_recv = bus2.recv()
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x40, index, subindex, 0x00000000))
@@ -618,24 +622,24 @@ class SDOClientTestCase(unittest.TestCase):
 		bus2.send(message_send)
 		time.sleep(0.001)
 		
-		message_recv = bus2.recv()
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index ^ 0xFF, subindex, 0x08000000))
-
+		
 		#### Test step: Upload, expedited transfer, timeout
 		index = 0x5678
 		subindex = 0x00
 		value = 1234
 		# Initiation
-		message_recv = bus2.recv()
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x40, index, subindex, 0x00000000))
 		
 		time.sleep(2)
 		
-		message_recv = bus2.recv()
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x05040000))
@@ -645,7 +649,7 @@ class SDOClientTestCase(unittest.TestCase):
 		subindex = 0x00
 		value = 1234
 		# Initiation
-		message_recv = bus2.recv()
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x40, index, subindex, 0x00000000))
@@ -660,7 +664,7 @@ class SDOClientTestCase(unittest.TestCase):
 		subindex = 0x0B
 		value = "123456"
 		# Initiation
-		message_recv = bus2.recv()
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x40, index, subindex, 0x00000000))
@@ -670,7 +674,7 @@ class SDOClientTestCase(unittest.TestCase):
 		bus2.send(message_send)
 		time.sleep(0.001)
 		
-		message_recv = bus2.recv()
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x05040001))
@@ -680,7 +684,7 @@ class SDOClientTestCase(unittest.TestCase):
 		subindex = 0x0B
 		value = "123456"
 		# Initiation
-		message_recv = bus2.recv()
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x40, index, subindex, 0x00000000))
@@ -691,7 +695,7 @@ class SDOClientTestCase(unittest.TestCase):
 		time.sleep(0.001)
 		
 		# First segment
-		message_recv = bus2.recv()
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<B7s", 0x60, b"\x00\x00\x00\x00\x00\x00\x00"))
@@ -701,7 +705,7 @@ class SDOClientTestCase(unittest.TestCase):
 		bus2.send(message_send)
 		time.sleep(0.001)
 		
-		message_recv = bus2.recv()
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x05030000))
@@ -711,7 +715,7 @@ class SDOClientTestCase(unittest.TestCase):
 		subindex = 0x0B
 		value = "123456"
 		# Initiation
-		message_recv = bus2.recv()
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x40, index, subindex, 0x00000000))
@@ -722,7 +726,7 @@ class SDOClientTestCase(unittest.TestCase):
 		time.sleep(0.001)
 		
 		# First segment
-		message_recv = bus2.recv()
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<B7s", 0x60, b"\x00\x00\x00\x00\x00\x00\x00"))
@@ -733,7 +737,7 @@ class SDOClientTestCase(unittest.TestCase):
 		time.sleep(0.001)
 		
 		# Second and last segment
-		message_recv = bus2.recv()
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<B7s", 0x70, b"\x00\x00\x00\x00\x00\x00\x00"))
@@ -743,7 +747,7 @@ class SDOClientTestCase(unittest.TestCase):
 		bus2.send(message_send)
 		time.sleep(0.001)
 		
-		message_recv = bus2.recv()
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x06070010))
@@ -753,7 +757,7 @@ class SDOClientTestCase(unittest.TestCase):
 		subindex = 0x0B
 		value = "123456"
 		# Initiation
-		message_recv = bus2.recv()
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x40, index, subindex, 0x00000000))
@@ -764,7 +768,7 @@ class SDOClientTestCase(unittest.TestCase):
 		time.sleep(0.001)
 		
 		# First segment
-		message_recv = bus2.recv()
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<B7s", 0x60, b"\x00\x00\x00\x00\x00\x00\x00"))
@@ -775,7 +779,7 @@ class SDOClientTestCase(unittest.TestCase):
 		time.sleep(0.001)
 		
 		# Second and last segment
-		message_recv = bus2.recv()
+		message_recv = bus2.recv(1)
 		self.assertEqual(message_recv.arbitration_id, 0x601)
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.data, struct.pack("<B7s", 0x70, b"\x00\x00\x00\x00\x00\x00\x00"))
@@ -785,9 +789,6 @@ class SDOClientTestCase(unittest.TestCase):
 		bus2.send(message_send)
 		time.sleep(0.001)
 		
-		#### The vehicle should not have been crashed
-		self.assertTrue(vehicle.is_alive())	
-		vehicle.stop()
 		vehicle.join()
 		
 		bus1.shutdown()

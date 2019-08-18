@@ -95,15 +95,17 @@ class EMCYProducerTestCase(unittest.TestCase):
 		
 		
 		#### Test step: Send some error_codes
-		for test_data in [(NO_ERROR, 0x00), (GENERIC_ERROR, 0x10), (SOFTWARE_ERROR, 0x14)]:
-			error_code = test_data[0]
-			error_register = test_data[1]
-			data = b"\x01\x02"
-			examinee.send(error_code, error_register, data)
-			message_recv = bus2.recv(1)
-			self.assertEqual(message_recv.arbitration_id, 0x80 + node.id)
-			self.assertEqual(message_recv.is_extended_id, False)
-			self.assertEqual(message_recv.data, struct.pack("<HB5s", error_code, error_register, b"\x01\x02\x00\x00\x00"))
+		test_data = [(NO_ERROR, 0x00), (GENERIC_ERROR, 0x10), (SOFTWARE_ERROR, 0x14)]
+		for value in test_data:
+			with self.subTest(value = value):
+				error_code = value[0]
+				error_register = value[1]
+				data = b"\x01\x02"
+				examinee.send(error_code, error_register, data)
+				message_recv = bus2.recv(1)
+				self.assertEqual(message_recv.arbitration_id, 0x80 + node.id)
+				self.assertEqual(message_recv.is_extended_id, False)
+				self.assertEqual(message_recv.data, struct.pack("<HB5s", error_code, error_register, b"\x01\x02\x00\x00\x00"))
 		
 		examinee.detach()
 		node.detach()
