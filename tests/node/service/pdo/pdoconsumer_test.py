@@ -59,21 +59,23 @@ class PDOConsumerTest(unittest.TestCase):
 		node = canopen.Node("a", 1, dictionary)
 		examinee = PDOConsumer()
 		
-		m = Mock()
-		examinee.add_callback("pdo", m)
+		cb1 = Mock()
+		examinee.add_callback("pdo", cb1)
 		
 		network.attach(bus1)
 		node.attach(network)
 		examinee.attach(node)
 		
 		#### Test step: PDO message
-		message = can.Message(arbitration_id = 0x201, is_extended_id = False, data = b"\x11\x22\x33\x44\x55\x66\x77\x88")
-		bus2.send(message)
-		time.sleep(0.001)
-		
-		m.assert_called()
-		
-		self.assertEqual(examinee.data, b"\x11\x22\x33\x44\x55\x66\x77\x88")
+		test_data = [b"\x11\x22\x33\x44\x55\x66\x77\x88", b"\x00", b""]
+		for data in test_data:
+			with self.subTest("PDO message", data = data):
+				cb1.reset_mock()
+				message = can.Message(arbitration_id = 0x201, is_extended_id = False, data = data)
+				bus2.send(message)
+				time.sleep(0.001)
+				cb1.assert_called()
+				self.assertEqual(examinee.data, data)
 		
 		examinee.detach()
 		node.detach()
@@ -89,19 +91,22 @@ class PDOConsumerTest(unittest.TestCase):
 		node = canopen.Node("a", 1, dictionary)
 		examinee = PDOConsumer()
 		
-		m = Mock()
-		examinee.add_callback("sync", m)
+		cb1 = Mock()
+		examinee.add_callback("sync", cb1)
 		
 		network.attach(bus1)
 		node.attach(network)
 		examinee.attach(node)
 		
 		#### Test step: Sync message
-		message = can.Message(arbitration_id = 0x80, is_extended_id = False, data = b"\x01")
-		bus2.send(message)
-		time.sleep(0.001)
-		
-		m.assert_called()
+		test_data = [None, b"", b"\x01"]
+		for data in test_data:
+			with self.subTest("sync message", data = data):
+				cb1.reset_mock()
+				message = can.Message(arbitration_id = 0x80, is_extended_id = False, data = data)
+				bus2.send(message)
+				time.sleep(0.001)
+				cb1.assert_called()
 		
 		examinee.detach()
 		node.detach()

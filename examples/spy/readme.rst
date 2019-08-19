@@ -84,8 +84,8 @@ spy.py
 Step 3. Spy service for NMT protocol
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Each ``Node`` has services with care about the can messages. Create a service for the NMT related messages.
-The services are usually created at creation of the node, attached to the node, when the node is attached to the network and detached when the node is detached from the network.
+Each ``Node`` has services which care about the can messages. Create a service for the NMT related messages.
+The services are usually created at creation of the node. They get attached to the node when the node is attached to the network and detached when the node is detached from the network.
 
 canopenspy/node/service/nmt/nmtspy.py
 

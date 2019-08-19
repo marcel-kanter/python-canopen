@@ -93,15 +93,31 @@ class EMCYConsumerTestCase(unittest.TestCase):
 		node = canopen.Node("a", 1, dictionary)
 		consumer = canopen.node.service.EMCYConsumer()
 		
+		cb1 = Mock()
+		
 		network.attach(bus1)
 		node.attach(network)
 		consumer.attach(node)
 		
-		#### Test step: EMCY write "no error, or error reset"
-		d = struct.pack("<HB5s", 0x0000, 0x00, b"\x00\x00\x00\x00\x00")
-		message = can.Message(arbitration_id = 0x80 + node.id, is_extended_id = False, data = d)
-		bus2.send(message)
-		time.sleep(0.001)
+		consumer.add_callback("emcy", cb1)
+		
+		#### Test step: EMCY write no error, or error reset
+		with self.subTest("EMCY write no error, or error reset"):
+			cb1.reset_mock()
+			d = struct.pack("<HB5s", 0x0000, 0x00, b"\x00\x00\x00\x00\x00")
+			message = can.Message(arbitration_id = 0x80 + node.id, is_extended_id = False, data = d)
+			bus2.send(message)
+			time.sleep(0.001)
+			cb1.assert_called_once_with("emcy", consumer, 0x0000, 0x00, b"\x00\x00\x00\x00\x00")
+		
+		#### Test step: EMCY write with malformed message - too short message
+		with self.subTest("EMCY write with malformed message - too short message"):
+			cb1.reset_mock()
+			d = struct.pack("<HB4s", 0x0000, 0x00, b"\x00\x00\x00\x00")
+			message = can.Message(arbitration_id = 0x80 + node.id, is_extended_id = False, data = d)
+			bus2.send(message)
+			time.sleep(0.001)
+			cb1.assert_not_called()
 		
 		consumer.detach()
 		node.detach()

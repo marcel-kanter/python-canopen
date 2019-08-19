@@ -17,6 +17,7 @@ class EMCYProducer(Service):
 		Service.detach(self)
 	
 	def send(self, error_code, error_register, data = None):
+		""" Sends an emcy message on the bus. """
 		if error_code < 0 or error_code > 0xFFFF:
 			raise ValueError()
 		if error_register < 0 or error_register > 0xFF:
