@@ -36,13 +36,21 @@ class PDOConsumerTest(unittest.TestCase):
 		with self.assertRaises(TypeError):
 			examinee.attach(None)
 		
+		test_data = [-1, 0x100000000]
+		for value in test_data:
+			with self.subTest(value = value):
+				with self.assertRaises(ValueError):
+					examinee.attach(node1, value, 0)
+				with self.assertRaises(ValueError):
+					examinee.attach(node1, 0, value)
+		
 		examinee.attach(node1)
 		self.assertEqual(examinee.node, node1)
 		
 		with self.assertRaises(ValueError):
 			examinee.attach(node1)
 		
-		examinee.attach(node2)
+		examinee.attach(node2, (1 << 29) | 0x201, (1 << 29) | 0x80)
 		self.assertEqual(examinee.node, node2)
 		
 		examinee.detach()
@@ -64,6 +72,7 @@ class PDOConsumerTest(unittest.TestCase):
 		
 		network.attach(bus1)
 		node.attach(network)
+		
 		examinee.attach(node)
 		
 		#### Test step: PDO message
@@ -77,7 +86,22 @@ class PDOConsumerTest(unittest.TestCase):
 				cb1.assert_called()
 				self.assertEqual(examinee.data, data)
 		
+		#### Test step: PDO message, ignore differend extended frame type
+		cb1.reset_mock()
+		message = can.Message(arbitration_id = 0x201, is_extended_id = True, data = b"\x11\x22\x33\x44\x55\x66\x77\x88")
+		bus2.send(message)
+		time.sleep(0.01)
+		cb1.assert_not_called()
+		
+		#### Test step: PDO message, ignore remote frame
+		cb1.reset_mock()
+		message = can.Message(arbitration_id = 0x201, is_extended_id = False, is_remote_frame = True, dlc = 1)
+		bus2.send(message)
+		time.sleep(0.01)
+		cb1.assert_not_called()
+		
 		examinee.detach()
+		
 		node.detach()
 		network.detach()
 		bus1.shutdown()
@@ -107,6 +131,20 @@ class PDOConsumerTest(unittest.TestCase):
 				bus2.send(message)
 				time.sleep(0.001)
 				cb1.assert_called()
+		
+		#### Test step: sync message, ignore remote frame
+		cb1.reset_mock()
+		message = can.Message(arbitration_id = 0x80, is_extended_id = True, data = b"\x01")
+		bus2.send(message)
+		time.sleep(0.001)
+		cb1.assert_not_called()
+		
+		#### Test step: sync message, ignore remote frame
+		cb1.reset_mock()
+		message = can.Message(arbitration_id = 0x80, is_extended_id = False, is_remote_frame = True, dlc = 1)
+		bus2.send(message)
+		time.sleep(0.001)
+		cb1.assert_not_called()
 		
 		examinee.detach()
 		node.detach()
