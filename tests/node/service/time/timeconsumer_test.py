@@ -27,15 +27,21 @@ class TIMEConsumerTestCase(unittest.TestCase):
 			examinee.detach()
 		
 		with self.assertRaises(TypeError):
-			examinee.attach(None)
+			examinee.attach(None, 0x100)
 		
-		examinee.attach(node1)
+		test_data = [-1, 0x100000000]
+		for value in test_data:
+			with self.subTest(value = value):
+				with self.assertRaises(ValueError):
+					examinee.attach(node1, value)
+		
+		examinee.attach(node1, 0x100)
 		self.assertEqual(examinee.node, node1)
 		
 		with self.assertRaises(ValueError):
-			examinee.attach(node1)
+			examinee.attach(node1, 0x100)
 		
-		examinee.attach(node2)
+		examinee.attach(node2, (1 <<29) | 0x100)
 		self.assertEqual(examinee.node, node2)
 		
 		examinee.detach()
@@ -77,6 +83,14 @@ class TIMEConsumerTestCase(unittest.TestCase):
 		#### Test step: Ignore RTR
 		cb.reset_mock()
 		message = can.Message(arbitration_id = 0x100, is_extended_id = False, is_remote_frame = True, dlc = 6)
+		bus2.send(message)
+		time.sleep(0.001)
+		cb.assert_not_called()
+		
+		#### Test step: Message with some time - 60 days after CANopen epoch (1984 is a leap year) but extended frame bit differs to cob_id
+		cb.reset_mock()
+		d = struct.pack("<LH", 0, 60)
+		message = can.Message(arbitration_id = 0x100, is_extended_id = True, data = d)
 		bus2.send(message)
 		time.sleep(0.001)
 		cb.assert_not_called()

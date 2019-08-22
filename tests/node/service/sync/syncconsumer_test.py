@@ -28,13 +28,19 @@ class SYNCConsumerTestCase(unittest.TestCase):
 		with self.assertRaises(TypeError):
 			examinee.attach(None)
 		
+		test_data = [-1, 0x100000000]
+		for value in test_data:
+			with self.subTest(value = value):
+				with self.assertRaises(ValueError):
+					examinee.attach(node1, value)
+		
 		examinee.attach(node1)
 		self.assertEqual(examinee.node, node1)
 		
 		with self.assertRaises(ValueError):
 			examinee.attach(node1)
 		
-		examinee.attach(node2)
+		examinee.attach(node2, (1 << 29) | 0x80)
 		self.assertEqual(examinee.node, node2)
 		
 		examinee.detach()
@@ -69,7 +75,14 @@ class SYNCConsumerTestCase(unittest.TestCase):
 		cb.reset_mock()
 		message = can.Message(arbitration_id = 0x80, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
-		time.sleep(0.001)
+		time.sleep(0.01)
+		cb.assert_not_called()
+		
+		#### Test step: ignore frame with extended frame bit that differs from cob_id
+		cb.reset_mock()
+		message = can.Message(arbitration_id = 0x80, is_extended_id = True, dlc = 0)
+		bus2.send(message)
+		time.sleep(0.01)
 		cb.assert_not_called()
 		
 		#### Test step: sync message with counter

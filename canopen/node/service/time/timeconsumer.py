@@ -9,24 +9,38 @@ class TIMEConsumer(Service):
 	
 	def __init__(self):
 		Service.__init__(self)
-		self._identifier = 0x100
 		self._callbacks = {"time": []}
 	
-	def attach(self, node):
+	def attach(self, node, cob_id_time = None):
 		""" Attaches the ``TIMEConsumer`` to a ``Node``. It does NOT append or assign this ``TIMEConsumer`` to the ``Node``. """
+		if cob_id_time == None:
+			cob_id_time = 0x100
+		if cob_id_time < 0 or cob_id_time > 0xFFFFFFFF:
+			raise ValueError()
+		
 		Service.attach(self, node)
-		self._node.network.subscribe(self.on_time, self._identifier)
+		self._cob_id_time = cob_id_time
+		
+		if self._cob_id_time & (1 << 29):
+			self._node.network.subscribe(self.on_time, self._cob_id_time & 0x1FFFFFFF)
+		else:
+			self._node.network.subscribe(self.on_time, self._cob_id_time & 0x7FF)
 	
 	def detach(self):
 		""" Detaches the ``TIMEConsumer`` from the ``Node``. It does NOT remove or delete the ``TIMEConsumer`` from the ``Node``. """
 		if self._node == None:
 			raise RuntimeError()
-		self._node.network.unsubscribe(self.on_time, self._identifier)
+		if self._cob_id_time & (1 << 29):
+			self._node.network.unsubscribe(self.on_time, self._cob_id_time & 0x1FFFFFFF)
+		else:
+			self._node.network.unsubscribe(self.on_time, self._cob_id_time & 0x7FF)
 		Service.detach(self)
 	
 	def on_time(self, message):
 		""" Message handler for incoming SYNC messages. """
 		if message.is_remote_frame:
+			return
+		if message.is_extended_id != bool(self._cob_id_time & (1 << 29)):
 			return
 		if message.dlc < 6:
 			return

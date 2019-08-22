@@ -25,15 +25,21 @@ class TIMEProducerTestCase(unittest.TestCase):
 			examinee.detach()
 		
 		with self.assertRaises(TypeError):
-			examinee.attach(None)
+			examinee.attach(None, 0x100)
+		
+		test_data = [-1, 0x100000000]
+		for value in test_data:
+			with self.subTest(value = value):
+				with self.assertRaises(ValueError):
+					examinee.attach(node1, value)
 		
 		examinee.attach(node1)
 		self.assertEqual(examinee.node, node1)
 		
 		with self.assertRaises(ValueError):
-			examinee.attach(node1)
+			examinee.attach(node1, 0x100)
 		
-		examinee.attach(node2)
+		examinee.attach(node2, (1 <<29) | 0x100)
 		self.assertEqual(examinee.node, node2)
 		
 		examinee.detach()
@@ -52,27 +58,32 @@ class TIMEProducerTestCase(unittest.TestCase):
 		
 		network.attach(bus1)
 		node.attach(network)
-		examinee.attach(node)
 		
-		#### Test step: Send CANopen epoch
-		value = calendar.timegm((1984, 1, 1, 0, 0, 0))
-		examinee.send(value)
-		
-		message_recv = bus2.recv(1)
-		self.assertEqual(message_recv.arbitration_id, 0x100)
-		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<LH", 0, 0))
-		
-		#### Test step: Send 60 days after CANopen epoch (1984 is a leap year)
-		value = calendar.timegm((1984, 3, 1, 0, 0, 0))
-		examinee.send(value)
+		test_data = [0x100, (1 << 29) | 0x100]
+		for cob_id in test_data:
+			with self.subTest(cob_id = cob_id):
+				examinee.attach(node, cob_id)
 				
-		message_recv = bus2.recv(1)
-		self.assertEqual(message_recv.arbitration_id, 0x100)
-		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<LH", 0, 60))
+				#### Test step: Send CANopen epoch
+				value = calendar.timegm((1984, 1, 1, 0, 0, 0))
+				examinee.send(value)
+				
+				message_recv = bus2.recv(1)
+				self.assertEqual(message_recv.arbitration_id, cob_id & 0x7FF)
+				self.assertEqual(message_recv.is_extended_id, bool(cob_id & (1 << 29)))
+				self.assertEqual(message_recv.data, struct.pack("<LH", 0, 0))
+				
+				#### Test step: Send 60 days after CANopen epoch (1984 is a leap year)
+				value = calendar.timegm((1984, 3, 1, 0, 0, 0))
+				examinee.send(value)
+						
+				message_recv = bus2.recv(1)
+				self.assertEqual(message_recv.arbitration_id, cob_id & 0x7FF)
+				self.assertEqual(message_recv.is_extended_id, bool(cob_id & (1 << 29)))
+				self.assertEqual(message_recv.data, struct.pack("<LH", 0, 60))
+				
+				examinee.detach()
 		
-		examinee.detach()
 		node.detach()
 		network.detach()
 		bus1.shutdown()

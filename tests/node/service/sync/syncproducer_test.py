@@ -27,13 +27,19 @@ class SYNCProducerTestCase(unittest.TestCase):
 		with self.assertRaises(TypeError):
 			examinee.attach(None)
 		
+		test_data = [-1, 0x100000000]
+		for value in test_data:
+			with self.subTest(value = value):
+				with self.assertRaises(ValueError):
+					examinee.attach(node1, value)
+		
 		examinee.attach(node1)
 		self.assertEqual(examinee.node, node1)
 		
 		with self.assertRaises(ValueError):
 			examinee.attach(node1)
 		
-		examinee.attach(node2)
+		examinee.attach(node2, (1 << 29) | 0x80)
 		self.assertEqual(examinee.node, node2)
 		
 		examinee.detach()
@@ -52,27 +58,32 @@ class SYNCProducerTestCase(unittest.TestCase):
 		
 		network.attach(bus1)
 		node.attach(network)
-		examinee.attach(node)
 		
-		#### Test step: Legacy sync message without counter
-		value = None
-		examinee.send(value)
+		test_data = [0x80, (1 << 29) | 0x80]
+		for cob_id in test_data:
+			with self.subTest(cob_id = cob_id):
+				examinee.attach(node, cob_id)
+				
+				#### Test step: Legacy sync message without counter
+				value = None
+				examinee.send(value)
+				
+				message_recv = bus2.recv(1)
+				self.assertEqual(message_recv.arbitration_id, cob_id & 0x7FF)
+				self.assertEqual(message_recv.is_extended_id, bool(cob_id & (1 << 29)))
+				self.assertEqual(message_recv.dlc, 0)
+				
+				#### Test step: sync message with counter
+				value = 111
+				examinee.send(value)
+				
+				message_recv = bus2.recv(1)
+				self.assertEqual(message_recv.arbitration_id, cob_id & 0x7FF)
+				self.assertEqual(message_recv.is_extended_id, bool(cob_id & (1 << 29)))
+				self.assertEqual(message_recv.data, struct.pack("<B", value))
+				
+				examinee.detach()
 		
-		message_recv = bus2.recv(1)
-		self.assertEqual(message_recv.arbitration_id, 0x80)
-		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.dlc, 0)
-		
-		#### Test step: sync message with counter
-		value = 111
-		examinee.send(value)
-		
-		message_recv = bus2.recv(1)
-		self.assertEqual(message_recv.arbitration_id, 0x80)
-		self.assertEqual(message_recv.is_extended_id, False)
-		self.assertEqual(message_recv.data, struct.pack("<B", value))
-		
-		examinee.detach()
 		node.detach()
 		network.detach()
 		bus1.shutdown()
