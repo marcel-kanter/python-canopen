@@ -11,7 +11,7 @@ from .domain import Domain
 class Node(collections.abc.Collection):
 	""" Representation of a CANopen node.
 	
-	This class is a basic representation of a CANopen node. It is an auto-associative list and may contain zero or more variables, records or arrays.
+	This class is a basic representation of a CANopen node. It is an auto-associative mapping and may contain zero or more variables, records or arrays.
 	"""
 	def __init__(self, name, node_id, dictionary):
 		if node_id < 1 or node_id > 127:

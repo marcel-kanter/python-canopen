@@ -5,8 +5,8 @@ This class is the representation of a DefStruct of an object dictionary. It is a
 The Variable of subindex 0x00 must have the data type UNSIGNED8. This is the number of elements in the structure (the highest subindex supported and not counting subindex 0x00 and 0xFF).
 All other variables (subindex 0x01 - 0xFE) must have the data type UNSIGNED8 or UNSIGNED16. They provide the datatype code.
 
-Auto-associative list
----------------------
+Auto-associative mapping
+------------------------
 
 The ``DefStruct`` class is a mutable auto-associative mapping of Variables and the properties for association are subindex and name.
 It's possible to get a ``Variable`` by subindex or name from the list.

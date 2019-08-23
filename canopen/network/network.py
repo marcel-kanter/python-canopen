@@ -6,7 +6,7 @@ import canopen.node
 class Network(collections.abc.Collection):
 	""" Representation of a CANopen network.
 	
-	This class is the representation of one CANopen network. It is a mutable auto-associative list and may contain zero or more CANopen nodes.
+	This class is the representation of one CANopen network. It is a mutable auto-associative mapping and may contain zero or more CANopen nodes.
 
 	To use Network together with a CAN bus, first the CAN bus instance must be created and then the network attached to the bus.
 	In the end, the network may be detached from the CAN bus.

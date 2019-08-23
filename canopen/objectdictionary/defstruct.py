@@ -8,7 +8,7 @@ from .variable import Variable
 class DefStruct(Record):
 	""" Representation of a DefStruct of an object dictionary.
 	
-	This class is the representation of a DefStruct of an object dictionary. It is a mutable auto-associative list and may contain zero or more variables.
+	This class is the representation of a DefStruct of an object dictionary. It is a mutable auto-associative mapping and may contain zero or more variables.
 	"""
 	def __init__(self, name, index):
 		Record.__init__(self, name, index)
