@@ -4,13 +4,29 @@ Network
 This class is the representation of a CANopen network. It is a mutable auto-associative mapping and may contain zero or more CANopen nodes.
 
 To use Network together with a CAN bus, first the CAN bus instance must be created and then the network attached to the bus.
-In the end, the network may be detached from the CAN bus.
+In the end, the network must be detached from the CAN bus.
 
 Attach/detach
 -------------
 
 The attach/detach pattern is used create a link from the ``Network`` (child) to the ``Bus`` (parent). It only creates a functional relationship between them.
 The structural relation between the child and the parent is handled by other means.
+
+.. code:: python
+
+	# First create a bus
+	bus = can.Bus(interface = "virtual", channel = 0)
+	# It's possible to use the can bus now, as described in the python-can documentation. You may send and receive messages, etc.
+	
+	# Create the canopen Network instance and attach it to the bus
+	network = canopen.Network()
+	network.attach(bus)
+	
+	# Detach the canopen Network before shutdown of the can bus.
+	network.detach()
+	
+	# Clean up
+	bus.shutdown()
 
 Auto-associative mapping
 ------------------------
@@ -39,4 +55,4 @@ If the id and the name belong to the same node, the two lines will retrieve the 
 	# Use the id
 	node_1 = the_network[1]
 	# Use the name
-	node_1 = the_network["A"]
+	node_A = the_network["A"]
