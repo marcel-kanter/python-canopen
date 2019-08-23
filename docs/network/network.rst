@@ -34,7 +34,7 @@ Auto-associative mapping
 The ``Network`` class is a mutable auto-associative mapping of nodes and the properties for association are id and name.
 It's possible to get a node by id or name from the mapping.
 
-To add a node to the mapping, the ``append`` function is used. The id and the name of the nodes inside the mapping must be unique.
+To add a node to the mapping, the ``add`` function is used. The id and the name of the nodes inside the mapping must be unique.
 
 .. code:: python
 
@@ -43,9 +43,9 @@ To add a node to the mapping, the ``append`` function is used. The id and the na
 	one_node = canopen.Node("A", 1, dictionary)
 	other_node = canopen.Node("B", 1, dictionary)
 	
-	the_network.append(one_node)
+	the_network.add(one_node)
 	# This fails, because there is already a node with id 1.
-	the_network.append(other_node)
+	the_network.add(other_node)
 
 After adding the node to the list, it can be accessed via subscription.
 If the id and the name belong to the same node, the two lines will retrieve the same node:

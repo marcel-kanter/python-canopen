@@ -18,7 +18,7 @@ if __name__ == "__main__":
 	node = canopen.LocalNode("node", 1, dictionary)
 	
 	network.attach(bus)
-	network.append(node)
+	network.add(node)
 	
 	print("press CTRL-C to quit")
 	

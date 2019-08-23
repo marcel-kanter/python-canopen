@@ -23,7 +23,7 @@ class SDOServer(Service):
 		self._timeout = timeout
 	
 	def attach(self, node):
-		""" Attaches the ``SDOServer`` to a ``Node``. It does NOT append or assign this ``SDOServer`` to the ``Node``. """
+		""" Attaches the ``SDOServer`` to a ``Node``. It does NOT add or assign this ``SDOServer`` to the ``Node``. """
 		Service.attach(self, node)
 		self._state = 0x80
 		self._identifier_rx = 0x600 + self._node.id

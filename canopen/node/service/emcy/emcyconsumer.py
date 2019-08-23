@@ -12,7 +12,7 @@ class EMCYConsumer(Service):
 		self._callbacks = {"emcy": []}
 	
 	def attach(self, node):
-		""" Attaches the ``EMCYConsumer`` to a ``Node``. It does NOT append or assign this ``EMCYConsumer`` to the ``Node``. """
+		""" Attaches the ``EMCYConsumer`` to a ``Node``. It does NOT add or assign this ``EMCYConsumer`` to the ``Node``. """
 		Service.attach(self, node)
 		self._identifier_rx = 0x80 + self._node.id
 		self._node.network.subscribe(self.on_emcy, self._identifier_rx)

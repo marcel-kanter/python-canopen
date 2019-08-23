@@ -8,7 +8,7 @@ class SYNCProducer(Service):
 		Service.__init__(self)
 	
 	def attach(self, node, cob_id_sync = None):
-		""" Attaches the ``SYNCProducer`` to a ``Node``. It does NOT append or assign this ``SYNCProducer`` to the ``Node``. """
+		""" Attaches the ``SYNCProducer`` to a ``Node``. It does NOT add or assign this ``SYNCProducer`` to the ``Node``. """
 		if cob_id_sync == None:
 			cob_id_sync = 0x80
 		if cob_id_sync < 0 or cob_id_sync > 0xFFFFFFFF:

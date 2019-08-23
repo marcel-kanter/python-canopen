@@ -14,7 +14,7 @@ class RemoteNode(Node):
 		self.sdo = SDOClient()
 	
 	def attach(self, network):
-		""" Attach the node and then all services to the network. It does NOT append or assign the node to the network."""
+		""" Attach the node and then all services to the network. It does NOT add or assign the node to the network."""
 		Node.attach(self, network)
 		self.nmt.attach(self)
 		self.sdo.attach(self)

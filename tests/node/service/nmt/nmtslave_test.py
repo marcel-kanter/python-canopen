@@ -149,7 +149,7 @@ class NMTSlaveTestCase(unittest.TestCase):
 		node.nmt.add_callback("reset", self.__callback_reset)
 		
 		network.attach(bus)
-		network.append(node)
+		network.add(node)
 		
 		self.assertEqual(node.nmt.state, 0x00)
 		
@@ -258,7 +258,7 @@ class NMTSlaveTestCase(unittest.TestCase):
 		node.nmt.add_callback("reset", self.__callback_reset)
 		
 		network.attach(bus1)
-		network.append(node)
+		network.add(node)
 		
 		#### Test step: Missing data
 		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, data = [])
@@ -401,7 +401,7 @@ class NMTSlaveTestCase(unittest.TestCase):
 		node = canopen.LocalNode("a", 0x0A, dictionary)
 		
 		network.attach(bus1)
-		network.append(node)
+		network.add(node)
 		
 		node.nmt.send_heartbeat()
 		node.nmt.state = canopen.nmt.states.PRE_OPERATIONAL

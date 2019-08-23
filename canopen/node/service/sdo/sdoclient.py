@@ -25,7 +25,7 @@ class SDOClient(Service):
 		self._timeout = timeout
 	
 	def attach(self, node):
-		""" Attaches the ``SDOClient`` to a ``Node``. It does NOT append or assign this ``SDOClient`` to the ``Node``. """
+		""" Attaches the ``SDOClient`` to a ``Node``. It does NOT add or assign this ``SDOClient`` to the ``Node``. """
 		Service.attach(self, node)
 		self._state = 0x80
 		self._identifier_rx = 0x580 + self._node.id

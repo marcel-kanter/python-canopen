@@ -9,7 +9,7 @@ class PDOConsumer(SYNCConsumer):
 		self._data = None
 	
 	def attach(self, node, cob_id_rx = None, cob_id_sync = None):
-		""" Attaches the ``PDOConsumer`` to a ``Node``. It does NOT append or assign this ``PDOConsumer`` to the ``Node``. """
+		""" Attaches the ``PDOConsumer`` to a ``Node``. It does NOT add or assign this ``PDOConsumer`` to the ``Node``. """
 		if not isinstance(node, canopen.node.Node):
 			raise TypeError()
 		if cob_id_rx == None:

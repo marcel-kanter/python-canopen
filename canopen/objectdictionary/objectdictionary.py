@@ -57,8 +57,8 @@ class ObjectDictionary(collections.abc.Collection):
 		del self._items_index[item.index]
 		del self._items_name[item.name]
 	
-	def append(self, value):
-		""" Appends a variable, record or array to the object dictionary. It may be accessed later by the name or the index. """
+	def add(self, value):
+		""" Adds a variable, record or array to the object dictionary. It may be accessed later by the name or the index. """
 		if not isinstance(value, (Array, DefStruct, DefType, Domain, Record, Variable)):
 			raise TypeError()
 		if value.index in self._items_index or value.name in self._items_name:

@@ -12,7 +12,7 @@ class TIMEConsumer(Service):
 		self._callbacks = {"time": []}
 	
 	def attach(self, node, cob_id_time = None):
-		""" Attaches the ``TIMEConsumer`` to a ``Node``. It does NOT append or assign this ``TIMEConsumer`` to the ``Node``. """
+		""" Attaches the ``TIMEConsumer`` to a ``Node``. It does NOT add or assign this ``TIMEConsumer`` to the ``Node``. """
 		if cob_id_time == None:
 			cob_id_time = 0x100
 		if cob_id_time < 0 or cob_id_time > 0xFFFFFFFF:

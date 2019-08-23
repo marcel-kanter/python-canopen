@@ -9,7 +9,7 @@ class PDOProducer(SYNCConsumer):
 		self._data = None
 	
 	def attach(self, node, cob_id_tx = None, cob_id_sync = None):
-		""" Attaches the ``PDOProducer`` to a ``Node``. It does NOT append or assign this ``PDOProducer`` to the ``Node``. """
+		""" Attaches the ``PDOProducer`` to a ``Node``. It does NOT add or assign this ``PDOProducer`` to the ``Node``. """
 		if not isinstance(node, canopen.node.Node):
 			raise TypeError()
 		if cob_id_tx == None:

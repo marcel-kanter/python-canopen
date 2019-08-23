@@ -52,16 +52,16 @@ class Network(collections.abc.Collection):
 		del self._items_id[item.id]
 		del self._items_name[item.name]
 	
-	def append(self, value):
-		""" Appends a node to the network. It may be accessed later by the name or the id. """
-		if not isinstance(value, canopen.Node):
+	def add(self, node):
+		""" Adds a node to the network. It may be accessed later by the name or the id. """
+		if not isinstance(node, canopen.Node):
 			raise TypeError()
-		if value.id in self._items_id or value.name in self._items_name:
+		if node.id in self._items_id or node.name in self._items_name:
 			raise ValueError()
 		
-		self._items_id[value.id] = value
-		self._items_name[value.name] = value
-		value.attach(self)
+		self._items_id[node.id] = node
+		self._items_name[node.name] = node
+		node.attach(self)
 	
 	def attach(self, bus):
 		""" Attach the network to a CAN bus. """

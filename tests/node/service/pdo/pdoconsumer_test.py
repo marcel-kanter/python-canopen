@@ -25,8 +25,8 @@ class PDOConsumerTest(unittest.TestCase):
 		node2 = canopen.Node("b", 2, dictionary)
 		examinee = PDOConsumer()
 		
-		network.append(node1)
-		network.append(node2)
+		network.add(node1)
+		network.add(node2)
 		
 		self.assertEqual(examinee.node, None)
 		

@@ -9,7 +9,7 @@ Auto-associative mapping
 The ``ObjectDictionary`` class is a mutable auto-associative mapping of Arrays, Records and Variables and the properties for association are index and name.
 It's possible to get a ``Array``, ``DefStruct``, ``DefType``, ``Domain``, ``Record`` or ``Variable`` by index or name from the mapping.
 
-To add a element to the mapping, the ``append`` function is used. The index and the name of the elements inside the mapping must be unique.
+To add a element to the mapping, the ``add`` function is used. The index and the name of the elements inside the mapping must be unique.
 
 .. code:: python
 
@@ -18,9 +18,9 @@ To add a element to the mapping, the ``append`` function is used. The index and 
 	one_record = canopen.objectdictionary.Record("rec", 1)
 	one_array = canopen.objectdictionary.Array("arr", 1)
 	
-	the_dictionary.append(one_record)
+	the_dictionary.add(one_record)
 	# This fails, because there is already a record with index 1.
-	the_dictionary.append(one_array)
+	the_dictionary.add(one_array)
 
 After adding the element to the list, it can be accessed via subscription.
 If the index and the name belong to the same element, the two lines will retrieve the same element:

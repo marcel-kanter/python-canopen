@@ -55,45 +55,45 @@ class ArrayTestCase(unittest.TestCase):
 		
 		#### Test step: Contents
 		b = canopen.objectdictionary.Array("arr", 100)
-		b.append(canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32))
+		b.add(canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32))
 		self.assertFalse(a == b)
 		
-		a.append(canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32))
+		a.add(canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32))
 		self.assertTrue(a == b)
 		
 		b = canopen.objectdictionary.Array("arr", 100)
-		b.append(canopen.objectdictionary.Variable("x", 100, 0, canopen.objectdictionary.UNSIGNED32))
+		b.add(canopen.objectdictionary.Variable("x", 100, 0, canopen.objectdictionary.UNSIGNED32))
 		self.assertFalse(a == b)
 	
 	def test_collection(self):
 		array = canopen.objectdictionary.Array("arr", 100)
 		
-		# append
+		# add
 		x = canopen.objectdictionary.Array("arr", 200)
 		with self.assertRaises(TypeError):
-			array.append(x)
+			array.add(x)
 		
 		x = canopen.objectdictionary.Record("rec", 300)
 		with self.assertRaises(TypeError):
-			array.append(x)
+			array.add(x)
 		
 		x = canopen.objectdictionary.Variable("var", 200, 0, canopen.objectdictionary.UNSIGNED32)
 		with self.assertRaises(ValueError):
-			array.append(x)
+			array.add(x)
 		
 		v1 = canopen.objectdictionary.Variable("var1", 100, 0, canopen.objectdictionary.UNSIGNED32)
-		array.append(v1)
+		array.add(v1)
 		self.assertEqual(len(array), 1)
 		
 		x = canopen.objectdictionary.Variable("var1", 100, 1, canopen.objectdictionary.UNSIGNED32)
 		with self.assertRaises(ValueError):
-			array.append(x)
+			array.add(x)
 		x = canopen.objectdictionary.Variable("rec", 100, 0, canopen.objectdictionary.UNSIGNED32)
 		with self.assertRaises(ValueError):
-			array.append(x)
+			array.add(x)
 		
 		v2 = canopen.objectdictionary.Variable("var2", 100, 1, canopen.objectdictionary.UNSIGNED32)
-		array.append(v2)
+		array.add(v2)
 		self.assertEqual(len(array), 2)
 		
 		# contains

@@ -76,24 +76,24 @@ class NetworkTestCase(unittest.TestCase):
 		dictionary = canopen.ObjectDictionary()
 		network = canopen.Network()
 		
-		# append
+		# add
 		x = canopen.Network()
 		with self.assertRaises(TypeError):
-			network.append(x)
+			network.add(x)
 		
 		n1 = canopen.Node("n1", 10, dictionary)
-		network.append(n1)
+		network.add(n1)
 		self.assertEqual(len(network), 1)
 		
 		x = canopen.Node("n1", 20, dictionary)
 		with self.assertRaises(ValueError):
-			network.append(x)
+			network.add(x)
 		x = canopen.Node("n2", 10, dictionary)
 		with self.assertRaises(ValueError):
-			network.append(x)
+			network.add(x)
 		
 		n2 = canopen.Node("n2", 20, dictionary)
-		network.append(n2)
+		network.add(n2)
 		self.assertEqual(len(network), 2)
 		
 		# contains

@@ -29,78 +29,78 @@ class ObjectDictionaryTestCase(unittest.TestCase):
 		self.assertTrue(a == b)
 		self.assertEqual(a == b, b == a)
 		
-		b.append(canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32))
+		b.add(canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32))
 		self.assertFalse(a == b)
 		self.assertEqual(a == b, b == a)
 		
-		a.append(canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32))
+		a.add(canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32))
 		self.assertTrue(a == b)
 		self.assertEqual(a == b, b == a)
 		
-		a.append(canopen.objectdictionary.Record("rec", 200))
-		b.append(canopen.objectdictionary.Record("rec", 200))
+		a.add(canopen.objectdictionary.Record("rec", 200))
+		b.add(canopen.objectdictionary.Record("rec", 200))
 		self.assertTrue(a == b)
 		self.assertEqual(a == b, b == a)
 		
-		b["rec"].append(canopen.objectdictionary.Variable("var", 200, 0, canopen.objectdictionary.UNSIGNED32))
+		b["rec"].add(canopen.objectdictionary.Variable("var", 200, 0, canopen.objectdictionary.UNSIGNED32))
 		self.assertFalse(a == b)
 		self.assertEqual(a == b, b == a)
 		
-		a["rec"].append(canopen.objectdictionary.Variable("var", 200, 0, canopen.objectdictionary.UNSIGNED32))
+		a["rec"].add(canopen.objectdictionary.Variable("var", 200, 0, canopen.objectdictionary.UNSIGNED32))
 		self.assertTrue(a == b)
 		self.assertEqual(a == b, b == a)
 		
 		b = canopen.objectdictionary.ObjectDictionary()
-		b.append(canopen.objectdictionary.Variable("x", 100, 0, canopen.objectdictionary.UNSIGNED32))
+		b.add(canopen.objectdictionary.Variable("x", 100, 0, canopen.objectdictionary.UNSIGNED32))
 		self.assertFalse(a == b)
 		self.assertEqual(a == b, b == a)
 			
 	def test_collection(self):
 		dictionary = canopen.ObjectDictionary()
 		
-		# append
+		# add
 		x = canopen.ObjectDictionary()
 		with self.assertRaises(TypeError):
-			dictionary.append(x)
+			dictionary.add(x)
 		
 		a = canopen.objectdictionary.Array("arr", 100)
-		dictionary.append(a)
+		dictionary.add(a)
 		self.assertEqual(len(dictionary), 1)
 		
 		x = canopen.objectdictionary.Array("arr", 200)
 		with self.assertRaises(ValueError):
-			dictionary.append(x)
+			dictionary.add(x)
 		x = canopen.objectdictionary.Record("rec", 100)
 		with self.assertRaises(ValueError):
-			dictionary.append(x)
+			dictionary.add(x)
 		
 		ds = canopen.objectdictionary.DefStruct("defstruct", 0x40)
-		dictionary.append(ds)
+		dictionary.add(ds)
 		self.assertEqual(len(dictionary), 2)
 		
 		with self.assertRaises(ValueError):
-			dictionary.append(ds)
+			dictionary.add(ds)
 		
 		dt = canopen.objectdictionary.DefStruct("deftype", 0x60)
-		dictionary.append(dt)
+		dictionary.add(dt)
 		self.assertEqual(len(dictionary), 3)
 		
 		with self.assertRaises(ValueError):
-			dictionary.append(dt)
+			dictionary.add(dt)
 		
 		r = canopen.objectdictionary.Record("rec", 200)
-		dictionary.append(r)
+		dictionary.add(r)
 		self.assertEqual(len(dictionary), 4)
 		
 		with self.assertRaises(ValueError):
-			dictionary.append(r)
+			dictionary.add(r)
 		
 		v = canopen.objectdictionary.Variable("var", 300, 0, canopen.objectdictionary.UNSIGNED32)
-		dictionary.append(v)
+		dictionary.add(v)
 		self.assertEqual(len(dictionary), 5)
 		
 		with self.assertRaises(ValueError):
-			dictionary.append(v)
+			dictionary.add(v)
 		
 		# contains
 		self.assertFalse("xxx" in dictionary)

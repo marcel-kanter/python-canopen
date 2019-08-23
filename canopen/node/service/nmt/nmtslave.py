@@ -19,7 +19,7 @@ class NMTSlave(Service):
 		self._timer = canopen.util.Timer(self.send_heartbeat) 
 	
 	def attach(self, node):
-		""" Attaches the ``NMTSlave`` to a ``Node``. It does NOT append or assign this ``NMTSlave`` to the ``Node``. """
+		""" Attaches the ``NMTSlave`` to a ``Node``. It does NOT add or assign this ``NMTSlave`` to the ``Node``. """
 		Service.attach(self, node)
 		self._state = 0
 		self._toggle_bit = 0

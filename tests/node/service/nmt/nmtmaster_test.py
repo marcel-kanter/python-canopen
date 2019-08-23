@@ -52,7 +52,7 @@ class NMTMasterTestCase(unittest.TestCase):
 		node = canopen.RemoteNode("a", 0x0A, dictionary)
 		
 		network.attach(bus1)
-		network.append(node)
+		network.add(node)
 		
 		self.assertEqual(node.nmt.state, canopen.nmt.states.INITIALIZATION)
 		
@@ -110,7 +110,7 @@ class NMTMasterTestCase(unittest.TestCase):
 		node = canopen.RemoteNode("a", 0x0A, dictionary)
 		
 		network.attach(bus1)
-		network.append(node)
+		network.add(node)
 		
 		#### Test step: Unknown state value -> ValueError
 		with self.assertRaises(ValueError):

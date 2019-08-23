@@ -54,7 +54,7 @@ class Node(collections.abc.Collection):
 		raise NotImplementedError()
 	
 	def attach(self, network):
-		""" Attach this node to a network. It does NOT append or assign the node to the network.
+		""" Attach this node to a network. It does NOT add or assign the node to the network.
 		If the node is already attached to a network, it is automatically detached. """
 		if not isinstance(network, canopen.Network):
 			raise TypeError()

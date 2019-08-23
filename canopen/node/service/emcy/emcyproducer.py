@@ -8,7 +8,7 @@ class EMCYProducer(Service):
 		Service.__init__(self)
 	
 	def attach(self, node):
-		""" Attaches the ``EMCYProducer`` to a ``Node``. It does NOT append or assign this ``EMCYProducer`` to the ``Node``. """
+		""" Attaches the ``EMCYProducer`` to a ``Node``. It does NOT add or assign this ``EMCYProducer`` to the ``Node``. """
 		Service.attach(self, node)
 		self._identifier_tx = 0x80 + self._node.id
 	

@@ -62,8 +62,8 @@ class Record(collections.abc.Collection):
 		del self._items_subindex[item.subindex]
 		del self._items_name[item.name]
 	
-	def append(self, value):
-		""" Appends a variable to the record. It may be accessed later by the name or the subindex. """
+	def add(self, value):
+		""" Adds a variable to the record. It may be accessed later by the name or the subindex. """
 		if not isinstance(value, Variable) or isinstance(value, (DefType, Domain)):
 			raise TypeError()
 		if value.subindex in self._items_subindex or value.name in self._items_name:

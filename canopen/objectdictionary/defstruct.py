@@ -14,8 +14,8 @@ class DefStruct(Record):
 		Record.__init__(self, name, index)
 		self._object_type = 6
 	
-	def append(self, value):
-		""" Appends a variable to the record. It may be accessed later by the name or the subindex. """
+	def add(self, value):
+		""" Adds a variable to the record. It may be accessed later by the name or the subindex. """
 		if not isinstance(value, Variable) or isinstance(value, (DefType, Domain)):
 			raise TypeError()
 		if value.data_type != UNSIGNED8 and value.data_type != UNSIGNED16:
@@ -25,4 +25,4 @@ class DefStruct(Record):
 		if value.access_type != "ro":
 			raise ValueError()
 		
-		Record.append(self, value)
+		Record.add(self, value)

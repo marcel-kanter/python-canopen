@@ -12,7 +12,7 @@ class TIMEProducer(Service):
 		Service.__init__(self)
 	
 	def attach(self, node, cob_id_time = None):
-		""" Attaches the ``TIMEProducer`` to a ``Node``. It does NOT append or assign this ``TIMEProducer`` to the ``Node``. """
+		""" Attaches the ``TIMEProducer`` to a ``Node``. It does NOT add or assign this ``TIMEProducer`` to the ``Node``. """
 		if cob_id_time == None:
 			cob_id_time = 0x100
 		if cob_id_time < 0 or cob_id_time > 0xFFFFFFFF:

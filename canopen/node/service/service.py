@@ -11,7 +11,7 @@ class Service(object):
 		self._callbacks = {}
 	
 	def attach(self, node):
-		""" Attaches the ``Service`` to a ``Node``. It does NOT append or assign this ``Service`` to the ``Node``. """
+		""" Attaches the ``Service`` to a ``Node``. It does NOT add or assign this ``Service`` to the ``Node``. """
 		if not isinstance(node, canopen.node.Node):
 			raise TypeError()
 		if self._node == node:

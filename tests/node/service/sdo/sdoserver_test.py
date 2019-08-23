@@ -118,18 +118,18 @@ class SDOServerTestCase(unittest.TestCase):
 		bus2 = can.Bus(interface = "virtual", channel = 0)
 		network = canopen.Network()
 		dictionary = canopen.ObjectDictionary()
-		dictionary.append(canopen.objectdictionary.Record("rec", 0x1234))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("boolean", 0x1234, 0x01, canopen.objectdictionary.BOOLEAN, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("integer8", 0x1234, 0x02, canopen.objectdictionary.INTEGER8, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("integer16", 0x1234, 0x03, canopen.objectdictionary.INTEGER16, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("integer32", 0x1234, 0x04, canopen.objectdictionary.INTEGER32, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("unsigned8", 0x1234, 0x05, canopen.objectdictionary.UNSIGNED8, "ro"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("unsigned16", 0x1234, 0x06, canopen.objectdictionary.UNSIGNED16, "wo"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("domain", 0x1234, 0x0F, canopen.objectdictionary.DOMAIN, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("integer24", 0x1234, 0x10, canopen.objectdictionary.INTEGER24, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("real64", 0x1234, 0x11, canopen.objectdictionary.REAL64, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("integer40", 0x1234, 0x12, canopen.objectdictionary.INTEGER40, "rw"))
-		dictionary.append(canopen.objectdictionary.Variable("var", 0x5678, 0x00, canopen.objectdictionary.UNSIGNED32, "rw"))
+		dictionary.add(canopen.objectdictionary.Record("rec", 0x1234))
+		dictionary["rec"].add(canopen.objectdictionary.Variable("boolean", 0x1234, 0x01, canopen.objectdictionary.BOOLEAN, "rw"))
+		dictionary["rec"].add(canopen.objectdictionary.Variable("integer8", 0x1234, 0x02, canopen.objectdictionary.INTEGER8, "rw"))
+		dictionary["rec"].add(canopen.objectdictionary.Variable("integer16", 0x1234, 0x03, canopen.objectdictionary.INTEGER16, "rw"))
+		dictionary["rec"].add(canopen.objectdictionary.Variable("integer32", 0x1234, 0x04, canopen.objectdictionary.INTEGER32, "rw"))
+		dictionary["rec"].add(canopen.objectdictionary.Variable("unsigned8", 0x1234, 0x05, canopen.objectdictionary.UNSIGNED8, "ro"))
+		dictionary["rec"].add(canopen.objectdictionary.Variable("unsigned16", 0x1234, 0x06, canopen.objectdictionary.UNSIGNED16, "wo"))
+		dictionary["rec"].add(canopen.objectdictionary.Variable("domain", 0x1234, 0x0F, canopen.objectdictionary.DOMAIN, "rw"))
+		dictionary["rec"].add(canopen.objectdictionary.Variable("integer24", 0x1234, 0x10, canopen.objectdictionary.INTEGER24, "rw"))
+		dictionary["rec"].add(canopen.objectdictionary.Variable("real64", 0x1234, 0x11, canopen.objectdictionary.REAL64, "rw"))
+		dictionary["rec"].add(canopen.objectdictionary.Variable("integer40", 0x1234, 0x12, canopen.objectdictionary.INTEGER40, "rw"))
+		dictionary.add(canopen.objectdictionary.Variable("var", 0x5678, 0x00, canopen.objectdictionary.UNSIGNED32, "rw"))
 		node = InspectionNode("a", 1, dictionary)
 		sdoserver = canopen.node.service.SDOServer()
 		
@@ -293,7 +293,7 @@ class SDOServerTestCase(unittest.TestCase):
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x06020000))
 		
 		# Restore Variable in dictionary
-		dictionary.append(canopen.objectdictionary.Variable("var", 0x5678, 0x00, 0x07, "rw"))
+		dictionary.add(canopen.objectdictionary.Variable("var", 0x5678, 0x00, 0x07, "rw"))
 		
 		#### Test step
 		# Initiate: e = 0 & s = 1 & size in data -> Confirm
@@ -332,7 +332,7 @@ class SDOServerTestCase(unittest.TestCase):
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x06090011))
 		
 		# Restore Variable in dictionary
-		dictionary["rec"].append(canopen.objectdictionary.Variable("domain", 0x1234, 0x0F, canopen.objectdictionary.DOMAIN, "rw"))
+		dictionary["rec"].add(canopen.objectdictionary.Variable("domain", 0x1234, 0x0F, canopen.objectdictionary.DOMAIN, "rw"))
 		
 		#### Test step
 		# Initiate: e = 0 & s = 1 & size in data -> Confirm
@@ -634,18 +634,18 @@ class SDOServerTestCase(unittest.TestCase):
 		bus2 = can.Bus(interface = "virtual", channel = 0)
 		network = canopen.Network()
 		dictionary = canopen.ObjectDictionary()
-		dictionary.append(canopen.objectdictionary.Record("rec", 0x1234))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("boolean", 0x1234, 0x01, canopen.objectdictionary.BOOLEAN, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("integer8", 0x1234, 0x02, canopen.objectdictionary.INTEGER8, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("integer16", 0x1234, 0x03, canopen.objectdictionary.INTEGER16, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("integer32", 0x1234, 0x04, canopen.objectdictionary.INTEGER32, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("unsigned8", 0x1234, 0x05, canopen.objectdictionary.UNSIGNED8, "ro"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("unsigned16", 0x1234, 0x06, canopen.objectdictionary.UNSIGNED16, "wo"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("domain", 0x1234, 0x0F, canopen.objectdictionary.DOMAIN, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("integer24", 0x1234, 0x10, canopen.objectdictionary.INTEGER24, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("real64", 0x1234, 0x11, canopen.objectdictionary.REAL64, "rw"))
-		dictionary["rec"].append(canopen.objectdictionary.Variable("integer40", 0x1234, 0x12, canopen.objectdictionary.INTEGER40, "rw"))
-		dictionary.append(canopen.objectdictionary.Variable("var", 0x5678, 0x00, canopen.objectdictionary.UNSIGNED32, "rw"))
+		dictionary.add(canopen.objectdictionary.Record("rec", 0x1234))
+		dictionary["rec"].add(canopen.objectdictionary.Variable("boolean", 0x1234, 0x01, canopen.objectdictionary.BOOLEAN, "rw"))
+		dictionary["rec"].add(canopen.objectdictionary.Variable("integer8", 0x1234, 0x02, canopen.objectdictionary.INTEGER8, "rw"))
+		dictionary["rec"].add(canopen.objectdictionary.Variable("integer16", 0x1234, 0x03, canopen.objectdictionary.INTEGER16, "rw"))
+		dictionary["rec"].add(canopen.objectdictionary.Variable("integer32", 0x1234, 0x04, canopen.objectdictionary.INTEGER32, "rw"))
+		dictionary["rec"].add(canopen.objectdictionary.Variable("unsigned8", 0x1234, 0x05, canopen.objectdictionary.UNSIGNED8, "ro"))
+		dictionary["rec"].add(canopen.objectdictionary.Variable("unsigned16", 0x1234, 0x06, canopen.objectdictionary.UNSIGNED16, "wo"))
+		dictionary["rec"].add(canopen.objectdictionary.Variable("domain", 0x1234, 0x0F, canopen.objectdictionary.DOMAIN, "rw"))
+		dictionary["rec"].add(canopen.objectdictionary.Variable("integer24", 0x1234, 0x10, canopen.objectdictionary.INTEGER24, "rw"))
+		dictionary["rec"].add(canopen.objectdictionary.Variable("real64", 0x1234, 0x11, canopen.objectdictionary.REAL64, "rw"))
+		dictionary["rec"].add(canopen.objectdictionary.Variable("integer40", 0x1234, 0x12, canopen.objectdictionary.INTEGER40, "rw"))
+		dictionary.add(canopen.objectdictionary.Variable("var", 0x5678, 0x00, canopen.objectdictionary.UNSIGNED32, "rw"))
 		node = InspectionNode("a", 1, dictionary)
 		sdoserver = canopen.node.service.SDOServer()
 		

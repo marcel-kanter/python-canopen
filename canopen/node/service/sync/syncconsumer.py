@@ -8,7 +8,7 @@ class SYNCConsumer(Service):
 		self._callbacks = {"sync": []}
 	
 	def attach(self, node, cob_id_sync = None):
-		""" Attaches the ``SYNCConsumer`` to a ``Node``. It does NOT append or assign this ``SYNCConsumer`` to the ``Node``. """
+		""" Attaches the ``SYNCConsumer`` to a ``Node``. It does NOT add or assign this ``SYNCConsumer`` to the ``Node``. """
 		if cob_id_sync == None:
 			cob_id_sync = 0x80
 		if cob_id_sync < 0 or cob_id_sync > 0xFFFFFFFF:

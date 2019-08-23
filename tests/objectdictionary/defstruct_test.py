@@ -25,52 +25,52 @@ class DefStructTestCase(unittest.TestCase):
 	def test_collection(self):
 		ds = canopen.objectdictionary.DefStruct("defstruct", 0x40)
 		
-		#### Test step: Append wrong type
+		#### Test step: add wrong type
 		x = canopen.objectdictionary.Array("arr", 0x40)
 		with self.assertRaises(TypeError):
-			ds.append(x)
+			ds.add(x)
 		
 		x = canopen.objectdictionary.Record("rec", 0x40)
 		with self.assertRaises(TypeError):
-			ds.append(x)
+			ds.add(x)
 		
 		x = canopen.objectdictionary.DefType("deftype", 0x40)
 		with self.assertRaises(TypeError):
-			ds.append(x)
+			ds.add(x)
 		
-		#### Test step: Append wrong index
+		#### Test step: add wrong index
 		x = canopen.objectdictionary.Variable("var", 200, 0, canopen.objectdictionary.UNSIGNED8, "ro")
 		with self.assertRaises(ValueError):
-			ds.append(x)
+			ds.add(x)
 		
-		### Test step: Append Variable with UNSIGNED16 to subindex 0
+		### Test step: add Variable with UNSIGNED16 to subindex 0
 		x = canopen.objectdictionary.Variable("var1", 0x40, 0, canopen.objectdictionary.UNSIGNED16, "ro")
 		with self.assertRaises(ValueError):
-			ds.append(x)
+			ds.add(x)
 		
-		#### Test step: Append correct Variable
+		#### Test step: add correct Variable
 		v1 = canopen.objectdictionary.Variable("var1", 0x40, 0, canopen.objectdictionary.UNSIGNED8, "ro")
-		ds.append(v1)
+		ds.add(v1)
 		self.assertEqual(len(ds), 1)
 		
-		### Test step: Append Variable twice, same subindex, differend name
+		### Test step: add Variable twice, same subindex, differend name
 		x = canopen.objectdictionary.Variable("var2", 0x40, 0, canopen.objectdictionary.UNSIGNED8, "ro")
 		with self.assertRaises(ValueError):
-			ds.append(x)
+			ds.add(x)
 		
-		### Test step: Append Variable with UNSIGNED32 to subindex 1
+		### Test step: add Variable with UNSIGNED32 to subindex 1
 		x = canopen.objectdictionary.Variable("var2", 0x40, 1, canopen.objectdictionary.UNSIGNED32, "ro")
 		with self.assertRaises(ValueError):
-			ds.append(x)
+			ds.add(x)
 		
-		### Test step: Append Variable with UNSIGNED32 to subindex 1
+		### Test step: add Variable with UNSIGNED32 to subindex 1
 		x = canopen.objectdictionary.Variable("var2", 0x40, 1, canopen.objectdictionary.UNSIGNED16, "rw")
 		with self.assertRaises(ValueError):
-			ds.append(x)
+			ds.add(x)
 		
-		#### Test step: Append correct Variable
+		#### Test step: add correct Variable
 		v2 = canopen.objectdictionary.Variable("var2", 0x40, 1, canopen.objectdictionary.UNSIGNED16, "ro")
-		ds.append(v2)
+		ds.add(v2)
 		self.assertEqual(len(ds), 2)
 		
 		#### Test step: contains

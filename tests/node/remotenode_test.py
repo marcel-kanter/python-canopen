@@ -22,11 +22,11 @@ class Vehicle(threading.Thread):
 		try:
 			network = canopen.Network()
 			dictionary = canopen.ObjectDictionary()
-			dictionary.append(canopen.objectdictionary.Variable("var", 0x5678, 0x00, canopen.objectdictionary.UNSIGNED32, "rw"))
+			dictionary.add(canopen.objectdictionary.Variable("var", 0x5678, 0x00, canopen.objectdictionary.UNSIGNED32, "rw"))
 			examinee = canopen.RemoteNode("examinee", 1, dictionary)
 			
 			network.attach(self._bus)
-			network.append(examinee)
+			network.add(examinee)
 			
 			examinee.set_data(0x5678, 0x00, 0x12345678)
 			
