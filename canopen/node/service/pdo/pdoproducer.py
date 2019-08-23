@@ -1,11 +1,11 @@
 import canopen.node
-from canopen.node.service import Service
+from canopen.node.service.sync import SYNCConsumer
 
 
-class PDOProducer(Service):
+class PDOProducer(SYNCConsumer):
 	def __init__(self):
-		Service.__init__(self)
-		self._callbacks = {"sync": [], "pdo": []}
+		SYNCConsumer.__init__(self)
+		self._callbacks["pdo"] = []
 		self._data = None
 	
 	def attach(self, node, cob_id_tx = None, cob_id_sync = None):
@@ -16,19 +16,10 @@ class PDOProducer(Service):
 			cob_id_tx = 0x180 + node.id
 		if cob_id_tx < 0 or cob_id_tx > 0xFFFFFFFF:
 			raise ValueError()
-		if cob_id_sync == None:
-			cob_id_sync = 0x80
-		if cob_id_sync < 0 or cob_id_sync > 0xFFFFFFFF:
-			raise ValueError()
 		
-		Service.attach(self, node)
+		SYNCConsumer.attach(self, node, cob_id_sync)
 		self._cob_id_tx = cob_id_tx
-		self._cob_id_sync = cob_id_sync
 		
-		if self._cob_id_sync & (1 << 29):
-			self._node.network.subscribe(self.on_sync, self._cob_id_sync & 0x1FFFFFFF)
-		else:
-			self._node.network.subscribe(self.on_sync, self._cob_id_sync & 0x7FF)
 		if self._cob_id_tx & (1 << 29):
 			self._node.network.subscribe(self.on_pdo, self._cob_id_tx & 0x1FFFFFFF)
 		else:
@@ -39,16 +30,12 @@ class PDOProducer(Service):
 		if self._node == None:
 			raise RuntimeError()
 		
-		if self._cob_id_sync & (1 << 29):
-			self._node.network.unsubscribe(self.on_sync, self._cob_id_sync & 0x1FFFFFFF)
-		else:
-			self._node.network.unsubscribe(self.on_sync, self._cob_id_sync & 0x7FF)
 		if self._cob_id_tx & (1 << 29):
 			self._node.network.unsubscribe(self.on_pdo, self._cob_id_tx & 0x1FFFFFFF)
 		else:
 			self._node.network.unsubscribe(self.on_pdo, self._cob_id_tx & 0x7FF)
 		
-		Service.detach(self)
+		SYNCConsumer.detach(self)
 	
 	def on_pdo(self, message):
 		if not message.is_remote_frame:
@@ -56,13 +43,6 @@ class PDOProducer(Service):
 		if message.is_extended_id != bool(self._cob_id_tx & (1 << 29)):
 			return
 		self.notify("pdo", self)
-	
-	def on_sync(self, message):
-		if message.is_remote_frame:
-			return
-		if message.is_extended_id != bool(self._cob_id_sync & (1 << 29)):
-			return
-		self.notify("sync", self)
 	
 	@property
 	def data(self):
