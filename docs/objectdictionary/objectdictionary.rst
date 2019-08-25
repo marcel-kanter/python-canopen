@@ -1,7 +1,7 @@
 ObjectDictionary
 ================
 
-This class is the representation of an object dictionary. It is a mutable auto-associative mapping and may contain zero or more of ``Array``, ``Record`` and ``Variable``.
+This class is the representation of an object dictionary. It is a mutable auto-associative mapping and may contain zero or more of ``Array``, ``DefStruct``, ``DefType``, ``Domain``, ``Record`` and ``Variable``.
 
 Auto-associative mapping
 ------------------------
@@ -19,7 +19,7 @@ To add a element to the mapping, the ``add`` function is used. The index and the
 	one_array = canopen.objectdictionary.Array("arr", 1)
 	
 	the_dictionary.add(one_record)
-	# This fails, because there is already a record with index 1.
+	# This fails, because there is already an object with index 1 in the object dictionary.
 	the_dictionary.add(one_array)
 
 After adding the element to the list, it can be accessed via subscription.
@@ -30,4 +30,4 @@ If the index and the name belong to the same element, the two lines will retriev
 	# Use the index
 	record_1 = the_dictionary[1]
 	# Use the name
-	record_1 = the_dictionary["rec"]
+	record_rec = the_dictionary["rec"]

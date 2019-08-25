@@ -10,13 +10,15 @@ Attach/detach
 -------------
 
 The attach/detach pattern is used create a link from the ``Network`` (child) to the ``Bus`` (parent). It only creates a functional relationship between them.
-The structural relation between the child and the parent is handled by other means.
+
+The structural relation between the child and the parent must be handled by other means (the ``Bus`` class has no functionality for this).
 
 .. code:: python
 
 	# First create a bus
 	bus = can.Bus(interface = "virtual", channel = 0)
-	# It's possible to use the can bus now, as described in the python-can documentation. You may send and receive messages, etc.
+	# It's possible to use the can bus now, as described in the python-can documentation.
+	# You may send and receive messages, etc.
 	
 	# Create the canopen Network instance and attach it to the bus
 	network = canopen.Network()
@@ -24,6 +26,8 @@ The structural relation between the child and the parent is handled by other mea
 	
 	# Detach the canopen Network before shutdown of the can bus.
 	network.detach()
+	
+	# The can bus is still open and usable at this point.
 	
 	# Clean up
 	bus.shutdown()
@@ -44,7 +48,7 @@ To add a node to the mapping, the ``add`` function is used. The id and the name 
 	other_node = canopen.Node("B", 1, dictionary)
 	
 	the_network.add(one_node)
-	# This fails, because there is already a node with id 1.
+	# This fails, because there is already a node with id 1 in the_network.
 	the_network.add(other_node)
 
 After adding the node to the list, it can be accessed via subscription.

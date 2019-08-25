@@ -46,7 +46,7 @@ A ``Variable`` has a default value. Depending on the data type, the default valu
 Encode/Decode
 -------------
 
-For conversion of python variables into the CANopen representation and back, the functions ``encode`` and ``decode`` are used.
+For conversion of python variables into the CANopen representation and back, the functions ``encode`` and ``decode`` are used. The usage of both functions are similar to the ones of python's built-in objects.
 
 .. code:: python
 
@@ -57,9 +57,38 @@ For conversion of python variables into the CANopen representation and back, the
 	decoded = one_variable.decode(b"\xAA\x00\x00\x00")
 	
 	one_variable = canopen.objectdictionary.Variable("var1", 0x1000, 0x01, canopen.objectdictionary.VISIBLE_STRING)
-	# Convert python string with ascii encoding into bytes containing CANopen representation
+	# Convert python string into bytes containing CANopen representation using ASCII encoding
 	# This may raise an exception, if the text includes non-ascii characters
 	encoded = one_variable.encode("TestText")
+	
+	one_variable = canopen.objectdictionary.Variable("var1", 0x1000, 0x01, canopen.objectdictionary.UNICODE_STRING)
+	# Convert python string into bytes containing CANopen representation using UTF-16-LE encoding
+	# This may raise an exception, if the text includes characters which cannot be encoded with utf-16
+	encoded = one_variable.encode("TestText")
+
+VISIBLE_STRING
+~~~~~~~~~~~~~~
+
+DS201 defines ASCII as character set. But only the values 0 and 0x20 to 0x7E are admissible.
+DS301 and DS1301 defines ISO646:1973 as character set. But only the values 0 and 0x20 to 0x7E are admissible.
+
+However this library uses the built-in ascii character set of python and thus may encode bytes that are not inside the range of admissible values.
+
+OCTET_STRING
+~~~~~~~~~~~~
+
+DS201, DS301 and DS1301 don't define a character set. The width of each encoded character shall be 8 bits. 
+
+This library uses UTF-8 encoding, as this matches the 8 bits requirement and all unicode code points can be encoded.
+
+UNICODE_STRING
+~~~~~~~~~~~~~~
+
+DS201 does not define this data type.
+DS301 only defines the length of each encoded character to be 16 bits.
+DS1301 defines ISO10646:2003 UCS-2 as character set, which is only 16 bit wide.
+
+However since UCS-2 is obsolete now, this library uses utf-16-le as encoding, as this is the most comparable.
 
 TIME_OF_DAY
 ~~~~~~~~~~~
