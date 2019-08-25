@@ -1,5 +1,6 @@
 import struct
 import can
+import canopen.node
 from canopen.node.service import Service
 
 
@@ -7,10 +8,17 @@ class EMCYProducer(Service):
 	def __init__(self):
 		Service.__init__(self)
 	
-	def attach(self, node):
+	def attach(self, node, cob_id_emcy = None):
 		""" Attaches the ``EMCYProducer`` to a ``Node``. It does NOT add or assign this ``EMCYProducer`` to the ``Node``. """
+		if not isinstance(node, canopen.node.Node):
+			raise TypeError()
+		if cob_id_emcy == None:
+			cob_id_emcy = 0x80 + node.id
+		if cob_id_emcy < 0 or cob_id_emcy > 0xFFFFFFFF:
+			raise ValueError()
+		
 		Service.attach(self, node)
-		self._identifier_tx = 0x80 + self._node.id
+		self._cob_id_emcy = cob_id_emcy
 	
 	def detach(self):
 		""" Detaches the ``EMCYProducer`` from the ``Node``. It does NOT remove or delete the ``EMCYProducer`` from the ``Node``. """
@@ -28,5 +36,8 @@ class EMCYProducer(Service):
 			raise ValueError()
 		
 		d = struct.pack("<HB5s", error_code, error_register, data)
-		message = can.Message(arbitration_id = self._identifier_tx, is_extended_id = False, data = d)
+		if self._cob_id_emcy & (1 << 29):
+			message = can.Message(arbitration_id = self._cob_id_emcy & 0x1FFFFFFF, is_extended_id = True, data = d)
+		else:
+			message = can.Message(arbitration_id = self._cob_id_emcy & 0x7FF, is_extended_id = False, data = d)
 		self._node.network.send(message)

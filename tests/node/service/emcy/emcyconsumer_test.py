@@ -28,13 +28,19 @@ class EMCYConsumerTestCase(unittest.TestCase):
 		with self.assertRaises(TypeError):
 			examinee.attach(None)
 		
+		test_data = [-1, 0x100000000]
+		for value in test_data:
+			with self.subTest(value = value):
+				with self.assertRaises(ValueError):
+					examinee.attach(node1, value)
+		
 		examinee.attach(node1)
 		self.assertEqual(examinee.node, node1)
 		
 		with self.assertRaises(ValueError):
 			examinee.attach(node1)
 		
-		examinee.attach(node2)
+		examinee.attach(node2, (1 << 29) | (0x80 + node2.id))
 		self.assertEqual(examinee.node, node2)
 		
 		examinee.detach()
@@ -109,6 +115,15 @@ class EMCYConsumerTestCase(unittest.TestCase):
 			bus2.send(message)
 			time.sleep(0.001)
 			cb1.assert_called_once_with("emcy", consumer, 0x0000, 0x00, b"\x00\x00\x00\x00\x00")
+		
+		#### Test step: EMCY write with differing extended frame bit
+		with self.subTest("EMCY write with differing extended frame bit"):
+			cb1.reset_mock()
+			d = struct.pack("<HB4s", 0x0000, 0x00, b"\x00\x00\x00\x00\x00")
+			message = can.Message(arbitration_id = 0x80 + node.id, is_extended_id = True, data = d)
+			bus2.send(message)
+			time.sleep(0.001)
+			cb1.assert_not_called()
 		
 		#### Test step: EMCY write with malformed message - too short message
 		with self.subTest("EMCY write with malformed message - too short message"):

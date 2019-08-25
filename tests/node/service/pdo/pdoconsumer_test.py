@@ -50,7 +50,7 @@ class PDOConsumerTest(unittest.TestCase):
 		with self.assertRaises(ValueError):
 			examinee.attach(node1)
 		
-		examinee.attach(node2, (1 << 29) | 0x201, (1 << 29) | 0x80)
+		examinee.attach(node2, (1 << 29) | (0x200 + node2.id), (1 << 29) | 0x80)
 		self.assertEqual(examinee.node, node2)
 		
 		examinee.detach()
