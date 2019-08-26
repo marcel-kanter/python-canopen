@@ -21,7 +21,7 @@ The structural relation between the child and the parent is handled by other mea
 Access to objects
 -----------------
 
-The objects of a node can be accessed by subscription.
+The objects of a node can be accessed by subscription, if the object exists in the object dictionary. This will start a SDO transfer to get/set the acutal data.
 
 .. code:: python
 
