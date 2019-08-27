@@ -3,6 +3,7 @@ import can
 import threading
 from canopen.sdo.abortcodes import *
 from canopen.node.service import Service
+import canopen.node
 import canopen.objectdictionary
 
 
@@ -24,21 +25,41 @@ class SDOClient(Service):
 		self._condition = threading.Condition()
 		self._timeout = timeout
 	
-	def attach(self, node):
+	def attach(self, node, cob_id_rx = None, cob_id_tx = None):
 		""" Attaches the ``SDOClient`` to a ``Node``. It does NOT add or assign this ``SDOClient`` to the ``Node``. """
+		if not isinstance(node, canopen.node.Node):
+			raise TypeError()
+		if cob_id_rx == None:
+			cob_id_rx = 0x580 + node.id
+		if cob_id_rx < 0 or cob_id_rx > 0xFFFFFFFF:
+			raise ValueError()
+		if cob_id_tx == None:
+			cob_id_tx = 0x600 + node.id
+		if cob_id_tx < 0 or cob_id_tx > 0xFFFFFFFF:
+			raise ValueError()
+		
 		Service.attach(self, node)
 		self._state = 0x80
-		self._identifier_rx = 0x580 + self._node.id
-		self._identifier_tx = 0x600 + self._node.id
-		self._node.network.subscribe(self.on_response, self._identifier_rx)
+		self._cob_id_rx = cob_id_rx
+		self._cob_id_tx = cob_id_tx
+		
+		if self._cob_id_rx & (1 << 29):
+			self._node.network.subscribe(self.on_response, self._cob_id_rx & 0x1FFFFFFF)
+		else:
+			self._node.network.subscribe(self.on_response, self._cob_id_rx & 0x7FF)
 	
 	def detach(self):
 		""" Detaches the ``SDOClient`` from the ``Node``. It does NOT remove or delete the ``SDOClient`` from the ``Node``. """
 		if self._node == None:
 			raise RuntimeError()
-		self._node.network.unsubscribe(self.on_response, self._identifier_rx)
+		
+		if self._cob_id_rx & (1 << 29):
+			self._node.network.unsubscribe(self.on_response, self._cob_id_rx & 0x1FFFFFFF)
+		else:
+			self._node.network.unsubscribe(self.on_response, self._cob_id_rx & 0x7FF)
+		
 		Service.detach(self)
-
+	
 	def upload(self, index, subindex):
 		item = self._node.dictionary[index]
 		
@@ -58,7 +79,10 @@ class SDOClient(Service):
 		self._state = request_command
 		
 		d = struct.pack("<BHB4s", request_command, index, subindex, request_data)
-		request = can.Message(arbitration_id = self._identifier_tx, is_extended_id = False, data = d)
+		if self._cob_id_tx & (1 << 29):
+			request = can.Message(arbitration_id = self._cob_id_tx & 0x1FFFFFFF, is_extended_id = True, data = d)
+		else:
+			request = can.Message(arbitration_id = self._cob_id_tx & 0x7FF, is_extended_id = False, data = d)
 		self._node.network.send(request)
 		
 		if not self._condition.wait(self._timeout):
@@ -107,7 +131,10 @@ class SDOClient(Service):
 		self._state = request_command
 		
 		d = struct.pack("<BHB4s", request_command, index, subindex, request_data)
-		request = can.Message(arbitration_id = self._identifier_tx, is_extended_id = False, data = d)
+		if self._cob_id_tx & (1 << 29):
+			request = can.Message(arbitration_id = self._cob_id_tx & 0x1FFFFFFF, is_extended_id = True, data = d)
+		else:
+			request = can.Message(arbitration_id = self._cob_id_tx & 0x7FF, is_extended_id = False, data = d)
 		self._node.network.send(request)
 		
 		if not self._condition.wait(self._timeout):
@@ -147,14 +174,18 @@ class SDOClient(Service):
 			self._on_network_indication(message)
 	
 	def _abort(self, index, subindex, code):
-		message = can.Message(arbitration_id = self._identifier_tx, is_extended_id = False, data = struct.pack("<BHBL", 0x80, index, subindex, code))
+		d = struct.pack("<BHBL", 0x80, index, subindex, code)
+		if self._cob_id_tx & (1 << 29):
+			message = can.Message(arbitration_id = self._cob_id_tx & 0x1FFFFFFF, is_extended_id = True, data = d)
+		else:
+			message = can.Message(arbitration_id = self._cob_id_tx & 0x7FF, is_extended_id = False, data = d)
 		self._node.network.send(message)
 		
 		self._state = 0x80
 		self._condition.acquire()
 		self._condition.notify(1)
 		self._condition.release()
-
+	
 	def _on_upload_segment(self, message):
 		response_command, response_data = struct.unpack_from("<B7s", message.data)
 		
@@ -185,7 +216,10 @@ class SDOClient(Service):
 			request_command = 0x60 | self._toggle_bit
 			request_data = b"\x00\x00\x00\x00\x00\x00\x00"
 			d = struct.pack("<B7s", request_command, request_data)
-			request = can.Message(arbitration_id = self._identifier_tx, is_extended_id = False, data = d)
+			if self._cob_id_tx & (1 << 29):
+				request = can.Message(arbitration_id = self._cob_id_tx & 0x1FFFFFFF, is_extended_id = True, data = d)
+			else:
+				request = can.Message(arbitration_id = self._cob_id_tx & 0x7FF, is_extended_id = False, data = d)
 			self._node.network.send(request)
 	
 	def _on_download_segment(self, message):
@@ -211,11 +245,14 @@ class SDOClient(Service):
 				request_command = 0x00 | self._toggle_bit
 			else:
 				request_command = 0x00 | self._toggle_bit | ((7 - size) << 1) | (1 << 0)
-				
+			
 			request_data = self._buffer[:7]
 			
 			d = struct.pack("<B7s", request_command, request_data)
-			request = can.Message(arbitration_id = self._identifier_tx, is_extended_id = False, data = d)
+			if self._cob_id_tx & (1 << 29):
+				request = can.Message(arbitration_id = self._cob_id_tx & 0x1FFFFFFF, is_extended_id = True, data = d)
+			else:
+				request = can.Message(arbitration_id = self._cob_id_tx & 0x7FF, is_extended_id = False, data = d)
 			self._node.network.send(request)
 		
 			self._buffer = self._buffer[7:]
@@ -252,7 +289,10 @@ class SDOClient(Service):
 				request_command = 0x60 | self._toggle_bit
 				request_data = b"\x00\x00\x00\x00\x00\x00\x00"
 				d = struct.pack("<B7s", request_command, request_data)
-				request = can.Message(arbitration_id = self._identifier_tx, is_extended_id = False, data = d)
+				if self._cob_id_tx & (1 << 29):
+					request = can.Message(arbitration_id = self._cob_id_tx & 0x1FFFFFFF, is_extended_id = True, data = d)
+				else:
+					request = can.Message(arbitration_id = self._cob_id_tx & 0x7FF, is_extended_id = False, data = d)
 				self._node.network.send(request)
 			else:
 				self._abort(index, subindex, COMMAND_SPECIFIER_NOT_VALID)
@@ -285,7 +325,10 @@ class SDOClient(Service):
 			request_data = self._buffer[:7]
 			
 			d = struct.pack("<B7s", request_command, request_data)
-			request = can.Message(arbitration_id = self._identifier_tx, is_extended_id = False, data = d)
+			if self._cob_id_tx & (1 << 29):
+				request = can.Message(arbitration_id = self._cob_id_tx & 0x1FFFFFFF, is_extended_id = True, data = d)
+			else:
+				request = can.Message(arbitration_id = self._cob_id_tx & 0x7FF, is_extended_id = False, data = d)
 			self._node.network.send(request)
 		
 			self._buffer = self._buffer[7:]
