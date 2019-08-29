@@ -18,7 +18,7 @@ class Variable(object):
 			raise ValueError()
 		if data_type not in allowed_types:
 			raise ValueError()
-		if access_type not in ["rw", "wo", "ro"]:
+		if access_type not in ["rw", "wo", "ro", "const"]:
 			raise ValueError()
 		
 		self._object_type = 7
@@ -284,7 +284,7 @@ class Variable(object):
 	
 	@access_type.setter
 	def access_type(self, x):
-		if x not in ["rw", "wo", "ro"]:
+		if x not in ["rw", "wo", "ro", "const"]:
 			raise ValueError()
 		self._access_type = x
 	

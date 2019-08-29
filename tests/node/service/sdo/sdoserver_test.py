@@ -138,6 +138,7 @@ class SDOServerTestCase(unittest.TestCase):
 		dictionary["rec"].add(canopen.objectdictionary.Variable("real64", 0x1234, 0x11, canopen.objectdictionary.REAL64, "rw"))
 		dictionary["rec"].add(canopen.objectdictionary.Variable("integer40", 0x1234, 0x12, canopen.objectdictionary.INTEGER40, "rw"))
 		dictionary.add(canopen.objectdictionary.Variable("var", 0x5678, 0x00, canopen.objectdictionary.UNSIGNED32, "rw"))
+		dictionary.add(canopen.objectdictionary.Variable("const", 0x7777, 0x00, canopen.objectdictionary.UNSIGNED32, "const"))
 		node = InspectionNode("a", 1, dictionary)
 		examinee = canopen.node.service.SDOServer()
 		
@@ -175,6 +176,19 @@ class SDOServerTestCase(unittest.TestCase):
 		# Initiate: index: +, subindex: +, rw: - -> Abort with attempt to write an read only object
 		index = 0x1234
 		subindex = 0x05
+		d = struct.pack("<BHBL", 0x20, index, subindex, 0x00000000)
+		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
+		bus2.send(message)
+		
+		message_recv = bus2.recv(1)
+		self.assertEqual(message_recv.arbitration_id, 0x581)
+		self.assertEqual(message_recv.is_extended_id, False)
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x06010002))
+		
+		#### Test step
+		# Initiate: index: +, subindex: +, rw: - (const) -> Abort with attempt to write an read only object
+		index = 0x7777
+		subindex = 0x00
 		d = struct.pack("<BHBL", 0x20, index, subindex, 0x00000000)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)

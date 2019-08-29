@@ -35,11 +35,12 @@ Each variable has a data type. The data types are defined in DS301 "Table 44: Ob
 * UNSIGNED56
 * UNSIGNED64
 
-Each variable has an access type. The access types as defined in DS301 "Table 43: Access attributes for data objects" and the follwing access types are supported.
+Each variable has an access type. The access types as defined in DS201 chapter "4. Variables", DS301 "Table 43: Access attributes for data objects" and DS1301 "Table 64 – USDO access value definition". Since DS301 defines the "const" access type, this value is supported too, but it is an alias for "ro".
 
 * rw
 * wo
 * ro
+* const
 
 A ``Variable`` has a default value. Depending on the data type, the default value is set to False, 0 or empty data at creation of the Variable object. It can be changed if needed.
 

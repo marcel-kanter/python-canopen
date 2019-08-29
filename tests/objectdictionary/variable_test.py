@@ -20,7 +20,7 @@ class VariableTestCase(unittest.TestCase):
 		with self.assertRaises(ValueError):
 			canopen.objectdictionary.Variable("var", 0, 0, canopen.objectdictionary.UNSIGNED32, "X")
 		
-		for access_type in ["rw", "wo", "ro"]:
+		for access_type in ["rw", "wo", "ro", "const"]:
 			examinee = canopen.objectdictionary.Variable("var", 100, 0, UNSIGNED32, access_type)
 			self.assertEqual(examinee.access_type, access_type)
 		

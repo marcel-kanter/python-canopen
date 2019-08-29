@@ -232,7 +232,7 @@ class SDOServer(Service):
 				self._abort(index, subindex, SUBINDEX_DOES_NOT_EXIST)
 				return
 		
-		if "r" not in item.access_type:
+		if "r" not in item.access_type and item.access_type != "const":
 			# 0x06010001 Attempt to read a write only object.
 			self._abort(index, subindex, 0x06010001)
 			return
