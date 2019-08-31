@@ -25,6 +25,7 @@ class VariableTestCase(unittest.TestCase):
 		self.assertEqual(examinee.subindex, entry.subindex)
 		self.assertEqual(examinee.data_type, entry.data_type)
 		self.assertEqual(examinee.access_type, entry.access_type)
+		self.assertEqual(examinee.default_value, entry.default_value)
 		
 		#### Test step: data access set_data
 		value = 100

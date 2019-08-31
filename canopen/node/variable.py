@@ -41,3 +41,7 @@ class Variable(object):
 	@property
 	def access_type(self):
 		return self._entry.access_type
+	
+	@property
+	def default_value(self):
+		return self._entry.default_value

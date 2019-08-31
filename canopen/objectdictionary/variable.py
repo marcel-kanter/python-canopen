@@ -29,17 +29,17 @@ class Variable(object):
 		self._access_type = access_type
 		
 		if self._data_type == BOOLEAN:
-			self._default = False
+			self._default_value = False
 		elif self._data_type in [REAL32, REAL64]:
-			self._default = 0.0	
+			self._default_value = 0.0	
 		elif self._data_type in [VISIBLE_STRING, OCTET_STRING, UNICODE_STRING]:
-			self._default = ""
+			self._default_value = ""
 		elif self._data_type == DOMAIN:
-			self._default = b""
+			self._default_value = b""
 		elif self._data_type == TIME_OF_DAY:
-			self._default = self._canopen_epoch
+			self._default_value = self._canopen_epoch
 		else:
-			self._default = 0
+			self._default_value = 0
 	
 	def __eq__(self, other):
 		""" Indicates whether some other object is "equal to" this one. """
@@ -47,7 +47,7 @@ class Variable(object):
 			return True
 		if self.__class__ != other.__class__:
 			return False
-		if self._name != other._name or self._index != other.index or self._subindex != other.subindex or self._data_type != other.data_type or self._access_type != other.access_type or self._default != other.default:
+		if self._name != other._name or self._index != other.index or self._subindex != other.subindex or self._data_type != other.data_type or self._access_type != other.access_type or self._default_value != other.default_value:
 			return False
 		return True
 	
@@ -289,12 +289,12 @@ class Variable(object):
 		self._access_type = x
 	
 	@property
-	def default(self):
+	def default_value(self):
 		"""
 		Returns the default value for this Variable.
 		"""
-		return self._default
+		return self._default_value
 	
-	@default.setter
-	def default(self, x):
-		self._default = x
+	@default_value.setter
+	def default_value(self, x):
+		self._default_value = x

@@ -42,7 +42,7 @@ class LocalNode(Node):
 				except:
 					raise KeyError()
 			
-			return item.default
+			return item.default_value
 		else:
 			return self._data[(index, subindex)]
 	

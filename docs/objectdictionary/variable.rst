@@ -5,7 +5,7 @@ This class is the representation of an variable of an object dictionary.
 It describes only the object in the dictionary and does not hold any actual data of a node.
 
 The most properties of the ``Variable`` are immutable and cannot be changed after creation of the variable.
-Only access_type and default can be changed after creation.
+Only ``access_type`` and ``default_value`` can be changed after creation.
 
 Each variable has a data type. The data types are defined in DS301 "Table 44: Object dictionary data types" and the following data types are supported.
 
