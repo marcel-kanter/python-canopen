@@ -8,7 +8,10 @@ class SYNCProducer(Service):
 		Service.__init__(self)
 	
 	def attach(self, node, cob_id_sync = None):
-		""" Attaches the ``SYNCProducer`` to a ``Node``. It does NOT add or assign this ``SYNCProducer`` to the ``Node``. """
+		""" Attaches the ``SYNCProducer`` to a ``Node``. It does NOT add or assign this ``SYNCProducer`` to the ``Node``.
+		:param node: A canopen.Node, to which the service should be attached to.
+		:param cob_id_sync: The COB ID for the SYNC service. Bit 29 selects whether an extended frame is used. The CAN ID is masked out of the lowest 11 or 29 bits.
+			If it is omitted or None is passed, the value defaults to 0x80. """
 		if cob_id_sync == None:
 			cob_id_sync = 0x80
 		if cob_id_sync < 0 or cob_id_sync > 0xFFFFFFFF:

@@ -12,7 +12,10 @@ class TIMEProducer(Service):
 		Service.__init__(self)
 	
 	def attach(self, node, cob_id_time = None):
-		""" Attaches the ``TIMEProducer`` to a ``Node``. It does NOT add or assign this ``TIMEProducer`` to the ``Node``. """
+		""" Attaches the ``TIMEProducer`` to a ``Node``. It does NOT add or assign this ``TIMEProducer`` to the ``Node``.
+		:param node: A canopen.Node, to which the service should be attached to.
+		:param cob_id_time: The COB ID for the TIME service. Bit 29 selects whether an extended frame is used. The CAN ID is masked out of the lowest 11 or 29 bits.
+			If it is omitted or None is passed, the value defaults to 0x100. """
 		if cob_id_time == None:
 			cob_id_time = 0x100
 		if cob_id_time < 0 or cob_id_time > 0xFFFFFFFF:

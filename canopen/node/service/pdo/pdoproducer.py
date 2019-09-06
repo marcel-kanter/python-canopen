@@ -9,7 +9,14 @@ class PDOProducer(SYNCConsumer):
 		self._data = None
 	
 	def attach(self, node, cob_id_tx = None, cob_id_sync = None):
-		""" Attaches the ``PDOProducer`` to a ``Node``. It does NOT add or assign this ``PDOProducer`` to the ``Node``. """
+		""" Attaches the ``PDOProducer`` to a ``Node``. It does NOT add or assign this ``PDOProducer`` to the ``Node``.
+		:param node: A canopen.Node, to which the service should be attached to.
+		:param cob_id_tx: The COB ID for the PDO service, used for the CAN ID of the PDO messages to be sent.
+			Bit 29 selects whether an extended frame is used. The CAN ID is masked out of the lowest 11 or 29 bits.
+			If it is omitted or None is passed, the value defaults to 0x180 + node.id .
+		:param cob_id_sync: The COB ID for the PDO service, used for the CAN ID of the SYNC messages to be received.
+			Bit 29 selects whether an extended frame is used. The CAN ID is masked out of the lowest 11 or 29 bits.
+			If it is omitted or None is passed, the value defaults to 0x80. """
 		if not isinstance(node, canopen.node.Node):
 			raise TypeError()
 		if cob_id_tx == None:

@@ -14,7 +14,8 @@ class NMTMaster(Service):
 		self._state = 0
 
 	def attach(self, node):
-		""" Attaches the ``NMTMaster`` to a ``Node``. It does NOT add or assign this ``NMTMaster`` to the ``Node``. """
+		""" Attaches the ``NMTMaster`` to a ``Node``. It does NOT add or assign this ``NMTMaster`` to the ``Node``.
+		:param node: A canopen.Node, to which the service should be attached to. """
 		Service.attach(self, node)
 		self._state = 0
 		self._identifier_ec = 0x700 + self._node.id

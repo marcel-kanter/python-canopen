@@ -73,7 +73,7 @@ VISIBLE_STRING
 DS201 defines ASCII as character set. But only the values 0 and 0x20 to 0x7E are admissible.
 DS301 and DS1301 defines ISO646:1973 as character set. But only the values 0 and 0x20 to 0x7E are admissible.
 
-However this library uses the built-in ascii character set of python and thus may encode bytes that are not inside the range of admissible values.
+This library uses the built-in ascii character set of python and thus may encode bytes that are not inside the range of admissible values.
 
 OCTET_STRING
 ~~~~~~~~~~~~
@@ -89,7 +89,7 @@ DS201 does not define this data type.
 DS301 only defines the length of each encoded character to be 16 bits.
 DS1301 defines ISO10646:2003 UCS-2 as character set, which is only 16 bit wide.
 
-However since UCS-2 is obsolete now, this library uses utf-16-le as encoding, as this is the most comparable.
+Since UCS-2 is obsolete now, this library uses utf-16-le as encoding, as this is the most comparable.
 
 TIME_OF_DAY
 ~~~~~~~~~~~

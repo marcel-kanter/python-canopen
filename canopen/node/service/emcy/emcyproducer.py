@@ -9,7 +9,11 @@ class EMCYProducer(Service):
 		Service.__init__(self)
 	
 	def attach(self, node, cob_id_emcy = None):
-		""" Attaches the ``EMCYProducer`` to a ``Node``. It does NOT add or assign this ``EMCYProducer`` to the ``Node``. """
+		""" Attaches the ``EMCYProducer`` to a ``Node``. It does NOT add or assign this ``EMCYProducer`` to the ``Node``.
+		:param node: A canopen.Node, to which the service should be attached to.
+		:param cob_id_emcy: The COB ID for the EMCY service, used for the CAN ID of the EMCY messages to be sent.
+			Bit 29 selects whether an extended frame is used. The CAN ID is masked out of the lowest 11 or 29 bits.
+			If it is omitted or None is passed, the value defaults to 0x80 + node.id . """
 		if not isinstance(node, canopen.node.Node):
 			raise TypeError()
 		if cob_id_emcy == None:
