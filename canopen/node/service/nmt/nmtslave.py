@@ -14,9 +14,9 @@ class NMTSlave(Service):
 		Service.__init__(self)
 		self._state = 0
 		self._toggle_bit = 0
-		self._callbacks = {"start": [], "stop": [], "pause": [], "reset": []}
+		self._callbacks = {"start": [], "stop": [], "pre-operational": [], "reset-application": []}
 		
-		self._timer = canopen.util.Timer(self.send_heartbeat) 
+		self._timer = canopen.util.Timer(self.timer_callback)
 	
 	def attach(self, node):
 		""" Attaches the ``NMTSlave`` to a ``Node``. It does NOT add or assign this ``NMTSlave`` to the ``Node``.
@@ -50,6 +50,9 @@ class NMTSlave(Service):
 		""" Stops sending heartbeat messages. """
 		self._timer.cancel()
 	
+	def timer_callback(self):
+		self.send_heartbeat()
+	
 	def on_error_control(self, message):
 		""" Handler for received error control requests. """
 		if not message.is_remote_frame:
@@ -79,10 +82,10 @@ class NMTSlave(Service):
 			if command == 0x02: # Stop (enter to NMT stopped)
 				self.notify("stop", self)
 			if command == 0x80: # Enter NMT pre-operational
-				self.notify("pause", self)
+				self.notify("pre-operational", self)
 			if command == 0x81: # Enter NMT reset application
 				self.state = INITIALIZATION
-				self.notify("reset", self)
+				self.notify("reset-application", self)
 			if command == 0x82: # Enter NMT reset communication
 				self.state = INITIALIZATION
 				self.state = PRE_OPERATIONAL
