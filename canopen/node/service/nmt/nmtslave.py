@@ -14,7 +14,7 @@ class NMTSlave(Service):
 		Service.__init__(self)
 		self._state = 0
 		self._toggle_bit = 0
-		self._callbacks = {"start": [], "stop": [], "pre-operational": [], "reset-application": []}
+		self._callbacks = {"start": [], "stop": [], "pre-operational": [], "reset-application": [], "reset-communication": []}
 		
 		self._timer = canopen.util.Timer(self.timer_callback)
 	
@@ -88,6 +88,7 @@ class NMTSlave(Service):
 				self.notify("reset-application", self)
 			if command == 0x82: # Enter NMT reset communication
 				self.state = INITIALIZATION
+				self.notify("reset-communication", self)
 				self.state = PRE_OPERATIONAL
 	
 	@property

@@ -4,7 +4,6 @@ import time
 import can
 import canopen.node.service
 import canopen.nmt.states
-from more_itertools.more import side_effect
 
 
 class NMTSlaveTestCase(unittest.TestCase):
@@ -42,17 +41,19 @@ class NMTSlaveTestCase(unittest.TestCase):
 		with self.assertRaises(ValueError):
 			examinee.add_callback("xxx", self.__callback_start)
 		
-		m_start = Mock(side_effect = self.__callback_start)
-		m_stop = Mock(side_effect = self.__callback_start)
-		m_pause = Mock(side_effect = self.__callback_start)
-		m_reset = Mock(side_effect = self.__callback_start)
-		m_raises = Mock(side_effect = self.__callback_raises)
+		m_start = Mock()
+		m_stop = Mock()
+		m_pre_operational = Mock()
+		m_reset_application = Mock()
+		m_reset_communication = Mock()
+		m_raises = Mock()
 		
 		#### Test step: add callback
 		examinee.add_callback("start", m_start)
 		examinee.add_callback("stop", m_stop)
-		examinee.add_callback("pre-operational", m_pause)
-		examinee.add_callback("reset-application", m_reset)
+		examinee.add_callback("pre-operational", m_pre_operational)
+		examinee.add_callback("reset-communication", m_reset_communication)
+		examinee.add_callback("reset-application", m_reset_application)
 		
 		examinee.add_callback("start", m_raises)
 		
@@ -63,29 +64,41 @@ class NMTSlaveTestCase(unittest.TestCase):
 		examinee.notify("start", examinee)
 		m_start.assert_called_once_with("start", examinee)
 		m_stop.assert_not_called()
-		m_pause.assert_not_called()
-		m_reset.assert_not_called()
+		m_pre_operational.assert_not_called()
+		m_reset_application.assert_not_called()
+		m_reset_communication.assert_not_called()
 		m_raises.assert_called_once_with("start", examinee)
 		
 		examinee.notify("stop", examinee)
 		m_start.assert_called_once()
 		m_stop.assert_called_once_with("stop", examinee)
-		m_pause.assert_not_called()
-		m_reset.assert_not_called()
+		m_pre_operational.assert_not_called()
+		m_reset_application.assert_not_called()
+		m_reset_communication.assert_not_called()
 		m_raises.assert_called_once()
 		
 		examinee.notify("pre-operational", examinee)
 		m_start.assert_called_once()
 		m_stop.assert_called_once()
-		m_pause.assert_called_once_with("pre-operational", examinee)
-		m_reset.assert_not_called()
+		m_pre_operational.assert_called_once_with("pre-operational", examinee)
+		m_reset_application.assert_not_called()
+		m_reset_communication.assert_not_called()
 		m_raises.assert_called_once()
 		
 		examinee.notify("reset-application", examinee)
 		m_start.assert_called_once()
 		m_stop.assert_called_once()
-		m_pause.assert_called_once()
-		m_reset.assert_called_once_with("reset-application", examinee)
+		m_pre_operational.assert_called_once()
+		m_reset_application.assert_called_once_with("reset-application", examinee)
+		m_reset_communication.assert_not_called()
+		m_raises.assert_called_once()
+		
+		examinee.notify("reset-communication", examinee)
+		m_start.assert_called_once()
+		m_stop.assert_called_once()
+		m_pre_operational.assert_called_once()
+		m_reset_application.assert_called_once()
+		m_reset_communication.assert_called_once_with("reset-communication", examinee)
 		m_raises.assert_called_once()
 		
 		#### Test step: remove callback
@@ -100,8 +113,9 @@ class NMTSlaveTestCase(unittest.TestCase):
 		
 		examinee.remove_callback("start", m_start)
 		examinee.remove_callback("stop", m_stop)
-		examinee.remove_callback("pre-operational", m_pause)
-		examinee.remove_callback("reset-application", m_reset)
+		examinee.remove_callback("pre-operational", m_pre_operational)
+		examinee.remove_callback("reset-application", m_reset_application)
+		examinee.remove_callback("reset-communication", m_reset_communication)
 		examinee.remove_callback("start", m_raises)
 	
 	def test_attach_detach(self):
