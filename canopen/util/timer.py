@@ -25,7 +25,8 @@ class Timer(threading.Thread):
 		
 		self._execute_time = 0.0
 		self._terminate = threading.Event()
-		self._trigger = threading.Condition(threading.Lock())
+		self._trigger_lock = threading.RLock()
+		self._trigger = threading.Condition(self._trigger_lock)
 		self._condition = threading.Event()
 		
 		threading.Thread.start(self)

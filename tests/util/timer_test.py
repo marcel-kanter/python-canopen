@@ -175,6 +175,38 @@ class TimerTest(unittest.TestCase):
 		m.assert_not_called()
 		self.assertFalse(examinee.is_alive())
 		self.assertLess(time.time() - t_start, 0.35)
+		
+		del examinee
+		del m
+		
+		#### Test step: Cancel inside callback
+		m = Mock(side_effect = self.stoptimer_callback)
+		self.counter = 0
+		self.examinee = canopen.util.Timer(m, [self])
+		
+		self.examinee.start(0.05, True)
+		time.sleep(0.18)
+		self.assertEqual(self.counter, 3)
+		# Callback should have incremented counter to 3 and canceled the timer - counter should not increment any more
+		time.sleep(0.2)
+		self.assertEqual(self.counter, 3)
+		
+		# Start timer again
+		self.counter = 0
+		self.examinee.start(0.05, True)
+		time.sleep(0.18)
+		self.assertEqual(self.counter, 3)
+		# Callback should have incremented counter to 3 and canceled the timer - counter should not increment any more
+		time.sleep(0.2)
+		self.assertEqual(self.counter, 3)
+		
+		del self.examinee
+		del m
+	
+	def stoptimer_callback(self, testcase):
+		testcase.counter += 1
+		if testcase.counter == 3:
+			testcase.examinee.cancel()
 
 
 if __name__ == "__main__":
