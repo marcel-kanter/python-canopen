@@ -33,10 +33,22 @@ class TimerTest(unittest.TestCase):
 		self.assertFalse(examinee.is_alive())
 	
 	def test_all(self):
+		#### Test step: Init should leave the timer in a triggerable state
+		cb = Mock()
+		examinee = canopen.util.Timer(cb)
+		examinee.start(0.1)
+		
+		time.sleep(0.15)
+		cb.assert_called()
+		
+		del examinee
+		del cb
+		
 		m = Mock()
-		examinee = canopen.util.Timer(m, [10], {"a": 20})
 		
 		#### Test step: The timer cycle should not start immediately after init
+		examinee = canopen.util.Timer(m, [10], {"a": 20})
+		
 		time.sleep(0.2)
 		m.assert_not_called()
 		

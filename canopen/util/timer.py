@@ -29,6 +29,10 @@ class Timer(threading.Thread):
 		self._condition = threading.Event()
 		
 		threading.Thread.start(self)
+		
+		# wait until the timer can be triggered
+		self._trigger.acquire()
+		self._trigger.release()
 	
 	def start(self, interval, periodic = False):
 		"""
