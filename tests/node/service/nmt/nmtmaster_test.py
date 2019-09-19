@@ -57,46 +57,55 @@ class NMTMasterTestCase(unittest.TestCase):
 		self.assertEqual(node.nmt.state, canopen.nmt.states.INITIALIZATION)
 		
 		#### Test step: Remote message -> Drop message
-		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 1)
+		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
 		time.sleep(0.001)
 		
 		self.assertEqual(node.nmt.state, canopen.nmt.states.INITIALIZATION)
 		
 		#### Test step: Missing data -> Drop message
-		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, data = b"")
+		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, data = b"")
 		bus2.send(message)
 		time.sleep(0.001)
 		
 		self.assertEqual(node.nmt.state, canopen.nmt.states.INITIALIZATION)
 		
 		#### Test step: Too much data -> Drop message
-		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, data = b"\x05\x05")
+		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, data = b"\x05\x05")
 		bus2.send(message)
 		time.sleep(0.001)
 		
 		self.assertEqual(node.nmt.state, canopen.nmt.states.INITIALIZATION)
 		
 		#### Test step: Remote message -> Drop message
-		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 1)
+		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
 		time.sleep(0.001)
 		
 		self.assertEqual(node.nmt.state, canopen.nmt.states.INITIALIZATION)
 		
 		#### Test step: NMT state with toggle bit
-		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, data = b"\x85")
+		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, data = b"\x85")
 		bus2.send(message)
 		time.sleep(0.001)
 		
 		self.assertEqual(node.nmt.state, canopen.nmt.states.OPERATIONAL)
 		
 		#### Test step: NMT state without toggle bit
-		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, data = b"\x04")
+		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, data = b"\x04")
 		bus2.send(message)
 		time.sleep(0.001)
 		
 		self.assertEqual(node.nmt.state, canopen.nmt.states.STOPPED)
+		
+		#### Test step: Send guarding request
+		node.nmt.send_guard_request()
+		
+		message = bus2.recv(1)
+		self.assertEqual(message.arbitration_id, 0x700 + node.id)
+		self.assertEqual(message.is_extended_id, False)
+		self.assertEqual(message.is_remote_frame, True)
+		self.assertEqual(message.dlc, 1)
 		
 		network.detach()
 		bus1.shutdown()

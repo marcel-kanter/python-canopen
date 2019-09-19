@@ -275,19 +275,19 @@ class NMTSlaveTestCase(unittest.TestCase):
 		network.add(node)
 		
 		#### Test step: Missing data
-		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, data = [])
+		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, data = [])
 		bus2.send(message)
 		time.sleep(0.001)
 		
 		#### Test step: Wrong RTR length
-		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 2)
+		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = True, dlc = 2)
 		bus2.send(message)
 		time.sleep(0.001)
 		
 		#### Test step: Error control should not respond in initialization state
 		self.assertEqual(node.nmt.state, canopen.nmt.states.INITIALIZATION)
 		
-		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 1)
+		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
 		
 		# No response after 1 second
@@ -303,27 +303,27 @@ class NMTSlaveTestCase(unittest.TestCase):
 		time.sleep(0.001)
 		self.assertEqual(node.nmt.state, canopen.nmt.states.OPERATIONAL)
 		
-		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 1)
+		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
 		
 		message = bus2.recv(1)
-		self.assertEqual(message.arbitration_id, 0x70A)
+		self.assertEqual(message.arbitration_id, 0x700 + node.id)
 		self.assertEqual(message.is_remote_frame, False)
 		self.assertEqual(message.data, b"\x05")
 		
-		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 1)
+		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
 		
 		message = bus2.recv(1)
-		self.assertEqual(message.arbitration_id, 0x70A)
+		self.assertEqual(message.arbitration_id, 0x700 + node.id)
 		self.assertEqual(message.is_remote_frame, False)
 		self.assertEqual(message.data, b"\x85")
 		
-		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 1)
+		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
 		
 		message = bus2.recv(1)
-		self.assertEqual(message.arbitration_id, 0x70A)
+		self.assertEqual(message.arbitration_id, 0x700 + node.id)
 		self.assertEqual(message.is_remote_frame, False)
 		self.assertEqual(message.data, b"\x05")
 		
@@ -333,11 +333,11 @@ class NMTSlaveTestCase(unittest.TestCase):
 		time.sleep(0.001)
 		self.assertEqual(node.nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
 		
-		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 1)
+		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
 		
 		message = bus2.recv(1)
-		self.assertEqual(message.arbitration_id, 0x70A)
+		self.assertEqual(message.arbitration_id, 0x700 + node.id)
 		self.assertEqual(message.is_remote_frame, False)
 		self.assertEqual(message.data, b"\x7F")
 		
@@ -347,27 +347,27 @@ class NMTSlaveTestCase(unittest.TestCase):
 		time.sleep(0.001)
 		self.assertEqual(node.nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
 		
-		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 1)
+		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
 		
 		message = bus2.recv(1)
-		self.assertEqual(message.arbitration_id, 0x70A)
+		self.assertEqual(message.arbitration_id, 0x700 + node.id)
 		self.assertEqual(message.is_remote_frame, False)
 		self.assertEqual(message.data, b"\x7F")
 		
-		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 1)
+		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
 		
 		message = bus2.recv(1)
-		self.assertEqual(message.arbitration_id, 0x70A)
+		self.assertEqual(message.arbitration_id, 0x700 + node.id)
 		self.assertEqual(message.is_remote_frame, False)
 		self.assertEqual(message.data, b"\xFF")
 		
-		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 1)
+		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
 		
 		message = bus2.recv(1)
-		self.assertEqual(message.arbitration_id, 0x70A)
+		self.assertEqual(message.arbitration_id, 0x700 + node.id)
 		self.assertEqual(message.is_remote_frame, False)
 		self.assertEqual(message.data, b"\x7F")
 		
@@ -380,11 +380,11 @@ class NMTSlaveTestCase(unittest.TestCase):
 		node.nmt.state = canopen.nmt.states.OPERATIONAL
 		self.assertEqual(node.nmt.state, canopen.nmt.states.OPERATIONAL)
 		
-		message = can.Message(arbitration_id = 0x70A, is_extended_id = False, is_remote_frame = True, dlc = 1)
+		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
 		
 		message = bus2.recv(1)
-		self.assertEqual(message.arbitration_id, 0x70A)
+		self.assertEqual(message.arbitration_id, 0x700 + node.id)
 		self.assertEqual(message.is_remote_frame, False)
 		self.assertEqual(message.data, b"\x05")
 		
@@ -392,57 +392,16 @@ class NMTSlaveTestCase(unittest.TestCase):
 		node.nmt.send_heartbeat()
 		
 		message = bus2.recv(1)
-		self.assertEqual(message.arbitration_id, 0x70A)
+		self.assertEqual(message.arbitration_id, 0x700 + node.id)
 		self.assertEqual(message.is_remote_frame, False)
 		self.assertEqual(message.data, b"\x05")
 		
 		node.nmt.send_heartbeat()
 		
 		message = bus2.recv(1)
-		self.assertEqual(message.arbitration_id, 0x70A)
+		self.assertEqual(message.arbitration_id, 0x700 + node.id)
 		self.assertEqual(message.is_remote_frame, False)
 		self.assertEqual(message.data, b"\x05")
-		
-		network.detach()
-		bus1.shutdown()
-		bus2.shutdown()
-	
-	def test_heartbeat(self):
-		bus1 = can.Bus(interface = "virtual", channel = 0)
-		bus2 = can.Bus(interface = "virtual", channel = 0)
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		node = canopen.LocalNode("a", 0x0A, dictionary)
-		
-		network.attach(bus1)
-		network.add(node)
-		
-		node.nmt.send_heartbeat()
-		node.nmt.state = canopen.nmt.states.PRE_OPERATIONAL
-		node.nmt.start_heartbeat(0.2)
-		
-		time.sleep(0.05)
-		
-		message = bus2.recv(0.2)
-		self.assertEqual(message.arbitration_id, 0x70A)
-		self.assertEqual(message.is_remote_frame, False)
-		self.assertEqual(message.data, b"\x00")
-		
-		time.sleep(0.2)
-		
-		message = bus2.recv(0.2)
-		self.assertEqual(message.arbitration_id, 0x70A)
-		self.assertEqual(message.is_remote_frame, False)
-		self.assertEqual(message.data, b"\x7F")
-		
-		time.sleep(0.2)
-		
-		message = bus2.recv(0.2)
-		self.assertEqual(message.arbitration_id, 0x70A)
-		self.assertEqual(message.is_remote_frame, False)
-		self.assertEqual(message.data, b"\x7F")
-		
-		node.nmt.stop_heartbeat()
 		
 		network.detach()
 		bus1.shutdown()

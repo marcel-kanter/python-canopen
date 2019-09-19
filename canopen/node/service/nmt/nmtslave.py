@@ -1,6 +1,5 @@
 import struct
 import can
-import canopen.util
 from canopen.node.service import Service
 from canopen.nmt.states import *
 
@@ -15,8 +14,6 @@ class NMTSlave(Service):
 		self._state = 0
 		self._toggle_bit = 0
 		self._callbacks = {"start": [], "stop": [], "pre-operational": [], "reset-application": [], "reset-communication": []}
-		
-		self._timer = canopen.util.Timer(self.timer_callback)
 	
 	def attach(self, node):
 		""" Attaches the ``NMTSlave`` to a ``Node``. It does NOT add or assign this ``NMTSlave`` to the ``Node``.
@@ -32,7 +29,6 @@ class NMTSlave(Service):
 		""" Detaches the ``NMTSlave`` from the ``Node``. It does NOT remove or delete the ``NMTSlave`` from the ``Node``. """
 		if self._node == None:
 			raise RuntimeError()
-		self._timer.cancel()
 		self._node.network.unsubscribe(self.on_error_control, self._identifier_ec)
 		self._node.network.unsubscribe(self.on_node_control, 0x000)
 		Service.detach(self)
@@ -42,16 +38,10 @@ class NMTSlave(Service):
 		message = can.Message(arbitration_id = self._identifier_ec, is_extended_id = False, data = [self._state & 0x7F])
 		self._node.network.send(message)
 	
-	def start_heartbeat(self, interval):
-		""" Starts sending heartbeat messages every interval seconds. """
-		self._timer.start(interval, True)
-	
-	def stop_heartbeat(self):
-		""" Stops sending heartbeat messages. """
-		self._timer.cancel()
-	
-	def timer_callback(self):
-		self.send_heartbeat()
+	def send_guard_response(self):
+		response = can.Message(arbitration_id = self._identifier_ec, is_extended_id = False, data = [self._toggle_bit | (self._state & 0x7F)])
+		self._node.network.send(response)
+		self._toggle_bit ^= 0x80
 	
 	def on_error_control(self, message):
 		""" Handler for received error control requests. """
@@ -64,10 +54,7 @@ class NMTSlave(Service):
 		if self._state == INITIALIZATION:
 			return
 		
-		response = can.Message(arbitration_id = self._identifier_ec, is_extended_id = False, data = [self._toggle_bit | (self._state & 0x7F)])
-		self._node.network.send(response)
-		
-		self._toggle_bit ^= 0x80
+		self.send_guard_response()
 	
 	def on_node_control(self, message):
 		""" Handler for received node control requests. """

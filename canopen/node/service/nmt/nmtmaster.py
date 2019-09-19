@@ -12,7 +12,8 @@ class NMTMaster(Service):
 	def __init__(self):
 		Service.__init__(self)
 		self._state = 0
-
+		self._toggle_bit = 0
+	
 	def attach(self, node):
 		""" Attaches the ``NMTMaster`` to a ``Node``. It does NOT add or assign this ``NMTMaster`` to the ``Node``.
 		:param node: A canopen.Node, to which the service should be attached to. """
@@ -28,14 +29,19 @@ class NMTMaster(Service):
 		self._node.network.unsubscribe(self.on_error_control, self._identifier_ec)
 		Service.detach(self)
 	
+	def send_guard_request(self):
+		message = can.Message(arbitration_id = self._identifier_ec, is_extended_id = False, is_remote_frame = True, dlc = 1)
+		self._node.network.send(message)
+	
 	def on_error_control(self, message):
-		""" Handler for error control requests. It catches all status messages from the remote node and updates the state property. """
+		""" Handler for error control responses. It catches all status messages from the remote node and updates the state property. """
 		if message.is_remote_frame:
 			return
 		if message.dlc != 1:
 			return
 		
 		self._state = message.data[0] & 0x7F
+		self._toggle_bit = message.data[0] & 0x80
 	
 	@property
 	def state(self):
