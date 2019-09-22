@@ -1,5 +1,6 @@
 import struct
 import can
+import canopen.util
 from canopen.node.service import Service
 from canopen.nmt.states import *
 
@@ -14,6 +15,10 @@ class NMTSlave(Service):
 		self._state = 0
 		self._toggle_bit = 0
 		self._callbacks = {"start": [], "stop": [], "pre-operational": [], "reset-application": [], "reset-communication": []}
+		
+		self._heartbeat_time = 0
+		self._guard_time = 0
+		self._timer = canopen.util.Timer(self.timer_callback)
 	
 	def attach(self, node):
 		""" Attaches the ``NMTSlave`` to a ``Node``. It does NOT add or assign this ``NMTSlave`` to the ``Node``.
@@ -31,7 +36,22 @@ class NMTSlave(Service):
 			raise RuntimeError()
 		self._node.network.unsubscribe(self.on_error_control, self._identifier_ec)
 		self._node.network.unsubscribe(self.on_node_control, 0x000)
+		self._timer.cancel()
 		Service.detach(self)
+	
+	def start_heartbeat(self, heartbeat_time):
+		if heartbeat_time <= 0:
+			raise ValueError()
+		
+		self._heartbeat_time = heartbeat_time
+		self.send_heartbeat()
+		self._timer.start(heartbeat_time, True)
+		
+	def start_guarding(self, guard_time):
+		if guard_time <= 0:
+			raise ValueError()
+		
+		self._guard_time = guard_time
 	
 	def send_heartbeat(self):
 		""" Sends an heartbeat message. """
@@ -42,6 +62,9 @@ class NMTSlave(Service):
 		response = can.Message(arbitration_id = self._identifier_ec, is_extended_id = False, data = [self._toggle_bit | (self._state & 0x7F)])
 		self._node.network.send(response)
 		self._toggle_bit ^= 0x80
+	
+	def timer_callback(self):
+		self.send_heartbeat()
 	
 	def on_error_control(self, message):
 		""" Handler for received error control requests. """

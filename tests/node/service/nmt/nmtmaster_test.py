@@ -160,6 +160,65 @@ class NMTMasterTestCase(unittest.TestCase):
 		network.detach()
 		bus1.shutdown()
 		bus2.shutdown()
+	
+	def test_heartbeat(self):
+		bus1 = can.Bus(interface = "virtual", channel = 0)
+		bus2 = can.Bus(interface = "virtual", channel = 0)
+		network = canopen.Network()
+		dictionary = canopen.ObjectDictionary()
+		node = canopen.RemoteNode("a", 0x0A, dictionary)
+		
+		network.attach(bus1)
+		network.add(node)
+		
+		test_data = [-1.0, 0.0]
+		for value in test_data:
+			with self.subTest(value):
+				with self.assertRaises(ValueError):
+					node.nmt.start_heartbeat(value)
+		
+		node.nmt.start_heartbeat(0.2)
+		
+		del network[node.id]
+		network.detach()
+		bus1.shutdown()
+		bus2.shutdown()
+	
+	def test_guarding(self):
+		bus1 = can.Bus(interface = "virtual", channel = 0)
+		bus2 = can.Bus(interface = "virtual", channel = 0)
+		network = canopen.Network()
+		dictionary = canopen.ObjectDictionary()
+		node = canopen.RemoteNode("a", 0x0A, dictionary)
+		
+		network.attach(bus1)
+		network.add(node)
+		
+		test_data = [-1.0, 0.0]
+		for value in test_data:
+			with self.subTest(value):
+				with self.assertRaises(ValueError):
+					node.nmt.start_guarding(value)
+		
+		node.nmt.start_guarding(0.2)
+		time.sleep(0.05)
+		
+		message = bus2.recv(1)
+		self.assertEqual(message.arbitration_id, 0x700 + node.id)
+		self.assertEqual(message.is_remote_frame, True)
+		self.assertEqual(message.dlc, 1)
+		
+		time.sleep(0.2)
+		
+		message = bus2.recv(1)
+		self.assertEqual(message.arbitration_id, 0x700 + node.id)
+		self.assertEqual(message.is_remote_frame, True)
+		self.assertEqual(message.dlc, 1)
+		
+		del network[node.id]
+		network.detach()
+		bus1.shutdown()
+		bus2.shutdown()
 
 
 if __name__ == "__main__":

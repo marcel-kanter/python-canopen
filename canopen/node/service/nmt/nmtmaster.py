@@ -1,5 +1,6 @@
 import struct
 import can
+import canopen.util
 from canopen.node.service import Service
 from canopen.nmt.states import *
 
@@ -13,6 +14,11 @@ class NMTMaster(Service):
 		Service.__init__(self)
 		self._state = 0
 		self._toggle_bit = 0
+		self._callbacks = {}
+		
+		self._heartbeat_time = 0
+		self._guard_time = 0
+		self._timer = canopen.util.Timer(self.timer_callback)
 	
 	def attach(self, node):
 		""" Attaches the ``NMTMaster`` to a ``Node``. It does NOT add or assign this ``NMTMaster`` to the ``Node``.
@@ -27,11 +33,29 @@ class NMTMaster(Service):
 		if self._node == None:
 			raise RuntimeError()
 		self._node.network.unsubscribe(self.on_error_control, self._identifier_ec)
+		self._timer.cancel()
 		Service.detach(self)
+	
+	def start_heartbeat(self, heartbeat_time):
+		if heartbeat_time <= 0:
+			raise ValueError()
+		
+		self._heartbeat_time = heartbeat_time
+	
+	def start_guarding(self, guard_time):
+		if guard_time <= 0:
+			raise ValueError()
+		
+		self._guard_time = guard_time
+		self.send_guard_request()
+		self._timer.start(guard_time, True)
 	
 	def send_guard_request(self):
 		message = can.Message(arbitration_id = self._identifier_ec, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		self._node.network.send(message)
+	
+	def timer_callback(self):
+		self.send_guard_request()
 	
 	def on_error_control(self, message):
 		""" Handler for error control responses. It catches all status messages from the remote node and updates the state property. """
