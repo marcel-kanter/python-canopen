@@ -36,7 +36,7 @@ class NMTSlave(Service):
 			raise RuntimeError()
 		self._node.network.unsubscribe(self.on_error_control, self._identifier_ec)
 		self._node.network.unsubscribe(self.on_node_control, 0x000)
-		self._timer.cancel()
+		self.stop()
 		Service.detach(self)
 	
 	def start_heartbeat(self, heartbeat_time):
@@ -52,6 +52,11 @@ class NMTSlave(Service):
 			raise ValueError()
 		
 		self._guard_time = guard_time
+	
+	def stop(self):
+		self._timer.cancel()
+		self._guard_time = 0
+		self._heartbeat_time = 0
 	
 	def send_heartbeat(self):
 		""" Sends an heartbeat message. """

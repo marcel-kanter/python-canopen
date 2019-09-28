@@ -33,7 +33,7 @@ class NMTMaster(Service):
 		if self._node == None:
 			raise RuntimeError()
 		self._node.network.unsubscribe(self.on_error_control, self._identifier_ec)
-		self._timer.cancel()
+		self.stop()
 		Service.detach(self)
 	
 	def start_heartbeat(self, heartbeat_time):
@@ -49,6 +49,11 @@ class NMTMaster(Service):
 		self._guard_time = guard_time
 		self.send_guard_request()
 		self._timer.start(guard_time, True)
+	
+	def stop(self):
+		self._timer.cancel()
+		self._guard_time = 0
+		self._heartbeat_time = 0
 	
 	def send_guard_request(self):
 		message = can.Message(arbitration_id = self._identifier_ec, is_extended_id = False, is_remote_frame = True, dlc = 1)

@@ -428,17 +428,24 @@ class NMTSlaveTestCase(unittest.TestCase):
 		node.nmt.start_heartbeat(0.2)
 		time.sleep(0.05)
 		
-		message = bus2.recv(1)
+		message = bus2.recv(0.01)
 		self.assertEqual(message.arbitration_id, 0x700 + node.id)
 		self.assertEqual(message.is_remote_frame, False)
 		self.assertEqual(message.data, b"\x7F")
 		
 		time.sleep(0.2)
 		
-		message = bus2.recv(1)
+		message = bus2.recv(0.01)
 		self.assertEqual(message.arbitration_id, 0x700 + node.id)
 		self.assertEqual(message.is_remote_frame, False)
 		self.assertEqual(message.data, b"\x7F")
+		
+		node.nmt.stop()
+		
+		time.sleep(0.2)
+		
+		message = bus2.recv(0.01)
+		self.assertEqual(message, None)
 		
 		del network[node.id]
 		network.detach()

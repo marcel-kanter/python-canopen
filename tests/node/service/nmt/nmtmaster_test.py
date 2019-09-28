@@ -215,6 +215,13 @@ class NMTMasterTestCase(unittest.TestCase):
 		self.assertEqual(message.is_remote_frame, True)
 		self.assertEqual(message.dlc, 1)
 		
+		node.nmt.stop()
+		
+		time.sleep(0.2)
+		
+		message = bus2.recv(0.01)
+		self.assertEqual(message, None)
+		
 		del network[node.id]
 		network.detach()
 		bus1.shutdown()
