@@ -161,6 +161,7 @@ class NMTSlaveTestCase(unittest.TestCase):
 		node.nmt.add_callback("stop", self.__callback_stop)
 		node.nmt.add_callback("pre-operational", self.__callback_pre_operational)
 		node.nmt.add_callback("reset-application", self.__callback_reset_application)
+		node.nmt.add_callback("reset-communication", self.__callback_reset_communication)
 		
 		network.attach(bus)
 		network.add(node)
@@ -270,6 +271,7 @@ class NMTSlaveTestCase(unittest.TestCase):
 		node.nmt.add_callback("stop", self.__callback_stop)
 		node.nmt.add_callback("pre-operational", self.__callback_pre_operational)
 		node.nmt.add_callback("reset-application", self.__callback_reset_application)
+		node.nmt.add_callback("reset-communication", self.__callback_reset_communication)
 		
 		network.attach(bus1)
 		network.add(node)
@@ -487,6 +489,11 @@ class NMTSlaveTestCase(unittest.TestCase):
 		service.node.nmt.state = canopen.nmt.states.PRE_OPERATIONAL
 	
 	def __callback_reset_application(self, event, service, *args):
+		service.node.nmt.state = canopen.nmt.states.INITIALIZATION
+		service.node.nmt.state = canopen.nmt.states.PRE_OPERATIONAL
+	
+	def __callback_reset_communication(self, event, service, *args):
+		service.node.nmt.state = canopen.nmt.states.INITIALIZATION
 		service.node.nmt.state = canopen.nmt.states.PRE_OPERATIONAL
 	
 	def __callback_raises(self, event, service, *args):

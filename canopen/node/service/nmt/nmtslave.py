@@ -103,12 +103,9 @@ class NMTSlave(Service):
 			if command == 0x80: # Enter NMT pre-operational
 				self.notify("pre-operational", self)
 			if command == 0x81: # Enter NMT reset application
-				self.state = INITIALIZATION
 				self.notify("reset-application", self)
 			if command == 0x82: # Enter NMT reset communication
-				self.state = INITIALIZATION
 				self.notify("reset-communication", self)
-				self.state = PRE_OPERATIONAL
 	
 	@property
 	def state(self):
