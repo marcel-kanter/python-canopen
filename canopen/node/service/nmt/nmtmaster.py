@@ -40,11 +40,15 @@ class NMTMaster(Service):
 		if heartbeat_time <= 0:
 			raise ValueError()
 		
+		self._timer.cancel()
+		
 		self._heartbeat_time = heartbeat_time
 	
 	def start_guarding(self, guard_time):
 		if guard_time <= 0:
 			raise ValueError()
+		
+		self._timer.cancel()
 		
 		self._guard_time = guard_time
 		self.send_guard_request()

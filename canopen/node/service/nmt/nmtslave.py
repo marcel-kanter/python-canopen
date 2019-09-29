@@ -43,6 +43,8 @@ class NMTSlave(Service):
 		if heartbeat_time <= 0:
 			raise ValueError()
 		
+		self._timer.cancel()
+		
 		self._heartbeat_time = heartbeat_time
 		self.send_heartbeat()
 		self._timer.start(heartbeat_time, True)
@@ -50,6 +52,8 @@ class NMTSlave(Service):
 	def start_guarding(self, guard_time):
 		if guard_time <= 0:
 			raise ValueError()
+		
+		self._timer.cancel()
 		
 		self._guard_time = guard_time
 	
