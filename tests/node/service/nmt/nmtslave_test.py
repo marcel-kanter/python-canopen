@@ -464,15 +464,15 @@ class NMTSlaveTestCase(unittest.TestCase):
 		network.attach(bus1)
 		network.add(node)
 		
-		test_data = [-1.0, 0.0]
-		for value in test_data:
-			with self.subTest(value):
+		test_data = [(-1, 1), (0, 1), (1, -1), (1, 0)]
+		for guard_time, life_time_factor in test_data:
+			with self.subTest("guard_time=" + str(guard_time) + ", life_time_factor=" + str(life_time_factor)):
 				with self.assertRaises(ValueError):
-					node.nmt.start_guarding(value)
+					node.nmt.start_guarding(guard_time, life_time_factor)
 		
 		node.nmt.state = canopen.nmt.states.PRE_OPERATIONAL
 		
-		node.nmt.start_guarding(0.2)
+		node.nmt.start_guarding(0.2, 1)
 		
 		del network[node.id]
 		network.detach()

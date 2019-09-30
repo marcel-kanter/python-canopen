@@ -11,16 +11,18 @@ class NMTSlave(Service):
 	This class is an implementation of the NMT slave. The nmt state of the node can be accessed by the state property.
 	
 	Callbacks
-	start, stop, pre-operational, reset-application, reset-communication
+	start, stop, pre-operational, reset-application, reset-communication, guarding-event
 	"""
 	def __init__(self):
 		Service.__init__(self)
 		self._state = 0
 		self._toggle_bit = 0
-		self._callbacks = {"start": [], "stop": [], "pre-operational": [], "reset-application": [], "reset-communication": []}
+		self._callbacks = {"start": [], "stop": [], "pre-operational": [], "reset-application": [], "reset-communication": [], "guarding-event" : []}
 		
+		self._counter = 0
 		self._heartbeat_time = 0
 		self._guard_time = 0
+		self._life_time_factor = 0
 		self._timer = canopen.util.Timer(self.timer_callback)
 	
 	def attach(self, node):
@@ -54,20 +56,25 @@ class NMTSlave(Service):
 		self.send_heartbeat()
 		self._timer.start(heartbeat_time, True)
 		
-	def start_guarding(self, guard_time):
+	def start_guarding(self, guard_time, life_time_factor):
 		""" Starts monitoring the node guarding requests on reception of the next request. 
-		:param guard_time: The time between the node guarding requests."""
+		:param guard_time: The time between the node guarding requests.
+		:param life_time_factor: The life time factor as defined in DS301."""
 		if guard_time <= 0:
+			raise ValueError()
+		if life_time_factor <= 0:
 			raise ValueError()
 		
 		self._timer.cancel()
 		
 		self._guard_time = guard_time
+		self._life_time_factor = life_time_factor
 	
 	def stop(self):
 		""" Stops the error control methods. """
 		self._timer.cancel()
 		self._guard_time = 0
+		self._life_time_factor = 0
 		self._heartbeat_time = 0
 	
 	def send_heartbeat(self):
@@ -96,6 +103,7 @@ class NMTSlave(Service):
 		if self._state == INITIALIZATION:
 			return
 		
+		self._counter = 0
 		self.send_guard_response()
 	
 	def on_node_control(self, message):
