@@ -5,6 +5,10 @@ from canopen.objectdictionary import Variable
 
 
 class TIMEProducer(Service):
+	""" TIMEProducer
+	
+	This class is an implementation of a TIME producer.
+	"""
 	
 	_helper_variable = Variable("helper", 0, 0, canopen.objectdictionary.TIME_OF_DAY)
 	
@@ -25,7 +29,8 @@ class TIMEProducer(Service):
 		self._cob_id_time = cob_id_time
 	
 	def send(self, t):
-		""" Sends a TIME message on the bus."""
+		""" Sends a TIME message on the bus.
+		:param t: The the stamp to send. The value is encoded like a Variable of data type TIME_OF_DAY. Values before the canopen epoch are not allowed."""
 		d = self._helper_variable.encode(t)
 		if self._cob_id_time & (1 << 29):
 			message = can.Message(arbitration_id = self._cob_id_time & 0x1FFFFFFF, is_extended_id = True, data = d)

@@ -4,6 +4,11 @@ from canopen.node.service import Service
 
 
 class SYNCProducer(Service):
+	""" SYNCProducer
+	
+	This class is an implementation of a SYNC producer.
+	"""
+	
 	def __init__(self):
 		Service.__init__(self)
 	
@@ -21,7 +26,8 @@ class SYNCProducer(Service):
 		self._cob_id_sync = cob_id_sync
 	
 	def send(self, counter = None):
-		""" Sends a SYNC message on the bus. If counter is None, no data is used in the SYNC message."""
+		""" Sends a SYNC message on the bus. If counter is None, no data is used in the SYNC message.
+		:param counter: The counter value to send with the SYNC message. If None, the counter value is omitted from the SYNC message."""
 		if self._cob_id_sync & (1 << 29):
 			message = can.Message(arbitration_id = self._cob_id_sync & 0x1FFFFFFF, is_extended_id = True)
 		else:

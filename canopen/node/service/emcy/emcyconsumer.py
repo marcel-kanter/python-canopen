@@ -4,9 +4,12 @@ from canopen.node.service import Service
 
 
 class EMCYConsumer(Service):
-	""" EMCY consumer
+	""" EMCYConsumer
 	
-	This class is an implementation of a DS301 EMCY consumer. 
+	This class is an implementation of an EMCY consumer.
+	
+	Callbacks
+	emcy
 	"""
 	def __init__(self):
 		Service.__init__(self)

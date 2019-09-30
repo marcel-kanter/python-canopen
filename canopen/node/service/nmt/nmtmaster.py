@@ -37,6 +37,8 @@ class NMTMaster(Service):
 		Service.detach(self)
 	
 	def start_heartbeat(self, heartbeat_time):
+		""" Starts montioring the heartbeat messages.
+		:param heartbeat_time: The time between the heartbeat messages. """
 		if heartbeat_time <= 0:
 			raise ValueError()
 		
@@ -45,6 +47,8 @@ class NMTMaster(Service):
 		self._heartbeat_time = heartbeat_time
 	
 	def start_guarding(self, guard_time):
+		""" Sends a node guarding request and then every guard_time seconds.
+		:param guard_time: The time between the node guarding requests. """
 		if guard_time <= 0:
 			raise ValueError()
 		
@@ -55,15 +59,18 @@ class NMTMaster(Service):
 		self._timer.start(guard_time, True)
 	
 	def stop(self):
+		""" Stops the error control methods. """
 		self._timer.cancel()
 		self._guard_time = 0
 		self._heartbeat_time = 0
 	
 	def send_guard_request(self):
+		""" Sends a guard request. """
 		message = can.Message(arbitration_id = self._identifier_ec, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		self._node.network.send(message)
 	
 	def timer_callback(self):
+		""" Handler for timer events. """
 		self.send_guard_request()
 	
 	def on_error_control(self, message):

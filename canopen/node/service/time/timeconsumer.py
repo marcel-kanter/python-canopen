@@ -4,6 +4,13 @@ from canopen.objectdictionary import Variable
 
 
 class TIMEConsumer(Service):
+	""" TIMEConsumer
+	
+	This class is an implementation of a TIME consumer.
+	
+	Callbacks
+	time
+	"""
 	
 	_helper_variable = Variable("helper", 0, 0, canopen.objectdictionary.TIME_OF_DAY)
 	

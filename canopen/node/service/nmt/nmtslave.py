@@ -9,6 +9,9 @@ class NMTSlave(Service):
 	""" NMTSlave service.
 	
 	This class is an implementation of the NMT slave. The nmt state of the node can be accessed by the state property.
+	
+	Callbacks
+	start, stop, pre-operational, reset-application, reset-communication
 	"""
 	def __init__(self):
 		Service.__init__(self)
@@ -40,6 +43,8 @@ class NMTSlave(Service):
 		Service.detach(self)
 	
 	def start_heartbeat(self, heartbeat_time):
+		""" Sends a heartbeat message and then every heartbeat_time seconds.
+		:param heartbeat_time: The time between the heartbeat messages. """
 		if heartbeat_time <= 0:
 			raise ValueError()
 		
@@ -50,6 +55,8 @@ class NMTSlave(Service):
 		self._timer.start(heartbeat_time, True)
 		
 	def start_guarding(self, guard_time):
+		""" Starts monitoring the node guarding requests on reception of the next request. 
+		:param guard_time: The time between the node guarding requests."""
 		if guard_time <= 0:
 			raise ValueError()
 		
@@ -58,21 +65,24 @@ class NMTSlave(Service):
 		self._guard_time = guard_time
 	
 	def stop(self):
+		""" Stops the error control methods. """
 		self._timer.cancel()
 		self._guard_time = 0
 		self._heartbeat_time = 0
 	
 	def send_heartbeat(self):
-		""" Sends an heartbeat message. """
+		""" Sends a heartbeat message. """
 		message = can.Message(arbitration_id = self._identifier_ec, is_extended_id = False, data = [self._state & 0x7F])
 		self._node.network.send(message)
 	
 	def send_guard_response(self):
+		""" Sends a guard response. Basically a heartbeat message with the toggle bit. After sending the message, the toggle bit is inverted. """
 		response = can.Message(arbitration_id = self._identifier_ec, is_extended_id = False, data = [self._toggle_bit | (self._state & 0x7F)])
 		self._node.network.send(response)
 		self._toggle_bit ^= 0x80
 	
 	def timer_callback(self):
+		""" Handler for timer events. """
 		self.send_heartbeat()
 	
 	def on_error_control(self, message):

@@ -3,6 +3,14 @@ from canopen.node.service import Service
 
 
 class SYNCConsumer(Service):
+	""" SYNCConsumer
+	
+	This class is an implementation of a SYNC consumer.
+	
+	Callbacks
+	sync
+	"""
+	
 	def __init__(self):
 		Service.__init__(self)
 		self._callbacks = {"sync": []}

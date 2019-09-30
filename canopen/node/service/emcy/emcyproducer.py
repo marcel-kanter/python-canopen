@@ -5,6 +5,10 @@ from canopen.node.service import Service
 
 
 class EMCYProducer(Service):
+	""" ECMYProducer
+	
+	This class is an implementation of an EMCY producer.
+	"""
 	def __init__(self):
 		Service.__init__(self)
 	
