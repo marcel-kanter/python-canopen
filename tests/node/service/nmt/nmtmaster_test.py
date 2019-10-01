@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import Mock
 import time
 import struct
 import can
@@ -191,6 +192,10 @@ class NMTMasterTestCase(unittest.TestCase):
 		dictionary = canopen.ObjectDictionary()
 		node = canopen.RemoteNode("a", 0x0A, dictionary)
 		
+		cb = Mock()
+		
+		node.nmt.add_callback("guarding", cb)
+		
 		network.attach(bus1)
 		network.add(node)
 		
@@ -200,7 +205,9 @@ class NMTMasterTestCase(unittest.TestCase):
 				with self.assertRaises(ValueError):
 					node.nmt.start_guarding(guard_time, life_time_factor)
 		
-		node.nmt.start_guarding(0.2, 1)
+		# Interval 0, t = 0
+		
+		node.nmt.start_guarding(0.2, 2)
 		time.sleep(0.05)
 		
 		message = bus2.recv(1)
@@ -208,7 +215,34 @@ class NMTMasterTestCase(unittest.TestCase):
 		self.assertEqual(message.is_remote_frame, True)
 		self.assertEqual(message.dlc, 1)
 		
+		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = False, data = b"\x05")
+		bus2.send(message)
+		
 		time.sleep(0.2)
+		cb.assert_not_called()
+		
+		# Interval 1, t = 0.25, without response
+		
+		message = bus2.recv(1)
+		self.assertEqual(message.arbitration_id, 0x700 + node.id)
+		self.assertEqual(message.is_remote_frame, True)
+		self.assertEqual(message.dlc, 1)
+		
+		time.sleep(0.2)
+		cb.assert_not_called() # life time factor = 2 => the event occurs on second missed guarding request
+		
+		# Interval 2, t = 0.45, without response
+		
+		message = bus2.recv(1)
+		self.assertEqual(message.arbitration_id, 0x700 + node.id)
+		self.assertEqual(message.is_remote_frame, True)
+		self.assertEqual(message.dlc, 1)
+		
+		time.sleep(0.2)
+		
+		cb.assert_called_with("guarding", node.nmt)
+		
+		# Interval 3, t = 0.65, stop
 		
 		message = bus2.recv(1)
 		self.assertEqual(message.arbitration_id, 0x700 + node.id)
@@ -217,9 +251,7 @@ class NMTMasterTestCase(unittest.TestCase):
 		
 		node.nmt.stop()
 		
-		time.sleep(0.2)
-		
-		message = bus2.recv(0.01)
+		message = bus2.recv(0.2)
 		self.assertEqual(message, None)
 		
 		del network[node.id]

@@ -11,13 +11,13 @@ class NMTMaster(Service):
 	This class is an implementation of the NMT master. The nmt state of the node can be accessed by the state property.
 	
 	Callbacks
-	heartbeat-event, guarding-event
+	heartbeat, guarding
 	"""
 	def __init__(self):
 		Service.__init__(self)
 		self._state = 0
 		self._toggle_bit = 0
-		self._callbacks = {"heartbeat-event": [], "guarding-event": []}
+		self._callbacks = {"heartbeat": [], "guarding": []}
 		
 		self._counter = 0
 		self._heartbeat_time = 0
@@ -84,6 +84,8 @@ class NMTMaster(Service):
 	
 	def timer_callback(self):
 		""" Handler for timer events. """
+		if self._counter >= self._life_time_factor:
+			self.notify("guarding", self)
 		self._counter += 1
 		self.send_guard_request()
 	
@@ -109,6 +111,7 @@ class NMTMaster(Service):
 		
 		if value == INITIALIZATION:
 			command = 0x81
+			self._toggle_bit = 0x00
 		if value == STOPPED:
 			command = 0x02
 		if value == OPERATIONAL:

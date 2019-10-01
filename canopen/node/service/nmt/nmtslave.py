@@ -11,13 +11,13 @@ class NMTSlave(Service):
 	This class is an implementation of the NMT slave. The nmt state of the node can be accessed by the state property.
 	
 	Callbacks
-	start, stop, pre-operational, reset-application, reset-communication, guarding-event
+	start, stop, pre-operational, reset-application, reset-communication, guarding
 	"""
 	def __init__(self):
 		Service.__init__(self)
 		self._state = 0
 		self._toggle_bit = 0
-		self._callbacks = {"start": [], "stop": [], "pre-operational": [], "reset-application": [], "reset-communication": [], "guarding-event" : []}
+		self._callbacks = {"start": [], "stop": [], "pre-operational": [], "reset-application": [], "reset-communication": [], "guarding" : []}
 		
 		self._counter = 0
 		self._heartbeat_time = 0
