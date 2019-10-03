@@ -136,8 +136,9 @@ class NMTSlave(Service):
 		
 		if self._state == INITIALIZATION:
 			# In initialization state, only the transition to pre-operational state is allowed.
-			if value != PRE_OPERATIONAL: 
+			if value != PRE_OPERATIONAL and value != INITIALIZATION: 
 				raise ValueError()
+			
 			self._toggle_bit = 0x00
 		
 		self._state = value 

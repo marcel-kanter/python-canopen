@@ -425,6 +425,10 @@ class NMTSlaveTestCase(unittest.TestCase):
 				with self.assertRaises(ValueError):
 					node.nmt.start_heartbeat(value)
 		
+		#### Teststep: Setting initialization state when the node is in initialization state
+		node.nmt.state = canopen.nmt.states.INITIALIZATION
+		
+		#### Teststep: Check the heartbeat functionality
 		node.nmt.state = canopen.nmt.states.PRE_OPERATIONAL
 		
 		node.nmt.start_heartbeat(0.2)
