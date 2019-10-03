@@ -11,11 +11,24 @@ import canopen
 import canopen.nmt
 
 
+def fkt(event, service):
+	print("guarding event")
+
+
 if __name__ == "__main__":
+	if len(sys.argv) != 3:
+		print("Usage: " + sys.argv[0] + " <guarding-time> <life-time-factor>")
+		print("")
+		print("gurading-time: The time between the guarding requests in seconds.")
+		print("life-time-factor: The life time factor as defined in DS301.")
+		exit()
+	
 	bus = can.Bus(interface = "ixxat", channel = 0, bitrate = 10000)
 	network = canopen.Network()
 	dictionary = canopen.ObjectDictionary()
-	node = canopen.LocalNode("node", 1, dictionary)
+	node = canopen.RemoteNode("node", 1, dictionary)
+	
+	node.nmt.add_callback("guarding", fkt)
 	
 	network.attach(bus)
 	network.add(node)
@@ -23,17 +36,12 @@ if __name__ == "__main__":
 	print("press CTRL-C to quit")
 	
 	try:
-		network["node"].nmt.send_heartbeat()
 		node.nmt.state = canopen.nmt.PRE_OPERATIONAL
-		network["node"].nmt.start_heartbeat(0.2)
-	
-		time.sleep(1)
-	
-		network[1].nmt.state = canopen.nmt.OPERATIONAL
 		
+		node.nmt.start_guarding(float(sys.argv[1]), int(sys.argv[2]))
 	
 		while True:
-			time.sleep(1)
+			time.sleep(0.1)
 	except:
 		pass
 	
