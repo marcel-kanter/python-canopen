@@ -207,7 +207,7 @@ class NMTMasterTestCase(unittest.TestCase):
 		
 		# Interval 0, t = 0
 		
-		node.nmt.start_guarding(0.2, 2)
+		node.nmt.start_guarding(0.1, 2)
 		time.sleep(0.05)
 		
 		message = bus2.recv(1)
@@ -218,31 +218,84 @@ class NMTMasterTestCase(unittest.TestCase):
 		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = False, data = b"\x05")
 		bus2.send(message)
 		
-		time.sleep(0.2)
+		time.sleep(0.1)
 		cb.assert_not_called()
 		
-		# Interval 1, t = 0.25, without response
+		# Interval 1, t = 0.15
 		
 		message = bus2.recv(1)
 		self.assertEqual(message.arbitration_id, 0x700 + node.id)
 		self.assertEqual(message.is_remote_frame, True)
 		self.assertEqual(message.dlc, 1)
 		
-		time.sleep(0.2)
+		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = False, data = b"\x85")
+		bus2.send(message)
+		
+		time.sleep(0.1)
+		cb.assert_not_called()
+		
+		# Interval 2, t = 0.25, toggle bit not alternated
+		
+		message = bus2.recv(1)
+		self.assertEqual(message.arbitration_id, 0x700 + node.id)
+		self.assertEqual(message.is_remote_frame, True)
+		self.assertEqual(message.dlc, 1)
+		
+		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = False, data = b"\x85")
+		bus2.send(message)
+		
+		time.sleep(0.1)
+		cb.assert_not_called()
+		
+		# Interval 3, t = 0.35, toggle bit not alternated
+		
+		message = bus2.recv(1)
+		self.assertEqual(message.arbitration_id, 0x700 + node.id)
+		self.assertEqual(message.is_remote_frame, True)
+		self.assertEqual(message.dlc, 1)
+		
+		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = False, data = b"\x85")
+		bus2.send(message)
+		
+		time.sleep(0.1)
+		cb.assert_called_with("guarding", node.nmt)
+		cb.reset_mock()
+		
+		# Interval 4, t = 0.45
+
+		message = bus2.recv(1)
+		self.assertEqual(message.arbitration_id, 0x700 + node.id)
+		self.assertEqual(message.is_remote_frame, True)
+		self.assertEqual(message.dlc, 1)
+		
+		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = False, data = b"\x05")
+		bus2.send(message)
+		
+		time.sleep(0.1)
+		cb.assert_not_called()
+
+		# Interval 5, t = 0.55, without response
+		
+		message = bus2.recv(1)
+		self.assertEqual(message.arbitration_id, 0x700 + node.id)
+		self.assertEqual(message.is_remote_frame, True)
+		self.assertEqual(message.dlc, 1)
+		
+		time.sleep(0.1)
 		cb.assert_not_called() # life time factor = 2 => the event occurs on second missed guarding request
 		
-		# Interval 2, t = 0.45, without response
+		# Interval 6, t = 0.65, without response
 		
 		message = bus2.recv(1)
 		self.assertEqual(message.arbitration_id, 0x700 + node.id)
 		self.assertEqual(message.is_remote_frame, True)
 		self.assertEqual(message.dlc, 1)
 		
-		time.sleep(0.2)
+		time.sleep(0.1)
 		
 		cb.assert_called_with("guarding", node.nmt)
 		
-		# Interval 3, t = 0.65, stop
+		# Interval 7, t = 0.75, stop
 		
 		message = bus2.recv(1)
 		self.assertEqual(message.arbitration_id, 0x700 + node.id)

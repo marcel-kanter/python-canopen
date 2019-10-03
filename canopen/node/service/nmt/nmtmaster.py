@@ -16,7 +16,7 @@ class NMTMaster(Service):
 	def __init__(self):
 		Service.__init__(self)
 		self._state = 0
-		self._toggle_bit = 0
+		self._toggle_bit = 0x00
 		self._callbacks = {"heartbeat": [], "guarding": []}
 		
 		self._counter = 0
@@ -30,7 +30,8 @@ class NMTMaster(Service):
 		:param node: A canopen.Node, to which the service should be attached to. """
 		Service.attach(self, node)
 		self._state = 0
-		self._toggle_bit = 0
+		# The toggle bit of the next guarding response is unknown, but maybe the node is in initialization state. Pretend there was a previous guarding response with the inverted toggle bit.
+		self._toggle_bit = 0x80
 		self._identifier_ec = 0x700 + self._node.id
 		self._node.network.subscribe(self.on_error_control, self._identifier_ec)
 	
@@ -96,8 +97,10 @@ class NMTMaster(Service):
 		if message.dlc != 1:
 			return
 		
-		self._counter = 0
-		self._state = message.data[0] & 0x7F
+		# Check toggle bit only when node guarding is active
+		if self._guard_time <= 0 or self._life_time_factor <= 0 or message.data[0] & 0x80 == self._toggle_bit ^ 0x80:
+			self._counter = 0
+			self._state = message.data[0] & 0x7F
 		self._toggle_bit = message.data[0] & 0x80
 	
 	@property
@@ -111,7 +114,8 @@ class NMTMaster(Service):
 		
 		if value == INITIALIZATION:
 			command = 0x81
-			self._toggle_bit = 0x00
+			# The toggle bit of the next guarding response should be 0. Pretend there was a previous guarding response with the inverted toggle bit.
+			self._toggle_bit = 0x80
 		if value == STOPPED:
 			command = 0x02
 		if value == OPERATIONAL:
