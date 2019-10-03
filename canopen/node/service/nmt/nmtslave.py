@@ -53,8 +53,10 @@ class NMTSlave(Service):
 		self._timer.cancel()
 		
 		self._heartbeat_time = heartbeat_time
-		self.send_heartbeat()
-		self._timer.start(heartbeat_time, True)
+		
+		if self._state != INITIALIZATION:
+			self.send_heartbeat()
+			self._timer.start(self._heartbeat_time, True)
 		
 	def start_guarding(self, guard_time, life_time_factor):
 		""" Starts monitoring the node guarding requests on reception of the next request. 
@@ -140,5 +142,12 @@ class NMTSlave(Service):
 				raise ValueError()
 			
 			self._toggle_bit = 0x00
+			
+			if self._heartbeat_time > 0:
+				self.send_heartbeat()
+				self._timer.start(self._heartbeat_time, True)
+		else:
+			if value == INITIALIZATION:
+				self._timer.cancel()
 		
 		self._state = value 

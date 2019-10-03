@@ -425,32 +425,56 @@ class NMTSlaveTestCase(unittest.TestCase):
 				with self.assertRaises(ValueError):
 					node.nmt.start_heartbeat(value)
 		
-		#### Teststep: Setting initialization state when the node is in initialization state
+		#### Test step 1: Starting heartbeat in initialization state and switching state afterwards. No message should be send until pre-operational state is set. 
 		node.nmt.state = canopen.nmt.states.INITIALIZATION
 		
-		#### Teststep: Check the heartbeat functionality
-		node.nmt.state = canopen.nmt.states.PRE_OPERATIONAL
-		
 		node.nmt.start_heartbeat(0.2)
-		time.sleep(0.05)
-		
-		message = bus2.recv(0.01)
-		self.assertEqual(message.arbitration_id, 0x700 + node.id)
-		self.assertEqual(message.is_remote_frame, False)
-		self.assertEqual(message.data, b"\x7F")
 		
 		time.sleep(0.2)
 		
-		message = bus2.recv(0.01)
+		message = bus2.recv(0.1)
+		self.assertEqual(message, None)
+		
+		# No message until the state is set to pre-operational.
+		
+		node.nmt.state = canopen.nmt.states.PRE_OPERATIONAL
+		
+		# First message should be boot-up message
+		message = bus2.recv(0.1)
+		self.assertEqual(message.arbitration_id, 0x700 + node.id)
+		self.assertEqual(message.is_remote_frame, False)
+		self.assertEqual(message.data, b"\x00")
+		
+		time.sleep(0.2)
+		
+		# Next message should indicate pre-operational state.
+		message = bus2.recv(0.1)
 		self.assertEqual(message.arbitration_id, 0x700 + node.id)
 		self.assertEqual(message.is_remote_frame, False)
 		self.assertEqual(message.data, b"\x7F")
 		
+		# Stop heartbeat functionality
 		node.nmt.stop()
 		
 		time.sleep(0.2)
 		
-		message = bus2.recv(0.01)
+		message = bus2.recv(0.1)
+		self.assertEqual(message, None)
+		
+		# Start heartbeat functionality again. Now the node is in pre-operational state already.
+		node.nmt.start_heartbeat(0.2)
+		
+		message = bus2.recv(0.1)
+		self.assertEqual(message.arbitration_id, 0x700 + node.id)
+		self.assertEqual(message.is_remote_frame, False)
+		self.assertEqual(message.data, b"\x7F")
+		
+		# Stop heartbeat functionality
+		node.nmt.stop()
+		
+		time.sleep(0.2)
+		
+		message = bus2.recv(0.1)
 		self.assertEqual(message, None)
 		
 		del network[node.id]
