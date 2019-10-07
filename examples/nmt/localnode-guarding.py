@@ -11,11 +11,17 @@ import canopen
 import canopen.nmt
 
 
+def fkt(event, service):
+	service.node.emcy.send(0x8130, 0x11, None)
+	print("guarding event")
+
+
 if __name__ == "__main__":
-	if len(sys.argv) != 2:
-		print("Usage: " + sys.argv[0] + " <heartbeat-time>")
+	if len(sys.argv) != 3:
+		print("Usage: " + sys.argv[0] + " <guarding-time> <life-time-factor>")
 		print("")
-		print("heartbeat-time: The time between the heartbeat message in seconds.")
+		print("gurading-time: The time between the guarding requests in seconds.")
+		print("life-time-factor: The life time factor as defined in DS301.")
 		exit()
 	
 	bus = can.Bus(interface = "ixxat", channel = 0, bitrate = 10000)
@@ -23,16 +29,17 @@ if __name__ == "__main__":
 	dictionary = canopen.ObjectDictionary()
 	node = canopen.LocalNode("node", 1, dictionary)
 	
+	node.nmt.add_callback("guarding", fkt)
+	
 	network.attach(bus)
 	network.add(node)
 	
 	print("press CTRL-C to quit")
 	
 	try:
-		node.nmt.send_heartbeat()
 		node.nmt.state = canopen.nmt.PRE_OPERATIONAL
 		
-		node.nmt.start_heartbeat(float(sys.argv[1]))
+		node.nmt.start_guarding(float(sys.argv[1]), int(sys.argv[2]))
 	
 		time.sleep(1)
 	

@@ -23,6 +23,7 @@ class NMTSlave(Service):
 		self._heartbeat_time = 0
 		self._guard_time = 0
 		self._life_time_factor = 0
+		self._guarding_running = False
 		self._timer = canopen.util.Timer(self.timer_callback)
 	
 	def attach(self, node):
@@ -51,6 +52,7 @@ class NMTSlave(Service):
 			raise ValueError()
 		
 		self._timer.cancel()
+		self._guarding_running = False
 		
 		self._heartbeat_time = heartbeat_time
 		
@@ -68,6 +70,7 @@ class NMTSlave(Service):
 			raise ValueError()
 		
 		self._timer.cancel()
+		self._guarding_running = False
 		
 		self._guard_time = guard_time
 		self._life_time_factor = life_time_factor
@@ -77,6 +80,7 @@ class NMTSlave(Service):
 		self._timer.cancel()
 		self._guard_time = 0
 		self._life_time_factor = 0
+		self._guarding_running = False
 		self._heartbeat_time = 0
 	
 	def send_heartbeat(self):
@@ -92,7 +96,17 @@ class NMTSlave(Service):
 	
 	def timer_callback(self):
 		""" Handler for timer events. """
-		self.send_heartbeat()
+		if self._heartbeat_time > 0:
+			self.send_heartbeat()
+		elif self._guard_time > 0 and self._life_time_factor > 0:
+			if self._counter >= self._life_time_factor:
+				self.notify("guarding", self)
+			else:
+				self._counter += 1
+		else:
+			# Heartbeat and nodeguarding is not runnig, so the timer is not needed.
+			self._timer.cancel()
+			self._guarding_running = False
 	
 	def on_error_control(self, message):
 		""" Handler for received error control requests. """
@@ -102,11 +116,13 @@ class NMTSlave(Service):
 			return
 		
 		# Do not respond to error control request in initialization state
-		if self._state == INITIALIZATION:
-			return
-		
-		self._counter = 0
-		self.send_guard_response()
+		if self._state != INITIALIZATION:
+			self._counter = 0
+			self.send_guard_response()
+			if self._guard_time > 0 and self._life_time_factor > 0 and self._heartbeat_time <= 0 and not self._guarding_running:
+				self._guarding_running = True
+				self._counter = 1
+				self._timer.start(self._guard_time, True)
 	
 	def on_node_control(self, message):
 		""" Handler for received node control requests. """
@@ -149,5 +165,6 @@ class NMTSlave(Service):
 		else:
 			if value == INITIALIZATION:
 				self._timer.cancel()
+				self._guarding_running = False
 		
 		self._state = value 

@@ -416,6 +416,10 @@ class NMTSlaveTestCase(unittest.TestCase):
 		dictionary = canopen.ObjectDictionary()
 		node = canopen.LocalNode("a", 0x0A, dictionary)
 		
+		cb = Mock()
+		
+		node.nmt.add_callback("guarding", cb)
+		
 		network.attach(bus1)
 		network.add(node)
 		
@@ -477,6 +481,18 @@ class NMTSlaveTestCase(unittest.TestCase):
 		message = bus2.recv(0.1)
 		self.assertEqual(message, None)
 		
+		# The callback is not used in heartbeat, so it should not have been called
+		cb.assert_not_called()
+		
+		#### Test step: Calling the timer_callback from outside should not produce an error (it should only be called by the internal timer).
+		cb.reset_mock()
+		node.nmt.timer_callback()
+		
+		message = bus2.recv(0.1)
+		self.assertEqual(message, None)
+		
+		cb.assert_not_called()
+		
 		del network[node.id]
 		network.detach()
 		bus1.shutdown()
@@ -489,6 +505,10 @@ class NMTSlaveTestCase(unittest.TestCase):
 		dictionary = canopen.ObjectDictionary()
 		node = canopen.LocalNode("a", 0x0A, dictionary)
 		
+		cb = Mock()
+		
+		node.nmt.add_callback("guarding", cb)
+		
 		network.attach(bus1)
 		network.add(node)
 		
@@ -500,7 +520,61 @@ class NMTSlaveTestCase(unittest.TestCase):
 		
 		node.nmt.state = canopen.nmt.states.PRE_OPERATIONAL
 		
-		node.nmt.start_guarding(0.2, 1)
+		node.nmt.start_guarding(0.2, 2)
+		
+		# Interval 0, Trigger guarding with the first RTR
+		
+		message = can.Message(arbitration_id = 0x700 + node.id, is_remote_frame = True, dlc = 1)
+		bus2.send(message)
+		
+		time.sleep(0.05)
+		
+		message = bus2.recv(0.1)
+		self.assertEqual(message.arbitration_id, 0x700 + node.id)
+		self.assertEqual(message.is_remote_frame, False)
+		self.assertEqual(message.data, b"\x7F")
+		
+		cb.assert_not_called()
+		
+		time.sleep(0.1)
+		
+		# Interval 1, t = 0.15
+		message = can.Message(arbitration_id = 0x700 + node.id, is_remote_frame = True, dlc = 1)
+		bus2.send(message)
+		
+		time.sleep(0.05)
+		
+		message = bus2.recv(0.1)
+		self.assertEqual(message.arbitration_id, 0x700 + node.id)
+		self.assertEqual(message.is_remote_frame, False)
+		self.assertEqual(message.data, b"\xFF")
+		
+		cb.assert_not_called()
+		
+		time.sleep(0.15)
+		
+		# Interval 2, t = 0.35, no RTR
+		cb.assert_not_called()
+		
+		time.sleep(0.2)
+		
+		cb.assert_not_called()
+		# Interval 3, t = 0.55, no RTR, now the callback should be called
+		
+		time.sleep(0.2)
+		
+		cb.assert_called()
+		
+		node.nmt.stop()
+		
+		#### Test step: Calling the timer_callback from outside should not produce an error (it should only be called by the internal timer).
+		cb.reset_mock()
+		node.nmt.timer_callback()
+		
+		message = bus2.recv(0.1)
+		self.assertEqual(message, None)
+		
+		cb.assert_not_called()
 		
 		del network[node.id]
 		network.detach()
