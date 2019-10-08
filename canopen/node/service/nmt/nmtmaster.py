@@ -85,10 +85,15 @@ class NMTMaster(Service):
 	
 	def timer_callback(self):
 		""" Handler for timer events. """
-		if self._counter >= self._life_time_factor:
-			self.notify("guarding", self)
-		self._counter += 1
-		self.send_guard_request()
+		if self._heartbeat_time > 0:
+			self.notify("heartbeat", self)
+		elif self._guard_time > 0 and self._life_time_factor > 0:
+			if self._counter >= self._life_time_factor:
+				self.notify("guarding", self)
+			self._counter += 1
+			self.send_guard_request()
+		else:
+			self._timer.cancel()
 	
 	def on_error_control(self, message):
 		""" Handler for error control responses. It catches all status messages from the remote node and updates the state property. """
@@ -102,6 +107,9 @@ class NMTMaster(Service):
 			self._counter = 0
 			self._state = message.data[0] & 0x7F
 		self._toggle_bit = message.data[0] & 0x80
+		if self._heartbeat_time > 0:
+			self._timer.cancel()
+			self._timer.start(self._heartbeat_time, False)
 	
 	@property
 	def state(self):

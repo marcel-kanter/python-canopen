@@ -563,7 +563,7 @@ class NMTSlaveTestCase(unittest.TestCase):
 		
 		time.sleep(0.2)
 		
-		cb.assert_called()
+		cb.assert_called_with("guarding", node.nmt)
 		
 		node.nmt.stop()
 		

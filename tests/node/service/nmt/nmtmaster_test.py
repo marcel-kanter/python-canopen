@@ -169,16 +169,54 @@ class NMTMasterTestCase(unittest.TestCase):
 		dictionary = canopen.ObjectDictionary()
 		node = canopen.RemoteNode("a", 0x0A, dictionary)
 		
+		cb = Mock()
+		
+		node.nmt.add_callback("heartbeat", cb)
+		
 		network.attach(bus1)
 		network.add(node)
 		
 		test_data = [-1.0, 0.0]
 		for value in test_data:
-			with self.subTest(value):
+			with self.subTest("heartbeat_time=" + str(value)):
 				with self.assertRaises(ValueError):
 					node.nmt.start_heartbeat(value)
 		
 		node.nmt.start_heartbeat(0.2)
+		
+		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = False, data = b"\x05")
+		bus2.send(message)
+		
+		time.sleep(0.05)
+		self.assertEqual(node.nmt.state, 0x05)
+		time.sleep(0.1)
+		
+		cb.assert_not_called()
+		
+		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = False, data = b"\x7F")
+		bus2.send(message)
+		
+		time.sleep(0.05)
+		self.assertEqual(node.nmt.state, 0x7F)
+		
+		time.sleep(0.1)
+		
+		cb.assert_not_called()
+		
+		time.sleep(0.1)
+		
+		cb.assert_called_with("heartbeat", node.nmt)
+		
+		node.nmt.stop()
+		
+		#### Test step: Calling the timer_callback from outside should not produce an error (it should only be called by the internal timer).
+		cb.reset_mock()
+		node.nmt.timer_callback()
+		
+		message = bus2.recv(0.1)
+		self.assertEqual(message, None)
+		
+		cb.assert_not_called()
 		
 		del network[node.id]
 		network.detach()
@@ -262,7 +300,7 @@ class NMTMasterTestCase(unittest.TestCase):
 		cb.reset_mock()
 		
 		# Interval 4, t = 0.45
-
+		
 		message = bus2.recv(1)
 		self.assertEqual(message.arbitration_id, 0x700 + node.id)
 		self.assertEqual(message.is_remote_frame, True)
@@ -273,7 +311,7 @@ class NMTMasterTestCase(unittest.TestCase):
 		
 		time.sleep(0.1)
 		cb.assert_not_called()
-
+		
 		# Interval 5, t = 0.55, without response
 		
 		message = bus2.recv(1)
@@ -306,6 +344,15 @@ class NMTMasterTestCase(unittest.TestCase):
 		
 		message = bus2.recv(0.2)
 		self.assertEqual(message, None)
+		
+		#### Test step: Calling the timer_callback from outside should not produce an error (it should only be called by the internal timer).
+		cb.reset_mock()
+		node.nmt.timer_callback()
+		
+		message = bus2.recv(0.1)
+		self.assertEqual(message, None)
+		
+		cb.assert_not_called()
 		
 		del network[node.id]
 		network.detach()
