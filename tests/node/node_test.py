@@ -32,6 +32,29 @@ class NodeTestCase(unittest.TestCase):
 		with self.assertRaises(AttributeError):
 			node.network = None
 	
+	def test_equals(self):
+		dictionary = canopen.ObjectDictionary()
+		a = canopen.Node("a", 1, dictionary)
+		
+		#### Test step: Reflexivity
+		self.assertTrue(a == a)
+		
+		#### Test step: Compare same classes only (required for transitivity)
+		test_data = [None, 3, canopen.LocalNode("a", 1, dictionary)]
+		for value in test_data:
+			with self.subTest("value=" + str(value)):
+				self.assertFalse(a == value)
+		
+		#### Test step: Consistency
+		b = canopen.Node("a", 1, dictionary)
+		for _ in range(3):
+			self.assertTrue(a == b)
+		
+		#### Test step: Symmetricality
+		b = canopen.Node("a", 1, dictionary)
+		self.assertTrue(a == b)
+		self.assertEqual(a == b, b == a)
+	
 	def test_attach_detach(self):
 		network1 = canopen.Network()
 		network2 = canopen.Network()

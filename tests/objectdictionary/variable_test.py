@@ -68,16 +68,15 @@ class VariableTestCase(unittest.TestCase):
 		self.assertTrue(a == a)
 		
 		#### Test step: Compare same classes only (required for transitivity)
-		b = None
-		self.assertFalse(a == b)
-		b = 3
-		self.assertFalse(a == b)
+		test_data = [None, 3, canopen.objectdictionary.DefType("var", 100)]
+		for value in test_data:
+			with self.subTest("value=" + str(value)):
+				self.assertFalse(a == value)
 		
 		#### Test step: Consistency
 		b = canopen.objectdictionary.Variable("var", 100, 0, UNSIGNED32, "rw")
-		self.assertTrue(a == b)
-		self.assertTrue(a == b)
-		self.assertTrue(a == b)
+		for _ in range(3):
+			self.assertTrue(a == b)
 		
 		#### Test step: Symmetricality, Contents
 		b = canopen.objectdictionary.Variable("var", 100, 0, UNSIGNED32, "rw")

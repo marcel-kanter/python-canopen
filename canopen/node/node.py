@@ -24,6 +24,16 @@ class Node(collections.abc.Collection):
 		self._name = name
 		self._network = None
 	
+	def __eq__(self, other):
+		""" Indicates whether some other object is "equal to" this one. """
+		if self is other:
+			return True
+		if self.__class__ != other.__class__:
+			return False
+		if self._dictionary != other._dictionary or self._id != other._id or self._name != other._name or self._network != other._network:
+			return False
+		return True
+	
 	def __contains__(self, key):
 		""" Returns True if the node contains a variable, record or array with the specified index or name. """
 		return key in self._dictionary
