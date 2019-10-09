@@ -11,7 +11,8 @@ class NMTMaster(Service):
 	This class is an implementation of the NMT master. The nmt state of the node can be accessed by the state property.
 	
 	Callbacks
-	heartbeat, guarding
+	"heartbeat": ("heartbeat", service)
+	"guarding": ("guarding", service)
 	"""
 	def __init__(self):
 		Service.__init__(self)

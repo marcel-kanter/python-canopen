@@ -3,6 +3,8 @@ from canopen.node.service import Service
 
 
 class SRDOProducer(Service):
+	""" SRDOProducer
+	"""
 	def __init__(self):
 		Service.__init__(self)
 	

@@ -3,6 +3,12 @@ from canopen.node.service.sync import SYNCConsumer
 
 
 class PDOProducer(SYNCConsumer):
+	""" PDOProducer
+	
+	Callbacks
+	"sync": ("sync", service, counter)
+	"pdo": ("pdo", service)
+	"""
 	def __init__(self):
 		SYNCConsumer.__init__(self)
 		self._callbacks["pdo"] = []

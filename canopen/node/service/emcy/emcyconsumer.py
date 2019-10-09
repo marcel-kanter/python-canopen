@@ -9,7 +9,7 @@ class EMCYConsumer(Service):
 	This class is an implementation of an EMCY consumer.
 	
 	Callbacks
-	emcy
+	"emcy": ("emcy", service, error_code, error_register, data)
 	"""
 	def __init__(self):
 		Service.__init__(self)

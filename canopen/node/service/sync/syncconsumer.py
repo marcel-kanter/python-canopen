@@ -8,7 +8,7 @@ class SYNCConsumer(Service):
 	This class is an implementation of a SYNC consumer.
 	
 	Callbacks
-	sync
+	"sync": ("sync", service, counter)
 	"""
 	
 	def __init__(self):

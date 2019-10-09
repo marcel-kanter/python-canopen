@@ -7,7 +7,7 @@ import canopen.objectdictionary
 
 
 class SDOServer(Service):
-	""" SDOServer server
+	""" SDOServer
 	
 	This class is an implementation of a SDO server. It handles requests for expedited and segmented uploads and downloads.
 	Block upload and download is not implemented.

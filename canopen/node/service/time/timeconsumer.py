@@ -9,7 +9,7 @@ class TIMEConsumer(Service):
 	This class is an implementation of a TIME consumer.
 	
 	Callbacks
-	time
+	"time": ("time", service, timestamp)
 	"""
 	
 	_helper_variable = Variable("helper", 0, 0, canopen.objectdictionary.TIME_OF_DAY)
@@ -55,5 +55,5 @@ class TIMEConsumer(Service):
 		if message.dlc < 6:
 			return
 		
-		t = self._helper_variable.decode(message.data)
-		self.notify("time", self, t)
+		timestamp = self._helper_variable.decode(message.data)
+		self.notify("time", self, timestamp)
