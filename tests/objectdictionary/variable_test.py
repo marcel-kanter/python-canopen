@@ -109,314 +109,660 @@ class VariableTestCase(unittest.TestCase):
 		self.assertEqual(a == b, b == a)
 	
 	def test_encode(self):
-		variable = canopen.objectdictionary.Variable("BOOLEAN", 100, 0, canopen.objectdictionary.BOOLEAN)
-		e = variable.encode(False)
-		self.assertEqual(e, b"\x00")
+		with self.subTest("datatype=BOOLEAN"):
+			variable = canopen.objectdictionary.Variable("BOOLEAN", 100, 0, canopen.objectdictionary.BOOLEAN)
+			test_data = [(False, b"\x00"),
+				(True, b"\x01")]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.encode(x), y)
 		
-		variable = canopen.objectdictionary.Variable("INTEGER8", 100, 0, canopen.objectdictionary.INTEGER8)
-		e = variable.encode(0)
-		self.assertEqual(e, b"\x00")
-		with self.assertRaises(ValueError):
-			variable.encode(-2 ** 7 - 1)
-		with self.assertRaises(ValueError):
-			variable.encode(2 ** 7)
+		with self.subTest("datatype=INTEGER8"):
+			variable = canopen.objectdictionary.Variable("INTEGER8", 100, 0, canopen.objectdictionary.INTEGER8)
+			test_data = [(0, b"\x00"),
+				(1, b"\x01")]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.encode(x), y)
+			
+			test_data = [-2 ** 7 - 1, 2 ** 7]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.encode(x)
 		
-		variable = canopen.objectdictionary.Variable("INTEGER16", 100, 0, canopen.objectdictionary.INTEGER16)
-		e = variable.encode(0)
-		self.assertEqual(e, b"\x00\x00")
-		with self.assertRaises(ValueError):
-			variable.encode(-2 ** 15 - 1)
-		with self.assertRaises(ValueError):
-			variable.encode(2 ** 15)
+		with self.subTest("datatype=INTEGER16"):
+			variable = canopen.objectdictionary.Variable("INTEGER16", 100, 0, canopen.objectdictionary.INTEGER16)
+			test_data = [(0, b"\x00\x00"),
+				(1, b"\x01\x00"),
+				(85, b"\x55\x00"),
+				(-86, b"\xAA\xFF"),
+				(-21931, b"\x55\xAA"),
+				(21930, b"\xAA\x55")]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.encode(x), y)
+			
+			test_data = [-2 ** 15 - 1, 2 ** 15]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.encode(x)
 		
-		variable = canopen.objectdictionary.Variable("INTEGER32", 100, 0, canopen.objectdictionary.INTEGER32)
-		e = variable.encode(0)
-		self.assertEqual(e, b"\x00\x00\x00\x00")
-		with self.assertRaises(ValueError):
-			variable.encode(-2 ** 31 - 1)
-		with self.assertRaises(ValueError):
-			variable.encode(2 ** 31)
+		with self.subTest("datatype=INTEGER32"):
+			variable = canopen.objectdictionary.Variable("INTEGER32", 100, 0, canopen.objectdictionary.INTEGER32)
+			test_data = [(0, b"\x00\x00\x00\x00"),
+				(-1437226411, b"\x55\xAA\x55\xAA"),
+				(1437226410, b"\xAA\x55\xAA\x55")]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.encode(x), y)
+			
+			test_data = [-2 ** 31 - 1, 2 ** 31]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.encode(x)
 		
-		variable = canopen.objectdictionary.Variable("UNSIGNED8", 100, 0, canopen.objectdictionary.UNSIGNED8)
-		e = variable.encode(0)
-		self.assertEqual(e, b"\x00")
-		with self.assertRaises(ValueError):
-			variable.encode(-1)
-		with self.assertRaises(ValueError):
-			variable.encode(2 ** 8)
+		with self.subTest("datatype=UNSIGNED8"):
+			variable = canopen.objectdictionary.Variable("UNSIGNED8", 100, 0, canopen.objectdictionary.UNSIGNED8)
+			test_data = [(0, b"\x00"),
+				(85, b"\x55"),
+				(170, b"\xAA")]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.encode(x), y)
+			
+			test_data = [-1, 2 ** 8]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.encode(x)
 		
-		variable = canopen.objectdictionary.Variable("UNSIGNED16", 100, 0, canopen.objectdictionary.UNSIGNED16)
-		e = variable.encode(0)
-		self.assertEqual(e, b"\x00\x00")
-		with self.assertRaises(ValueError):
-			variable.encode(-1)
-		with self.assertRaises(ValueError):
-			variable.encode(2 ** 16)
+		with self.subTest("datatype=UNSIGNED16"):
+			variable = canopen.objectdictionary.Variable("UNSIGNED16", 100, 0, canopen.objectdictionary.UNSIGNED16)
+			test_data = [(0, b"\x00\x00"),
+				(43605, b"\x55\xAA"),
+				(21930, b"\xAA\x55")]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.encode(x), y)
+			
+			test_data = [-1, 2 ** 16]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.encode(x)
 		
-		variable = canopen.objectdictionary.Variable("UNSIGNED32", 100, 0, canopen.objectdictionary.UNSIGNED32)
-		e = variable.encode(0)
-		self.assertEqual(e, b"\x00\x00\x00\x00")
-		with self.assertRaises(ValueError):
-			variable.encode(-1)
-		with self.assertRaises(ValueError):
-			variable.encode(2 ** 32)
+		with self.subTest("datatype=UNSIGNED32"):
+			variable = canopen.objectdictionary.Variable("UNSIGNED32", 100, 0, canopen.objectdictionary.UNSIGNED32)
+			test_data = [(0, b"\x00\x00\x00\x00"),
+				(2857740885, b"\x55\xAA\x55\xAA"),
+				(1437226410, b"\xAA\x55\xAA\x55")]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.encode(x), y)
+			
+			test_data = [-1, 2 ** 32]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.encode(x)
 		
-		variable = canopen.objectdictionary.Variable("REAL32", 100, 0, canopen.objectdictionary.REAL32)
-		e = variable.encode(0.0)
-		self.assertEqual(e, b"\x00\x00\x00\x00")
+		with self.subTest("datatype=REAL32"):
+			variable = canopen.objectdictionary.Variable("REAL32", 100, 0, canopen.objectdictionary.REAL32)
+			test_data = [(0.0, b"\x00\x00\x00\x00")]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.encode(x), y)
 		
-		variable = canopen.objectdictionary.Variable("VISIBLE_STRING", 100, 0, canopen.objectdictionary.VISIBLE_STRING)
-		e = variable.encode("TEXT")
-		self.assertEqual(e, b"TEXT")
+		with self.subTest("datatype=VISIBLE_STRING"):
+			variable = canopen.objectdictionary.Variable("VISIBLE_STRING", 100, 0, canopen.objectdictionary.VISIBLE_STRING)
+			test_data = [("TEXT", b"TEXT")]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.encode(x), y)
 		
-		variable = canopen.objectdictionary.Variable("OCTET_STRING", 100, 0, canopen.objectdictionary.OCTET_STRING)
-		e = variable.encode("TEXT")
-		self.assertEqual(e, b"TEXT")
+		with self.subTest("datatype=OCTET_STRING"):
+			variable = canopen.objectdictionary.Variable("OCTET_STRING", 100, 0, canopen.objectdictionary.OCTET_STRING)
+			test_data = [("TEXT", b"TEXT")]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.encode(x), y)
 		
-		variable = canopen.objectdictionary.Variable("UNICODE_STRING", 100, 0, canopen.objectdictionary.UNICODE_STRING)
-		e = variable.encode("TEXT")
-		self.assertEqual(e, b"T\x00E\x00X\x00T\x00")
+		with self.subTest("datatype=UNICODE_STRING"):
+			variable = canopen.objectdictionary.Variable("UNICODE_STRING", 100, 0, canopen.objectdictionary.UNICODE_STRING)
+			test_data = [("TEXT", b"T\x00E\x00X\x00T\x00")]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.encode(x), y)
 		
-		variable = canopen.objectdictionary.Variable("TIME_OF_DAY", 100, 0, canopen.objectdictionary.TIME_OF_DAY)
-		with self.assertRaises(ValueError):
-			variable.encode(0)
-		e = variable.encode(calendar.timegm((1984, 1, 1, 0, 0, 0)))
-		self.assertEqual(e, struct.pack("<LH", 0, 0))
+		with self.subTest("datatype=TIME_OF_DAY"):
+			variable = canopen.objectdictionary.Variable("TIME_OF_DAY", 100, 0, canopen.objectdictionary.TIME_OF_DAY)
+			test_data = [(calendar.timegm((1984, 1, 1, 0, 0, 0)), struct.pack("<LH", 0, 0))]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.encode(x), y)
+			
+			with self.assertRaises(ValueError):
+				variable.encode(0)
 		
-		variable = canopen.objectdictionary.Variable("TIME_DIFFERENCE", 100, 0, canopen.objectdictionary.TIME_DIFFERENCE)
-		with self.assertRaises(ValueError):
-			variable.encode(-0.1)
-		e = variable.encode(0)
-		self.assertEqual(e, struct.pack("<LH", 0, 0))
+		with self.subTest("datatype=TIME_DIFFERENCE"):
+			variable = canopen.objectdictionary.Variable("TIME_DIFFERENCE", 100, 0, canopen.objectdictionary.TIME_DIFFERENCE)
+			test_data = [(0, struct.pack("<LH", 0, 0))]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.encode(x), y)
+			
+			with self.assertRaises(ValueError):
+				variable.encode(-0.1)
 		
-		variable = canopen.objectdictionary.Variable("DOMAIN", 100, 0, canopen.objectdictionary.DOMAIN)
-		e = variable.encode(b"\xA5\x5A")
-		self.assertEqual(e, b"\xA5\x5A")
+		with self.subTest("datatype=DOMAIN"):
+			variable = canopen.objectdictionary.Variable("DOMAIN", 100, 0, canopen.objectdictionary.DOMAIN)
+			test_data = [(b"\xA5\x5A", b"\xA5\x5A")]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.encode(x), y)
 		
-		variable = canopen.objectdictionary.Variable("INTEGER24", 100, 0, canopen.objectdictionary.INTEGER24)
-		e = variable.encode(0)
-		self.assertEqual(e, b"\x00\x00\x00")
-		with self.assertRaises(ValueError):
-			variable.encode(-2 ** 23 - 1)
-		with self.assertRaises(ValueError):
-			variable.encode(2 ** 23)
+		with self.subTest("datatype=INTEGER24"):
+			variable = canopen.objectdictionary.Variable("INTEGER24", 100, 0, canopen.objectdictionary.INTEGER24)
+			test_data = [(0, b"\x00\x00\x00"),
+				(5614165, b"\x55\xAA\x55"),
+				(-5614166, b"\xAA\x55\xAA")]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.encode(x), y)
+			
+			test_data = [-2 ** 23 - 1, 2 ** 23]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.encode(x)
 		
-		variable = canopen.objectdictionary.Variable("REAL64", 100, 0, canopen.objectdictionary.REAL64)
-		e = variable.encode(0.0)
-		self.assertEqual(e, b"\x00\x00\x00\x00\x00\x00\x00\x00")
+		with self.subTest("datatype=REAL64"):
+			variable = canopen.objectdictionary.Variable("REAL64", 100, 0, canopen.objectdictionary.REAL64)
+			test_data = [(0.0, b"\x00\x00\x00\x00\x00\x00\x00\x00")]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.encode(x), y)
 		
-		variable = canopen.objectdictionary.Variable("INTEGER40", 100, 0, canopen.objectdictionary.INTEGER40)
-		e = variable.encode(0)
-		self.assertEqual(e, b"\x00\x00\x00\x00\x00")
-		with self.assertRaises(ValueError):
-			variable.encode(-2 ** 39 - 1)
-		with self.assertRaises(ValueError):
-			variable.encode(2 ** 39)
+		with self.subTest("datatype=INTEGER40"):
+			variable = canopen.objectdictionary.Variable("INTEGER40", 100, 0, canopen.objectdictionary.INTEGER40)
+			test_data = [(0, b"\x00\x00\x00\x00\x00"),
+				(367929961045, b"\x55\xAA\x55\xAA\x55"),
+				(-367929961046, b"\xAA\x55\xAA\x55\xAA")]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.encode(x), y)
 		
-		variable = canopen.objectdictionary.Variable("INTEGER48", 100, 0, canopen.objectdictionary.INTEGER48)
-		e = variable.encode(0)
-		self.assertEqual(e, b"\x00\x00\x00\x00\x00\x00")
-		with self.assertRaises(ValueError):
-			variable.encode(-2 ** 47 - 1)
-		with self.assertRaises(ValueError):
-			variable.encode(2 ** 47)
+			test_data = [-2 ** 39 - 1, 2 ** 39]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.encode(x)
 		
-		variable = canopen.objectdictionary.Variable("INTEGER56", 100, 0, canopen.objectdictionary.INTEGER56)
-		e = variable.encode(0)
-		self.assertEqual(e, b"\x00\x00\x00\x00\x00\x00\x00")
-		with self.assertRaises(ValueError):
-			variable.encode(-2 ** 55 - 1)
-		with self.assertRaises(ValueError):
-			variable.encode(2 ** 55)
+		with self.subTest("datatype=INTEGER48"):
+			variable = canopen.objectdictionary.Variable("INTEGER48", 100, 0, canopen.objectdictionary.INTEGER48)
+			test_data = [(0, b"\x00\x00\x00\x00\x00\x00"),
+				(-94190070027691, b"\x55\xAA\x55\xAA\x55\xAA"),
+				(94190070027690, b"\xAA\x55\xAA\x55\xAA\x55")]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.encode(x), y)
 		
-		variable = canopen.objectdictionary.Variable("INTEGER64", 100, 0, canopen.objectdictionary.INTEGER64)
-		e = variable.encode(0)
-		self.assertEqual(e, b"\x00\x00\x00\x00\x00\x00\x00\x00")
-		with self.assertRaises(ValueError):
-			variable.encode(-2 ** 63 - 1)
-		with self.assertRaises(ValueError):
-			variable.encode(2 ** 63)
+			test_data = [-2 ** 47 - 1, 2 ** 47]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.encode(x)
 		
-		variable = canopen.objectdictionary.Variable("UNSIGNED24", 100, 0, canopen.objectdictionary.UNSIGNED24)
-		e = variable.encode(0)
-		self.assertEqual(e, b"\x00\x00\x00")
-		with self.assertRaises(ValueError):
-			variable.encode(-1)
-		with self.assertRaises(ValueError):
-			variable.encode(2 ** 24)
+		with self.subTest("datatype=INTEGER56"):
+			variable = canopen.objectdictionary.Variable("INTEGER56", 100, 0, canopen.objectdictionary.INTEGER56)
+			test_data = [(0, b"\x00\x00\x00\x00\x00\x00\x00"),
+				(24112657927088725, b"\x55\xAA\x55\xAA\x55\xAA\x55"),
+				(-24112657927088726, b"\xAA\x55\xAA\x55\xAA\x55\xAA")]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.encode(x), y)
+			
+			test_data = [-2 ** 55 - 1, 2 ** 55]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.encode(x)
 		
-		variable = canopen.objectdictionary.Variable("UNSIGNED40", 100, 0, canopen.objectdictionary.UNSIGNED40)
-		e = variable.encode(0)
-		self.assertEqual(e, b"\x00\x00\x00\x00\x00")
-		with self.assertRaises(ValueError):
-			variable.encode(-1)
-		with self.assertRaises(ValueError):
-			variable.encode(2 ** 40)
+		with self.subTest("datatype=INTEGER64"):
+			variable = canopen.objectdictionary.Variable("INTEGER64", 100, 0, canopen.objectdictionary.INTEGER64)
+			test_data = [(0, b"\x00\x00\x00\x00\x00\x00\x00\x00"),
+				(-6172840429334713771, b"\x55\xAA\x55\xAA\x55\xAA\x55\xAA"),
+				(6172840429334713770, b"\xAA\x55\xAA\x55\xAA\x55\xAA\x55")]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.encode(x), y)
+			
+			test_data = [-2 ** 63 - 1, 2 ** 63]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.encode(x)
 		
-		variable = canopen.objectdictionary.Variable("UNSIGNED48", 100, 0, canopen.objectdictionary.UNSIGNED48)
-		e = variable.encode(0)
-		self.assertEqual(e, b"\x00\x00\x00\x00\x00\x00")
-		with self.assertRaises(ValueError):
-			variable.encode(-1)
-		with self.assertRaises(ValueError):
-			variable.encode(2 ** 48)
+		with self.subTest("datatype=UNSIGNED24"):
+			variable = canopen.objectdictionary.Variable("UNSIGNED24", 100, 0, canopen.objectdictionary.UNSIGNED24)
+			test_data = [(0, b"\x00\x00\x00"),
+				(5614165, b"\x55\xAA\x55"),
+				(11163050, b"\xAA\x55\xAA")]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.encode(x), y)
+			
+			test_data = [-1, 2 ** 24]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.encode(x)
 		
-		variable = canopen.objectdictionary.Variable("UNSIGNED56", 100, 0, canopen.objectdictionary.UNSIGNED56)
-		e = variable.encode(0)
-		self.assertEqual(e, b"\x00\x00\x00\x00\x00\x00\x00")
-		with self.assertRaises(ValueError):
-			variable.encode(-1)
-		with self.assertRaises(ValueError):
-			variable.encode(2 ** 56)
+		with self.subTest("datatype=UNSIGNED40"):
+			variable = canopen.objectdictionary.Variable("UNSIGNED40", 100, 0, canopen.objectdictionary.UNSIGNED40)
+			test_data = [(0, b"\x00\x00\x00\x00\x00"),
+				(367929961045, b"\x55\xAA\x55\xAA\x55"),
+				(731581666730, b"\xAA\x55\xAA\x55\xAA")]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.encode(x), y)
+			
+			test_data = [-1, 2 ** 40]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.encode(x)
 		
-		variable = canopen.objectdictionary.Variable("UNSIGNED64", 100, 0, canopen.objectdictionary.UNSIGNED64)
-		e = variable.encode(0)
-		self.assertEqual(e, b"\x00\x00\x00\x00\x00\x00\x00\x00")
-		with self.assertRaises(ValueError):
-			variable.encode(-1)
-		with self.assertRaises(ValueError):
-			variable.encode(2 ** 64)
+		with self.subTest("datatype=UNSIGNED48"):
+			variable = canopen.objectdictionary.Variable("UNSIGNED48", 100, 0, canopen.objectdictionary.UNSIGNED48)
+			test_data = [(0, b"\x00\x00\x00\x00\x00\x00"),
+				(187284906682965, b"\x55\xAA\x55\xAA\x55\xAA"),
+				(94190070027690, b"\xAA\x55\xAA\x55\xAA\x55")]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.encode(x), y)
+			
+			test_data = [-1, 2 ** 48]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.encode(x)
+		
+		with self.subTest("datatype=UNSIGNED56"):
+			variable = canopen.objectdictionary.Variable("UNSIGNED56", 100, 0, canopen.objectdictionary.UNSIGNED56)
+			test_data = [(0, b"\x00\x00\x00\x00\x00\x00\x00"),
+				(24112657927088725, b"\x55\xAA\x55\xAA\x55\xAA\x55"),
+				(47944936110839210, b"\xAA\x55\xAA\x55\xAA\x55\xAA")]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.encode(x), y)
+			
+			test_data = [-1, 2 ** 56]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.encode(x)
+		
+		with self.subTest("datatype=UNSIGNED64"):
+			variable = canopen.objectdictionary.Variable("UNSIGNED64", 100, 0, canopen.objectdictionary.UNSIGNED64)
+			test_data = [(0, b"\x00\x00\x00\x00\x00\x00\x00\x00"),
+				(12273903644374837845, b"\x55\xAA\x55\xAA\x55\xAA\x55\xAA"),
+				(6172840429334713770, b"\xAA\x55\xAA\x55\xAA\x55\xAA\x55")]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.encode(x), y)
+			
+			test_data = [-1, 2 ** 64]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.encode(x)
 	
 	def test_decode(self):
-		variable = canopen.objectdictionary.Variable("BOOLEAN", 100, 0, canopen.objectdictionary.BOOLEAN)
-		d = variable.decode(b"\x00")
-		self.assertEqual(d, False)
+		with self.subTest("datatype=BOOLEAN"):
+			variable = canopen.objectdictionary.Variable("BOOLEAN", 100, 0, canopen.objectdictionary.BOOLEAN)
+			test_data = [(b"\x00", False),
+				(b"\x01", True),
+				(b"\x01\x00", True),
+				(b"\x00\x00", False)]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.decode(x), y)
 		
-		variable = canopen.objectdictionary.Variable("INTEGER8", 100, 0, canopen.objectdictionary.INTEGER8)
-		d = variable.decode(b"\x00")
-		self.assertEqual(d, 0)
+		with self.subTest("datatype=INTEGER8"):
+			variable = canopen.objectdictionary.Variable("INTEGER8", 100, 0, canopen.objectdictionary.INTEGER8)
+			test_data = [(b"\x00", 0),
+				(b"\x55", 85),
+				(b"\xAA", -86),
+				(b"\x55\xFF", 85),
+				(b"\xAA\x00", -86)]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.decode(x), y)
 		
-		variable = canopen.objectdictionary.Variable("INTEGER16", 100, 0, canopen.objectdictionary.INTEGER16)
-		d = variable.decode(b"\x00\x00")
-		self.assertEqual(d, 0)
-		with self.assertRaises(ValueError):
-			variable.decode(b"\x00")
+		with self.subTest("datatype=INTEGER16"):
+			variable = canopen.objectdictionary.Variable("INTEGER16", 100, 0, canopen.objectdictionary.INTEGER16)
+			test_data = [(b"\x00\x00", 0),
+				(b"\x55\xAA", -21931),
+				(b"\xAA\x55", 21930),
+				(b"\x55\xAA\x00", -21931),
+				(b"\xAA\x55\xFF", 21930)]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.decode(x), y)
+			
+			test_data = [b"\x00"]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.decode(x)
 		
-		variable = canopen.objectdictionary.Variable("INTEGER32", 100, 0, canopen.objectdictionary.INTEGER32)
-		d = variable.decode(b"\x00\x00\x00\x00")
-		self.assertEqual(d, 0)
-		with self.assertRaises(ValueError):
-			variable.decode(b"\x00")
+		with self.subTest("datatype=INTEGER32"):
+			variable = canopen.objectdictionary.Variable("INTEGER32", 100, 0, canopen.objectdictionary.INTEGER32)
+			test_data = [(b"\x00\x00\x00\x00", 0),
+				(b"\x55\xAA\x55\xAA", -1437226411),
+				(b"\xAA\x55\xAA\x55", 1437226410),
+				(b"\x55\xAA\x55\xAA\x00", -1437226411),
+				(b"\xAA\x55\xAA\x55\xFF", 1437226410)]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.decode(x), y)
+			
+			test_data = [b"\x00"]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.decode(x)
 		
-		variable = canopen.objectdictionary.Variable("UNSIGNED8", 100, 0, canopen.objectdictionary.UNSIGNED8)
-		d = variable.decode(b"\x00")
-		self.assertEqual(d, 0)
+		with self.subTest("datatype=UNSIGNED8"):
+			variable = canopen.objectdictionary.Variable("UNSIGNED8", 100, 0, canopen.objectdictionary.UNSIGNED8)
+			test_data = [(b"\x00", 0),
+				(b"\x55", 85),
+				(b"\xAA", 170),
+				(b"\x55\xFF", 85),
+				(b"\xAA\xFF", 170)]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.decode(x), y)
 		
-		variable = canopen.objectdictionary.Variable("UNSIGNED16", 100, 0, canopen.objectdictionary.UNSIGNED16)
-		d = variable.decode(b"\x00\x00")
-		self.assertEqual(d, 0)
-		with self.assertRaises(ValueError):
-			variable.decode(b"\x00")
+		with self.subTest("datatype=UNSIGNED16"):
+			variable = canopen.objectdictionary.Variable("UNSIGNED16", 100, 0, canopen.objectdictionary.UNSIGNED16)
+			test_data = [(b"\x00\x00", 0),
+				(b"\x55\xAA",  43605),
+				(b"\xAA\x55", 21930),
+				(b"\x55\xAA\xFF", 43605),
+				(b"\xAA\x55\x55", 21930)]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.decode(x), y)
+			
+			test_data = [b"\x00"]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.decode(x)
 		
-		variable = canopen.objectdictionary.Variable("UNSIGNED32", 100, 0, canopen.objectdictionary.UNSIGNED32)
-		d = variable.decode(b"\x00\x00\x00\x00")
-		self.assertEqual(d, 0)
-		with self.assertRaises(ValueError):
-			variable.decode(b"\x00")
+		with self.subTest("datatype=UNSIGNED32"):
+			variable = canopen.objectdictionary.Variable("UNSIGNED32", 100, 0, canopen.objectdictionary.UNSIGNED32)
+			test_data = [(b"\x00\x00\x00\x00", 0),
+				(b"\x55\xAA\x55\xAA", 2857740885),
+				(b"\xAA\x55\xAA\x55", 1437226410),
+				(b"\x55\xAA\x55\xAA\xFF", 2857740885),
+				(b"\xAA\x55\xAA\x55\xFF", 1437226410)]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.decode(x), y)
+			
+			test_data = [b"\x00"]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.decode(x)
 		
-		variable = canopen.objectdictionary.Variable("REAL32", 100, 0, canopen.objectdictionary.REAL32)
-		d = variable.decode(b"\x00\x00\x00\x00")
-		self.assertEqual(d, 0.0)
-		with self.assertRaises(ValueError):
-			variable.decode(b"\x00")
+		with self.subTest("datatype=REAL32"):
+			variable = canopen.objectdictionary.Variable("REAL32", 100, 0, canopen.objectdictionary.REAL32)
+			test_data = [(b"\x00\x00\x00\x00", 0.0)]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.decode(x), y)
+			
+			test_data = [b"\x00"]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.decode(x)
 		
-		variable = canopen.objectdictionary.Variable("VISIBLE_STRING", 100, 0, canopen.objectdictionary.VISIBLE_STRING)
-		d = variable.decode(b"TEXT")
-		self.assertEqual(d, "TEXT")
+		with self.subTest("datatype=VISIBLE_STRING"):
+			variable = canopen.objectdictionary.Variable("VISIBLE_STRING", 100, 0, canopen.objectdictionary.VISIBLE_STRING)
+			test_data = [(b"TEXT", "TEXT")]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.decode(x), y)
 		
-		variable = canopen.objectdictionary.Variable("OCTET_STRING", 100, 0, canopen.objectdictionary.OCTET_STRING)
-		d = variable.decode(b"TEXT")
-		self.assertEqual(d, "TEXT")
+		with self.subTest("datatype=OCTET_STRING"):
+			variable = canopen.objectdictionary.Variable("OCTET_STRING", 100, 0, canopen.objectdictionary.OCTET_STRING)
+			test_data = [(b"TEXT", "TEXT")]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.decode(x), y)
 		
-		variable = canopen.objectdictionary.Variable("UNICODE_STRING", 100, 0, canopen.objectdictionary.UNICODE_STRING)
-		d = variable.decode(b"T\x00E\x00X\x00T\x00")
-		self.assertEqual(d, "TEXT")
+		with self.subTest("datatype=UNICODE_STRING"):
+			variable = canopen.objectdictionary.Variable("UNICODE_STRING", 100, 0, canopen.objectdictionary.UNICODE_STRING)
+			test_data = [(b"T\x00E\x00X\x00T\x00", "TEXT")]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.decode(x), y)
 		
-		variable = canopen.objectdictionary.Variable("TIME_OF_DAY", 100, 0, canopen.objectdictionary.TIME_OF_DAY)
-		d = variable.decode(struct.pack("<LH", 0, 0))
-		self.assertEqual(d, calendar.timegm((1984, 1, 1, 0, 0, 0)))
-		d = variable.decode(struct.pack("<LH", 10 * 60 * 60 * 1000, 0))
-		self.assertEqual(d, calendar.timegm((1984, 1, 1, 10, 0, 0)))
-		d = variable.decode(struct.pack("<LH", 0, 366))
-		self.assertEqual(d, calendar.timegm((1985, 1, 1, 0, 0, 0)))
+		with self.subTest("datatype=TIME_OF_DAY"):
+			variable = canopen.objectdictionary.Variable("TIME_OF_DAY", 100, 0, canopen.objectdictionary.TIME_OF_DAY)
+			test_data = [(struct.pack("<LH", 0, 0), calendar.timegm((1984, 1, 1, 0, 0, 0))),
+				(struct.pack("<LH", 10 * 60 * 60 * 1000, 0), calendar.timegm((1984, 1, 1, 10, 0, 0))),
+				(struct.pack("<LH", 0, 366), calendar.timegm((1985, 1, 1, 0, 0, 0)))]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.decode(x), y)
 		
-		variable = canopen.objectdictionary.Variable("TIME_DIFFERENCE", 100, 0, canopen.objectdictionary.TIME_DIFFERENCE)
-		d = variable.decode(struct.pack("<LH", 0, 0))
-		self.assertEqual(d, 0)
-		d = variable.decode(struct.pack("<LH", 10 * 60 * 60 * 1000, 0))
-		self.assertEqual(d, 10 * 60 * 60)
-		d = variable.decode(struct.pack("<LH", 0, 366))
-		self.assertEqual(d, 366 * 24 * 60 * 60)
+		with self.subTest("datatype=TIME_DIFFERENCE"):
+			variable = canopen.objectdictionary.Variable("TIME_DIFFERENCE", 100, 0, canopen.objectdictionary.TIME_DIFFERENCE)
+			test_data = [(struct.pack("<LH", 0, 0), 0),
+				(struct.pack("<LH", 10 * 60 * 60 * 1000, 0), 10 * 60 * 60),
+				(struct.pack("<LH", 0, 366), 366 * 24 * 60 * 60)]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.decode(x), y)
 		
-		variable = canopen.objectdictionary.Variable("DOMAIN", 100, 0, canopen.objectdictionary.DOMAIN)
-		d = variable.decode(b"\xA5\x5A")
-		self.assertEqual(d, b"\xA5\x5A")
+		with self.subTest("datatype=DOMAIN"):
+			variable = canopen.objectdictionary.Variable("DOMAIN", 100, 0, canopen.objectdictionary.DOMAIN)
+			test_data = [(b"\xA5\x5A", b"\xA5\x5A")]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.decode(x), y)
 		
-		variable = canopen.objectdictionary.Variable("INTEGER24", 100, 0, canopen.objectdictionary.INTEGER24)
-		d = variable.decode(b"\x00\x00\x00")
-		self.assertEqual(d, 0)
-		with self.assertRaises(ValueError):
-			variable.decode(b"\x00")
+		with self.subTest("datatype=INTEGER24"):
+			variable = canopen.objectdictionary.Variable("INTEGER24", 100, 0, canopen.objectdictionary.INTEGER24)
+			test_data = [(b"\x00\x00\x00", 0),
+				(b"\x55\xAA\x55", 5614165),
+				(b"\xAA\x55\xAA", -5614166),
+				(b"\x55\xAA\x55\xFF", 5614165),
+				(b"\xAA\x55\xAA\x00", -5614166)]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.decode(x), y)
+			
+			test_data = [b"\x00"]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.decode(x)
 		
-		variable = canopen.objectdictionary.Variable("REAL64", 100, 0, canopen.objectdictionary.REAL64)
-		d = variable.decode(b"\x00\x00\x00\x00\x00\x00\x00\x00")
-		self.assertEqual(d, 0.0)
-		with self.assertRaises(ValueError):
-			variable.decode(b"\x00")
+		with self.subTest("datatype=REAL64"):
+			variable = canopen.objectdictionary.Variable("REAL64", 100, 0, canopen.objectdictionary.REAL64)
+			test_data = [(b"\x00\x00\x00\x00\x00\x00\x00\x00", 0.0)]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.decode(x), y)
+			
+			test_data = [b"\x00"]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.decode(x)
 		
-		variable = canopen.objectdictionary.Variable("INTEGER40", 100, 0, canopen.objectdictionary.INTEGER40)
-		d = variable.decode(b"\x00\x00\x00\x00\x00")
-		self.assertEqual(d, 0)
-		with self.assertRaises(ValueError):
-			variable.decode(b"\x00")
+		with self.subTest("datatype=INTEGER40"):
+			variable = canopen.objectdictionary.Variable("INTEGER40", 100, 0, canopen.objectdictionary.INTEGER40)
+			test_data = [(b"\x00\x00\x00\x00\x00", 0),
+				(b"\x55\xAA\x55\xAA\x55", 367929961045),
+				(b"\xAA\x55\xAA\x55\xAA", -367929961046),
+				(b"\x55\xAA\x55\xAA\x55\xFF", 367929961045),
+				(b"\xAA\x55\xAA\x55\xAA\x00", -367929961046)]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.decode(x), y)
+			
+			test_data = [b"\x00"]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.decode(x)
 		
-		variable = canopen.objectdictionary.Variable("INTEGER48", 100, 0, canopen.objectdictionary.INTEGER48)
-		d = variable.decode(b"\x00\x00\x00\x00\x00\x00")
-		self.assertEqual(d, 0)
-		with self.assertRaises(ValueError):
-			variable.decode(b"\x00")
+		with self.subTest("datatype=INTEGER48"):
+			variable = canopen.objectdictionary.Variable("INTEGER48", 100, 0, canopen.objectdictionary.INTEGER48)
+			test_data = [(b"\x00\x00\x00\x00\x00\x00", 0),
+				(b"\x55\xAA\x55\xAA\x55\xAA", -94190070027691),
+				(b"\xAA\x55\xAA\x55\xAA\x55", 94190070027690),
+				(b"\x55\xAA\x55\xAA\x55\xAA\x00", -94190070027691),
+				(b"\xAA\x55\xAA\x55\xAA\x55\xFF", 94190070027690)]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.decode(x), y)
+			
+			test_data = [b"\x00"]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.decode(x)
 		
-		variable = canopen.objectdictionary.Variable("INTEGER56", 100, 0, canopen.objectdictionary.INTEGER56)
-		d = variable.decode(b"\x00\x00\x00\x00\x00\x00\x00")
-		self.assertEqual(d, 0)
-		with self.assertRaises(ValueError):
-			variable.decode(b"\x00")
+		with self.subTest("datatype=INTEGER56"):
+			variable = canopen.objectdictionary.Variable("INTEGER56", 100, 0, canopen.objectdictionary.INTEGER56)
+			test_data = [(b"\x00\x00\x00\x00\x00\x00\x00", 0),
+				(b"\x55\xAA\x55\xAA\x55\xAA\x55", 24112657927088725),
+				(b"\xAA\x55\xAA\x55\xAA\x55\xAA", -24112657927088726),
+				(b"\x55\xAA\x55\xAA\x55\xAA\x55\xFF", 24112657927088725),
+				(b"\xAA\x55\xAA\x55\xAA\x55\xAA\x00", -24112657927088726)]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.decode(x), y)
+			
+			test_data = [b"\x00"]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.decode(x)
 		
-		variable = canopen.objectdictionary.Variable("INTEGER64", 100, 0, canopen.objectdictionary.INTEGER64)
-		d = variable.decode(b"\x00\x00\x00\x00\x00\x00\x00\x00")
-		self.assertEqual(d, 0)
-		with self.assertRaises(ValueError):
-			variable.decode(b"\x00")
+		with self.subTest("datatype=INTEGER64"):
+			variable = canopen.objectdictionary.Variable("INTEGER64", 100, 0, canopen.objectdictionary.INTEGER64)
+			test_data = [(b"\x00\x00\x00\x00\x00\x00\x00\x00", 0),
+				(b"\x55\xAA\x55\xAA\x55\xAA\x55\xAA", -6172840429334713771),
+				(b"\xAA\x55\xAA\x55\xAA\x55\xAA\x55", 6172840429334713770),
+				(b"\x55\xAA\x55\xAA\x55\xAA\x55\xAA\xFF", -6172840429334713771),
+				(b"\xAA\x55\xAA\x55\xAA\x55\xAA\x55\xFF", 6172840429334713770)]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.decode(x), y)
+			
+			test_data = [b"\x00"]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.decode(x)
 		
-		variable = canopen.objectdictionary.Variable("UNSIGNED24", 100, 0, canopen.objectdictionary.UNSIGNED24)
-		d = variable.decode(b"\x00\x00\x00")
-		self.assertEqual(d, 0)
-		with self.assertRaises(ValueError):
-			variable.decode(b"\x00")
+		with self.subTest("datatype=UNSIGNED24"):
+			variable = canopen.objectdictionary.Variable("UNSIGNED24", 100, 0, canopen.objectdictionary.UNSIGNED24)
+			test_data = [(b"\x00\x00\x00", 0),
+				(b"\x55\xAA\x55", 5614165),
+				(b"\xAA\x55\xAA", 11163050),
+				(b"\x55\xAA\x55\xFF", 5614165),
+				(b"\xAA\x55\xAA\xFF", 11163050)]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.decode(x), y)
+			
+			test_data = [b"\x00"]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.decode(x)
 		
-		variable = canopen.objectdictionary.Variable("UNSIGNED40", 100, 0, canopen.objectdictionary.UNSIGNED40)
-		d = variable.decode(b"\x00\x00\x00\x00\x00")
-		self.assertEqual(d, 0)
-		with self.assertRaises(ValueError):
-			variable.decode(b"\x00")
+		with self.subTest("datatype=UNSIGNED40"):
+			variable = canopen.objectdictionary.Variable("UNSIGNED40", 100, 0, canopen.objectdictionary.UNSIGNED40)
+			test_data = [(b"\x00\x00\x00\x00\x00", 0),
+				(b"\x55\xAA\x55\xAA\x55", 367929961045),
+				(b"\xAA\x55\xAA\x55\xAA", 731581666730),
+				(b"\x55\xAA\x55\xAA\x55\xFF", 367929961045),
+				(b"\xAA\x55\xAA\x55\xAA\xFF", 731581666730)]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.decode(x), y)
+			
+			test_data = [b"\x00"]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.decode(x)
 		
-		variable = canopen.objectdictionary.Variable("UNSIGNED48", 100, 0, canopen.objectdictionary.UNSIGNED48)
-		d = variable.decode(b"\x00\x00\x00\x00\x00\x00")
-		self.assertEqual(d, 0)
-		with self.assertRaises(ValueError):
-			variable.decode(b"\x00")
+		with self.subTest("datatype=UNSIGNED48"):
+			variable = canopen.objectdictionary.Variable("UNSIGNED48", 100, 0, canopen.objectdictionary.UNSIGNED48)
+			test_data = [(b"\x00\x00\x00\x00\x00\x00", 0),
+				(b"\x55\xAA\x55\xAA\x55\xAA", 187284906682965),
+				(b"\xAA\x55\xAA\x55\xAA\x55", 94190070027690),
+				(b"\x55\xAA\x55\xAA\x55\xAA\xFF", 187284906682965),
+				(b"\xAA\x55\xAA\x55\xAA\x55\x55", 94190070027690)]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.decode(x), y)
+			
+			test_data = [b"\x00"]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.decode(x)
 		
-		variable = canopen.objectdictionary.Variable("UNSIGNED56", 100, 0, canopen.objectdictionary.UNSIGNED56)
-		d = variable.decode(b"\x00\x00\x00\x00\x00\x00\x00")
-		self.assertEqual(d, 0)
-		with self.assertRaises(ValueError):
-			variable.decode(b"\x00")
+		with self.subTest("datatype=UNSIGNED56"):
+			variable = canopen.objectdictionary.Variable("UNSIGNED56", 100, 0, canopen.objectdictionary.UNSIGNED56)
+			test_data = [(b"\x00\x00\x00\x00\x00\x00\x00", 0),
+				(b"\x55\xAA\x55\xAA\x55\xAA\x55", 24112657927088725),
+				(b"\xAA\x55\xAA\x55\xAA\x55\xAA", 47944936110839210),
+				(b"\x55\xAA\x55\xAA\x55\xAA\x55\xFF", 24112657927088725),
+				(b"\xAA\x55\xAA\x55\xAA\x55\xAA\x55", 47944936110839210)]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.decode(x), y)
+			
+			test_data = [b"\x00"]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.decode(x)
 		
-		variable = canopen.objectdictionary.Variable("UNSIGNED64", 100, 0, canopen.objectdictionary.UNSIGNED64)
-		d = variable.decode(b"\x00\x00\x00\x00\x00\x00\x00\x00")
-		self.assertEqual(d, 0)
-		with self.assertRaises(ValueError):
-			variable.decode(b"\x00")
+		with self.subTest("datatype=UNSIGNED64"):
+			variable = canopen.objectdictionary.Variable("UNSIGNED64", 100, 0, canopen.objectdictionary.UNSIGNED64)
+			test_data = [(b"\x00\x00\x00\x00\x00\x00\x00\x00", 0),
+				(b"\x55\xAA\x55\xAA\x55\xAA\x55\xAA", 12273903644374837845),
+				(b"\xAA\x55\xAA\x55\xAA\x55\xAA\x55", 6172840429334713770),
+				(b"\x55\xAA\x55\xAA\x55\xAA\x55\xAA\xFF", 12273903644374837845),
+				(b"\xAA\x55\xAA\x55\xAA\x55\xAA\x55\x55", 6172840429334713770)]
+			for x, y in test_data:
+				with self.subTest("x=" + str(x) + ",y=" + str(y)):
+					self.assertEqual(variable.decode(x), y)
+			
+			test_data = [b"\x00"]
+			for x in test_data:
+				with self.subTest("x=" + str(x)):
+					with self.assertRaises(ValueError):
+						variable.decode(x)
 
 
 if __name__ == "__main__":

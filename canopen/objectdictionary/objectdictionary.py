@@ -52,7 +52,7 @@ class ObjectDictionary(collections.abc.Collection):
 		raise KeyError()
 	
 	def __delitem__(self, key):
-		""" Removes the variable, record or array identified by the name of the index from the object dictionary. """
+		""" Removes the variable, record or array identified by the name or the index from the object dictionary. """
 		item = self[key]
 		del self._items_index[item.index]
 		del self._items_name[item.name]
