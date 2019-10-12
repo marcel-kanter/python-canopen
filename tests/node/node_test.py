@@ -66,19 +66,22 @@ class NodeTestCase(unittest.TestCase):
 		
 		with self.assertRaises(TypeError):
 			node.attach(None)
+			
+		self.assertFalse(node.is_attached())
 		
 		node.attach(network1)
-		
+		self.assertTrue(node.is_attached())
 		self.assertEqual(node.network, network1)
 		
 		with self.assertRaises(ValueError):
 			node.attach(network1)
 		
 		node.attach(network2)
-		
+		self.assertTrue(node.is_attached())
 		self.assertEqual(node.network, network2)
 		
 		node.detach()
+		self.assertFalse(node.is_attached())
 	
 	def test_collection(self):
 		dictionary = canopen.ObjectDictionary()

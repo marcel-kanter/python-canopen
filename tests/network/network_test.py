@@ -19,14 +19,22 @@ class NetworkTestCase(unittest.TestCase):
 		with self.assertRaises(TypeError):
 			network.attach(None)
 		
+		self.assertFalse(network.is_attached())
+		
 		network.attach(bus1)
+		
+		self.assertTrue(network.is_attached())
 		
 		with self.assertRaises(ValueError):
 			network.attach(bus1)
 		
 		network.attach(bus2)
 		
+		self.assertTrue(network.is_attached())
+		
 		network.detach()
+		
+		self.assertFalse(network.is_attached())
 		
 		bus1.shutdown()
 		bus2.shutdown()

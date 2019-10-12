@@ -24,16 +24,21 @@ class ServiceTestCase(unittest.TestCase):
 		with self.assertRaises(TypeError):
 			examinee.attach(None)
 		
+		self.assertFalse(examinee.is_attached())
+		
 		examinee.attach(node1)
+		self.assertTrue(examinee.is_attached())
 		self.assertEqual(examinee.node, node1)
 		
 		with self.assertRaises(ValueError):
 			examinee.attach(node1)
 		
 		examinee.attach(node2)
+		self.assertTrue(examinee.is_attached())
 		self.assertEqual(examinee.node, node2)
 		
 		examinee.detach()
+		self.assertFalse(examinee.is_attached())
 		self.assertEqual(examinee.node, None)
 		
 		node1.detach()

@@ -82,6 +82,10 @@ class Node(collections.abc.Collection):
 		
 		self._network = None
 	
+	def is_attached(self):
+		""" Returns True when the ``Node`` is attached to a ``Network``. """
+		return self._network != None
+	
 	def get_data(self, index, subindex):
 		raise NotImplementedError()
 	

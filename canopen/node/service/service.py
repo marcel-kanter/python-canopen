@@ -28,6 +28,10 @@ class Service(object):
 		
 		self._node = None
 	
+	def is_attached(self):
+		""" Returns True when the ``Service`` is attached to a ``Node``. """
+		return self._node != None
+	
 	def add_callback(self, event, callback):
 		""" Adds the given callback for the event. """
 		if not callable(callback):

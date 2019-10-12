@@ -84,6 +84,10 @@ class Network(collections.abc.Collection):
 		self._notifier = None
 		self._bus = None
 	
+	def is_attached(self):
+		""" Returns True when the ``Network`` is attached to a bus. """
+		return self._bus != None
+	
 	def send(self, message):
 		""" Sends a CAN message on the CAN bus. """
 		if self._bus == None:
