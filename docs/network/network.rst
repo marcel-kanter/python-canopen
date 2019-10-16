@@ -17,12 +17,17 @@ The structural relation between the child and the parent must be handled by othe
 
 	# First create a bus
 	bus = can.Bus(interface = "virtual", channel = 0)
+	
 	# It's possible to use the can bus now, as described in the python-can documentation.
 	# You may send and receive messages, etc.
 	
 	# Create the canopen Network instance and attach it to the bus
 	network = canopen.Network()
 	network.attach(bus)
+	
+	# Using bus.send() works as expected between Network.attach() and Notwork.detach().
+	# Using bus.recv() does not work or it disturbs the proper operation of the Network.
+	# See the chapter Mixed CAN/CANopen operation.
 	
 	# Detach the canopen Network before shutdown of the can bus.
 	network.detach()
@@ -31,6 +36,37 @@ The structural relation between the child and the parent must be handled by othe
 	
 	# Clean up
 	bus.shutdown()
+
+Mixed CAN/CANopen operation
+---------------------------
+
+The CANopen standards do not prohibit the use of CAN messages together with messages that belong to the CANopen protocol. The ``Network`` class provides the possibility to be operated in a mixed CAN/CANopen environment.
+
+If such operation is needed an external message notifier must be implemented and all (relevant) CAN messages must be passed to ``Network.on_message``. This can be achieved by overloading ``can.Notifier`` or by a simple endless loop.
+When attaching to the bus, the ``builtin_notifier`` must be set to ``False``.
+
+.. code:: python
+	
+	# Create the canopen Network instance and attach it to the bus
+	network = canopen.Network()
+	network.attach(bus, False)
+	
+	# Simple endless-loop "notifier". This is a stripped version of the internal code of ``can.Notifier``
+	_finish = False
+	msg = None
+	while not _finish:
+		if msg is not None:
+			# check if msg is a CAN message and process it
+			# process_message(msg)
+			
+			# pass the msg to the message handler of network
+			network.on_message(msg)
+			
+		# Receive new message, if any
+		msg = bus.recv(1.0)
+		
+	# Detach the canopen Network before shutdown of the can bus.
+	network.detach()
 
 Auto-associative mapping
 ------------------------

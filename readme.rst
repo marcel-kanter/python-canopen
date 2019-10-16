@@ -17,3 +17,5 @@ This package has the following capabilities and features:
 
 - Communication to remote nodes on the can open bus.
 - Emulating of multiple local nodes in software.
+
+- Mixed CAN/CANopen operation.

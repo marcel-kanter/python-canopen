@@ -28,7 +28,7 @@ class NetworkTestCase(unittest.TestCase):
 		with self.assertRaises(ValueError):
 			network.attach(bus1)
 		
-		network.attach(bus2)
+		network.attach(bus2, False)
 		
 		self.assertTrue(network.is_attached())
 		

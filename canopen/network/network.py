@@ -63,8 +63,11 @@ class Network(collections.abc.Collection):
 		self._items_name[node.name] = node
 		node.attach(self)
 	
-	def attach(self, bus):
-		""" Attach the network to a CAN bus. """
+	def attach(self, bus, builtin_notifier = True):
+		""" Attach the network to a CAN bus.
+		:param bus: The can bus to connect.
+		:param builtin_notifier: Use the builtin notifier or not. If False, all (relevant) CAN messages must be passed to on_message.
+		"""
 		if not isinstance(bus, can.BusABC):
 			raise TypeError()
 		if self._bus == bus:
@@ -73,15 +76,17 @@ class Network(collections.abc.Collection):
 			self.detach()
 		
 		self._bus = bus
-		self._notifier = can.Notifier(self._bus, self._listeners)
+		if builtin_notifier:
+			self._notifier = can.Notifier(self._bus, self._listeners)
 	
 	def detach(self):
 		""" Detach the network from a CAN bus. """
 		if not self.is_attached():
 			raise RuntimeError()
 		
-		self._notifier.stop()
-		self._notifier = None
+		if self._notifier != None:
+			self._notifier.stop()
+			self._notifier = None
 		self._bus = None
 	
 	def is_attached(self):
@@ -114,7 +119,9 @@ class Network(collections.abc.Collection):
 		self._subscribers[message_id].remove(callback)
 	
 	def on_message(self, message):
-		""" Handler for received messages. This method distributes the message to all callbacks. """
+		""" Handler for received messages.
+		This method distributes the message to the callbacks. All (relevant) message must be passed to this handler if ``Network.attach`` was called with ``builtin_notifier`` set to ``False``.
+		"""
 		if message.arbitration_id not in self._subscribers:
 			return
 		
