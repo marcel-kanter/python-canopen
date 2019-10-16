@@ -40,7 +40,7 @@ class PDOConsumer(SYNCConsumer):
 	
 	def detach(self):
 		""" Detaches the ``PDOConsumer`` from the ``Node``. It does NOT remove or delete the ``PDOConsumer`` from the ``Node``. """
-		if self._node == None:
+		if not self.is_attached():
 			raise RuntimeError()
 		
 		if self._cob_id_rx & (1 << 29):

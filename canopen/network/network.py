@@ -69,7 +69,7 @@ class Network(collections.abc.Collection):
 			raise TypeError()
 		if self._bus == bus:
 			raise ValueError()
-		if self._bus != None:
+		if self.is_attached():
 			self.detach()
 		
 		self._bus = bus
@@ -77,7 +77,7 @@ class Network(collections.abc.Collection):
 	
 	def detach(self):
 		""" Detach the network from a CAN bus. """
-		if self._bus == None:
+		if not self.is_attached():
 			raise RuntimeError()
 		
 		self._notifier.stop()

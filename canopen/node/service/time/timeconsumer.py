@@ -38,7 +38,7 @@ class TIMEConsumer(Service):
 	
 	def detach(self):
 		""" Detaches the ``TIMEConsumer`` from the ``Node``. It does NOT remove or delete the ``TIMEConsumer`` from the ``Node``. """
-		if self._node == None:
+		if not self.is_attached():
 			raise RuntimeError()
 		if self._cob_id_time & (1 << 29):
 			self._node.network.unsubscribe(self.on_time, self._cob_id_time & 0x1FFFFFFF)

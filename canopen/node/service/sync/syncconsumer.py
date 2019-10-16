@@ -35,7 +35,7 @@ class SYNCConsumer(Service):
 	
 	def detach(self):
 		""" Detaches the ``SYNCConsumer`` from the ``Node``. It does NOT remove or delete the ``SYNCConsumer`` from the ``Node``. """
-		if self._node == None:
+		if not self.is_attached():
 			raise RuntimeError()
 		if self._cob_id_sync & (1 << 29):
 			self._node.network.unsubscribe(self.on_sync, self._cob_id_sync & 0x1FFFFFFF)

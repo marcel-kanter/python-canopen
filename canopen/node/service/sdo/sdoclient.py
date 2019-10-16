@@ -57,7 +57,7 @@ class SDOClient(Service):
 	
 	def detach(self):
 		""" Detaches the ``SDOClient`` from the ``Node``. It does NOT remove or delete the ``SDOClient`` from the ``Node``. """
-		if self._node == None:
+		if not self.is_attached():
 			raise RuntimeError()
 		
 		if self._cob_id_rx & (1 << 29):

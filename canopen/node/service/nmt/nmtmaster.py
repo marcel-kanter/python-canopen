@@ -38,10 +38,12 @@ class NMTMaster(Service):
 	
 	def detach(self):
 		""" Detaches the ``NMTMaster`` from the ``Node``. It does NOT remove or delete the ``NMTMaster`` from the ``Node``. """
-		if self._node == None:
+		if not self.is_attached():
 			raise RuntimeError()
+		
 		self._node.network.unsubscribe(self.on_error_control, self._identifier_ec)
 		self.stop()
+		
 		Service.detach(self)
 	
 	def start_heartbeat(self, heartbeat_time):

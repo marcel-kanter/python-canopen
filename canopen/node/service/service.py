@@ -16,14 +16,14 @@ class Service(object):
 			raise TypeError()
 		if self._node == node:
 			raise ValueError()
-		if self._node != None:
+		if self.is_attached():
 			self.detach()
 		
 		self._node = node
 	
 	def detach(self):
 		""" Detaches the ``Service`` from the ``Node``. It does NOT remove or delete the ``Service`` from the ``Node``. """
-		if self._node == None:
+		if not self.is_attached():
 			raise RuntimeError()
 		
 		self._node = None

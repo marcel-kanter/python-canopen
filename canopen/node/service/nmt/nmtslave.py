@@ -43,11 +43,13 @@ class NMTSlave(Service):
 	
 	def detach(self):
 		""" Detaches the ``NMTSlave`` from the ``Node``. It does NOT remove or delete the ``NMTSlave`` from the ``Node``. """
-		if self._node == None:
+		if not self.is_attached():
 			raise RuntimeError()
+		
 		self._node.network.unsubscribe(self.on_error_control, self._identifier_ec)
 		self._node.network.unsubscribe(self.on_node_control, 0x000)
 		self.stop()
+		
 		Service.detach(self)
 	
 	def start_heartbeat(self, heartbeat_time):

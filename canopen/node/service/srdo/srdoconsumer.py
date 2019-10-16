@@ -44,7 +44,7 @@ class SRDOConsumer(Service):
 			self._node.network.subscribe(self.on_message2, self._cob_id_2 & 0x7FF)
 	
 	def detach(self):
-		if self._node == None:
+		if not self.is_attached():
 			raise RuntimeError()
 		
 		if self._cob_id_1 & (1 << 29):

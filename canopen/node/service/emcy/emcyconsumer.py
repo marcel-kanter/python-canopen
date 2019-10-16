@@ -38,12 +38,14 @@ class EMCYConsumer(Service):
 	
 	def detach(self):
 		""" Detaches the ``EMCYConsumer`` from the ``Node``. It does NOT remove or delete the ``EMCYConsumer`` from the ``Node``. """
-		if self._node == None:
+		if not self.is_attached():
 			raise RuntimeError()
+		
 		if self._cob_id_emcy & (1 << 29):
 			self._node.network.unsubscribe(self.on_emcy, self._cob_id_emcy & 0x1FFFFFFF)
 		else:
 			self._node.network.unsubscribe(self.on_emcy, self._cob_id_emcy & 0x7FF)
+		
 		Service.detach(self)
 		
 	def on_emcy(self, message):

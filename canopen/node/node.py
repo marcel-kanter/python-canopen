@@ -70,14 +70,14 @@ class Node(collections.abc.Collection):
 			raise TypeError()
 		if self._network == network:
 			raise ValueError()
-		if self._network != None:
+		if self.is_attached():
 			self.detach()
 		
 		self._network = network
 	
 	def detach(self):
 		""" Detach this node from the network. It does NOT remove or delete the node from the network. """
-		if self._network == None:
+		if not self.is_attached():
 			raise RuntimeError()
 		
 		self._network = None

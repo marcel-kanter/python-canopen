@@ -40,7 +40,7 @@ class PDOProducer(SYNCConsumer):
 		
 	def detach(self):
 		""" Detaches the ``PDOProducer`` from the ``Node``. It does NOT remove or delete the ``PDOProducer`` from the ``Node``. """
-		if self._node == None:
+		if not self.is_attached():
 			raise RuntimeError()
 		
 		if self._cob_id_tx & (1 << 29):
