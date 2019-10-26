@@ -127,7 +127,7 @@ class NodeTestCase(unittest.TestCase):
 		
 		items = []
 		for k in node:
-			items.append(node[k])
+			items.append(k)
 		
 		self.assertEqual(len(node), len(items))
 		self.assertEqual(len(node), len(dictionary))

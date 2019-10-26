@@ -112,10 +112,14 @@ class NetworkTestCase(unittest.TestCase):
 		self.assertTrue(n2.name in network)
 		self.assertTrue(n2.id in network)
 		
-		# iter, getitem
+		# getitem
+		item = network["n1"]
+		self.assertTrue(item.name in network)
+		
+		# iter
 		items = []
 		for k in network:
-			items.append(network[k])
+			items.append(k)
 		
 		# delitem
 		for x in items:

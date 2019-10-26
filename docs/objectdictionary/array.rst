@@ -32,3 +32,14 @@ If the subindex and the name belong to the same element, the two lines will retr
 	variable_1 = the_array[0x01]
 	# Use the name
 	variable_1 = the_array["var1"]
+
+It implements the iterator interface too. The iterator yields all elements (variables, ...) added to the ``Array``.
+
+.. code:: python
+
+	the_array = canopen.objectdictionary.Array("arr", 0x1000)
+	
+	# ... add some elements ...
+	
+	for v in the_array:
+		print(v.name)

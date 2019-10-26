@@ -103,10 +103,14 @@ class ArrayTestCase(unittest.TestCase):
 		self.assertTrue(v2.name in array)
 		self.assertTrue(v2.subindex in array)
 		
-		# iter, getitem
+		# getitem
+		item = array["var1"]
+		self.assertTrue(item.name in array)
+		
+		# iter
 		items = []
 		for k in array:
-			items.append(array[k])
+			items.append(k)
 		
 		# delitem
 		for x in items:

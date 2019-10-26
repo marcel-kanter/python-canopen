@@ -31,3 +31,14 @@ If the index and the name belong to the same element, the two lines will retriev
 	record_1 = the_dictionary[1]
 	# Use the name
 	record_rec = the_dictionary["rec"]
+
+It implements the iterator interface too. The iterator yields all elements (arrays, records, variables, ...) added to the dictionary.
+
+.. code:: python
+
+	the_dictionary = canopen.ObjectDictionary()
+	
+	# ... add some elements ...
+	
+	for o in the_dictionary:
+		print(o.name)

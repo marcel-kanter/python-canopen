@@ -49,24 +49,28 @@ class RecordTestCase(unittest.TestCase):
 		
 		node = canopen.Node("n", 1, dictionary)
 		
-		record = canopen.node.record.Record(node, dictionary["rec"])
+		examinee = canopen.node.record.Record(node, dictionary["rec"])
 		
 		# contains
-		self.assertFalse("xxx" in record)
-		self.assertFalse(99 in record)
-		self.assertTrue("first" in record)
-		self.assertTrue(0x01 in record)
-		self.assertTrue("second" in record)
-		self.assertTrue(0x02 in record)
+		self.assertFalse("xxx" in examinee)
+		self.assertFalse(99 in examinee)
+		self.assertTrue("first" in examinee)
+		self.assertTrue(0x01 in examinee)
+		self.assertTrue("second" in examinee)
+		self.assertTrue(0x02 in examinee)
 		
-		# iter, getitem
+		# getitem
+		item = examinee["first"]
+		self.assertTrue(item.name in examinee)
+		
+		# iter
 		items = []
-		for k in record:
-			items.append(record[k])
+		for k in examinee:
+			items.append(k)
 		
 		# len
-		self.assertEqual(len(record), len(dictionary["rec"]))
-		self.assertEqual(len(record), len(items))
+		self.assertEqual(len(examinee), len(dictionary["rec"]))
+		self.assertEqual(len(examinee), len(items))
 
 
 if __name__ == "__main__":

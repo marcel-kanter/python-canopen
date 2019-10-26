@@ -31,7 +31,7 @@ class Network(collections.abc.Collection):
 	
 	def __iter__(self):
 		""" Returns an iterator over all ids of the nodes in the network. """
-		return iter(self._items_id)
+		return iter(self._items_id.values())
 	
 	def __len__(self):
 		""" Returns the number of nodes in the network. """

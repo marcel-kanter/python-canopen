@@ -81,10 +81,14 @@ class DefStructTestCase(unittest.TestCase):
 		self.assertTrue(v2.name in ds)
 		self.assertTrue(v2.subindex in ds)
 		
-		#### Test step: iter, getitem
+		# getitem
+		item = ds["var1"]
+		self.assertTrue(item.name in ds)
+		
+		#### Test step: iter
 		items = []
 		for k in ds:
-			items.append(ds[k])
+			items.append(k)
 		
 		#### Test step: delitem
 		for x in items:

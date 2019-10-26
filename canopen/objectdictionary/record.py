@@ -42,7 +42,7 @@ class Record(collections.abc.Collection):
 	
 	def __iter__(self):
 		""" Returns an iterator over all subindexes of the variables in the record. """
-		return iter(self._items_subindex)
+		return iter(self._items_subindex.values())
 	
 	def __len__(self):
 		""" Returns the number of variables in the record. """

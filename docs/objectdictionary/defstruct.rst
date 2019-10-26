@@ -34,3 +34,14 @@ If the subindex and the name belong to the same element, the two lines will retr
 	variable_1 = the_struct[0x01]
 	# Use the name
 	variable_1 = the_struct["var1"]
+
+It implements the iterator interface too. The iterator yields all elements (variables, ...) added to the ``DefStruct``.
+
+.. code:: python
+
+	the_struct = canopen.objectdictionary.DefStruct("defstruct", 0x40)
+	
+	# ... add some elements ...
+	
+	for v in the_struct:
+		print(v.name)

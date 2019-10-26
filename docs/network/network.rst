@@ -96,3 +96,14 @@ If the id and the name belong to the same node, the two lines will retrieve the 
 	node_1 = the_network[1]
 	# Use the name
 	node_A = the_network["A"]
+
+It implements the iterator interface too. The iterator yields all nodes added to the ``Network``.
+
+.. code:: python
+
+	the_network = canopen.Network()
+	
+	# ... add some nodes ...
+	
+	for n in the_network:
+		print(n.name)

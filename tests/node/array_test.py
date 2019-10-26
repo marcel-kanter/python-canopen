@@ -49,24 +49,28 @@ class ArrayTestCase(unittest.TestCase):
 		
 		node = canopen.Node("n", 1, dictionary)
 		
-		array = canopen.node.array.Array(node, dictionary["arr"])
+		examinee = canopen.node.array.Array(node, dictionary["arr"])
 		
 		# contains
-		self.assertFalse("xxx" in array)
-		self.assertFalse(99 in array)
-		self.assertTrue("first" in array)
-		self.assertTrue(0x01 in array)
-		self.assertTrue("second" in array)
-		self.assertTrue(0x02 in array)
+		self.assertFalse("xxx" in examinee)
+		self.assertFalse(99 in examinee)
+		self.assertTrue("first" in examinee)
+		self.assertTrue(0x01 in examinee)
+		self.assertTrue("second" in examinee)
+		self.assertTrue(0x02 in examinee)
 		
-		# iter, getitem
+		# getitem
+		item = examinee["first"]
+		self.assertTrue(item.name in examinee)
+		
+		# iter
 		items = []
-		for k in array:
-			items.append(array[k])
+		for k in examinee:
+			items.append(k)
 		
 		# len
-		self.assertEqual(len(array), len(dictionary["arr"]))
-		self.assertEqual(len(array), len(items))
+		self.assertEqual(len(examinee), len(dictionary["arr"]))
+		self.assertEqual(len(examinee), len(items))
 
 
 if __name__ == "__main__":

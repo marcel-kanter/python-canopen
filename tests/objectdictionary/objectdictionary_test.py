@@ -115,10 +115,14 @@ class ObjectDictionaryTestCase(unittest.TestCase):
 		self.assertTrue(v.name in dictionary)
 		self.assertTrue(v.index in dictionary)
 		
-		# iter, getitem
+		# getitem
+		item = dictionary["var"]
+		self.assertTrue(item.name in dictionary)
+		
+		# iter
 		items = []
 		for k in dictionary:
-			items.append(dictionary[k])
+			items.append(k)
 		
 		# delitem
 		for x in items:

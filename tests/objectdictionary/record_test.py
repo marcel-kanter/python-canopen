@@ -103,10 +103,14 @@ class RecordTestCase(unittest.TestCase):
 		self.assertTrue(v2.name in record)
 		self.assertTrue(v2.subindex in record)
 		
-		# iter, getitem
+		# getitem
+		item = record["var1"]
+		self.assertTrue(item.name in record)
+		
+		# iter
 		items = []
 		for k in record:
-			items.append(record[k])
+			items.append(k)
 		
 		# delitem
 		for x in items:

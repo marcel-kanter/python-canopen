@@ -58,10 +58,14 @@ class DefStructTestCase(unittest.TestCase):
 		self.assertTrue("first" in examinee)
 		self.assertTrue(0x00 in examinee)
 		
-		# iter, getitem
+		# getitem
+		item = examinee["first"]
+		self.assertTrue(item.name in examinee)
+		
+		# iter
 		items = []
 		for k in examinee:
-			items.append(examinee[k])
+			items.append(k)
 		
 		# len
 		self.assertEqual(len(examinee), len(dictionary["defstruct"]))

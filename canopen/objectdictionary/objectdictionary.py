@@ -37,7 +37,7 @@ class ObjectDictionary(collections.abc.Collection):
 	
 	def __iter__(self):
 		""" Returns an iterator over all indexes of the objects in the object dictionary. """
-		return iter(self._items_index)
+		return iter(self._items_index.values())
 	
 	def __len__(self):
 		""" Returns the number of objects in the object dictionary. """
