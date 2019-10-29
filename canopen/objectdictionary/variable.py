@@ -1,29 +1,27 @@
 import struct
 import calendar
+from .objectdictionaryelement import ObjectDictionaryElement
 from .datatypes import *
 
 
-class Variable(object):
+class Variable(ObjectDictionaryElement):
 	"""	This class is the representation of a Variable in an object dictionary.
 	"""
 	
 	_canopen_epoch = calendar.timegm((1984, 1, 1, 0, 0, 0))
+	__allowed_types = [BOOLEAN, INTEGER8, INTEGER16, INTEGER32, UNSIGNED8, UNSIGNED16, UNSIGNED32, REAL32, VISIBLE_STRING, OCTET_STRING, UNICODE_STRING, TIME_OF_DAY, TIME_DIFFERENCE, DOMAIN, INTEGER24, REAL64, INTEGER40, INTEGER48, INTEGER56, INTEGER64, UNSIGNED24, UNSIGNED40, UNSIGNED48, UNSIGNED56, UNSIGNED64]
 	
 	def __init__(self, name, index, subindex, data_type, access_type = "rw"):
-		allowed_types = [BOOLEAN, INTEGER8, INTEGER16, INTEGER32, UNSIGNED8, UNSIGNED16, UNSIGNED32, REAL32, VISIBLE_STRING, OCTET_STRING, UNICODE_STRING, TIME_OF_DAY, TIME_DIFFERENCE, DOMAIN, INTEGER24, REAL64, INTEGER40, INTEGER48, INTEGER56, INTEGER64, UNSIGNED24, UNSIGNED40, UNSIGNED48, UNSIGNED56, UNSIGNED64]
-		
-		if index < 0 or index > 65535:
-			raise ValueError()
 		if subindex < 0 or subindex > 255:
 			raise ValueError()
-		if data_type not in allowed_types:
+		if data_type not in self.__allowed_types:
 			raise ValueError()
 		if access_type not in ["rw", "wo", "ro", "const"]:
 			raise ValueError()
 		
+		ObjectDictionaryElement.__init__(self, name, index)
+		
 		self._object_type = 7
-		self._name = str(name)
-		self._index = index
 		self._subindex = subindex
 		self._data_type = data_type
 		self._access_type = access_type
@@ -248,22 +246,7 @@ class Variable(object):
 			raise ValueError()
 		
 		return data
-	
-	@property
-	def object_type(self):
-		"""
-		Returns the object type as defined in DS301 v4.02 Table 42: Object code usage.
-		"""
-		return self._object_type
-	
-	@property
-	def index(self):
-		return self._index
-	
-	@property
-	def name(self):
-		return self._name
-	
+		
 	@property
 	def subindex(self):
 		return self._subindex

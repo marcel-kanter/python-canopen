@@ -1,21 +1,19 @@
 import collections
+from .objectdictionaryelement import ObjectDictionaryElement
 from .deftype import DefType
 from .domain import Domain
 from .variable import Variable
 
 
-class Array(collections.abc.Collection):
+class Array(collections.abc.Collection, ObjectDictionaryElement):
 	""" Representation of an array of a CANopen object dictionary.
 	
 	This class is the representation of an array of a CANopen object dictionary. It is a mutable auto-associative mapping and may contain zero or more variables.
 	"""
 	def __init__(self, name, index):
-		if index < 0 or index > 65535:
-			raise ValueError()
-		
+		ObjectDictionaryElement.__init__(self, name, index)
+			
 		self._object_type = 8
-		self._name = name
-		self._index = index
 		self._items_subindex = {}
 		self._items_name = {}
 	
@@ -73,18 +71,3 @@ class Array(collections.abc.Collection):
 		
 		self._items_subindex[value.subindex] = value
 		self._items_name[value.name] = value
-	
-	@property
-	def object_type(self):
-		"""
-		Returns the object type as defined in DS301 v4.02 Table 42: Object code usage.
-		"""
-		return self._object_type
-	
-	@property
-	def index(self):
-		return self._index
-	
-	@property
-	def name(self):
-		return self._name

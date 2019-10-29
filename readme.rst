@@ -19,4 +19,4 @@ This package has the following capabilities and features:
 - Emulating of multiple local nodes in software
 
 - `Mixed CAN/CANopen operation <docs/network/network.rst#mixed-cancanopen-operation>`_
-- `Support for all data types defined by DS301 and DS1301 <docs/objectdictionary/variable.rst#data%20type>`_
+- `Support for all data types defined by DS301 and DS1301 <docs/objectdictionary/variable.rst#data-type>`_
