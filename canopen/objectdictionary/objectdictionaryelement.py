@@ -6,6 +6,7 @@ class ObjectDictionaryElement(object):
 		self._object_type = 0
 		self._name = str(name)
 		self._index = int(index)
+		self._description = ""
 	
 	def __eq__(self, other):
 		""" Indicates whether some other object is "equal to" this one. """
@@ -30,3 +31,11 @@ class ObjectDictionaryElement(object):
 	@property
 	def name(self):
 		return self._name
+	
+	@property
+	def description(self):
+		return self._description
+	
+	@description.setter
+	def description(self, x):
+		self._description = x

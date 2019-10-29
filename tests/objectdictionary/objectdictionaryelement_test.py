@@ -9,7 +9,11 @@ class ObjectDictionaryElementTest(unittest.TestCase):
 		with self.assertRaises(ValueError):
 			canopen.objectdictionary.ObjectDictionaryElement("var", 65536)
 		
-		canopen.objectdictionary.ObjectDictionaryElement("a", 1)
+		examinee = canopen.objectdictionary.ObjectDictionaryElement("a", 1)
+		
+		desc = "Franz jagt im komplett verwahrlosten Taxi quer durch Bayern."
+		examinee.description = desc
+		self.assertEqual(examinee.description, desc)
 	
 	def test_equals(self):
 		a = canopen.objectdictionary.ObjectDictionaryElement("a", 1)
