@@ -4,7 +4,7 @@ import canopen
 
 def dump(obj, file):
 	field_names = ["name", "index", "sub-index"]
-	writer = csv.DictWriter(file, field_names)
+	writer = csv.DictWriter(file, field_names, delimiter = "\t")
 	
 	writer.writeheader()
 	
@@ -12,7 +12,7 @@ def dump(obj, file):
 
 def load(file):
 	dictionary = canopen.ObjectDictionary()
-	reader = csv.DictReader(file)
+	reader = csv.DictReader(file, delimiter = "\t")
 	
 	del reader
 	return dictionary
