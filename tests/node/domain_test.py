@@ -7,7 +7,7 @@ class DomainTest(unittest.TestCase):
 	def test_init(self):
 		dictionary = canopen.ObjectDictionary()
 		dictionary.add(canopen.objectdictionary.DefStruct("defstruct", 0x40))
-		dictionary["defstruct"].add(canopen.objectdictionary.Variable("first", 0x40, 0x00, 0x05, "ro"))
+		dictionary["defstruct"].add(canopen.objectdictionary.Variable("first", 0x40, 0x00, canopen.objectdictionary.UNSIGNED8, "ro"))
 		dictionary.add(canopen.objectdictionary.DefType("deftype", 0x60))
 		dictionary.add(canopen.objectdictionary.Domain("domain", 0x1000))
 		dictionary.add(canopen.objectdictionary.Record("rec", 0x1234, 0x00))

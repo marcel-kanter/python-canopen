@@ -1,7 +1,6 @@
 import collections
+from .datatypes import UNSIGNED8, UNSIGNED32
 from .objectdictionaryelement import ObjectDictionaryElement
-from .deftype import DefType
-from .domain import Domain
 from .variable import Variable
 
 
@@ -67,7 +66,10 @@ class Array(collections.abc.Collection, ObjectDictionaryElement):
 	
 	def add(self, value):
 		""" Adds a variable to the array. It may be accessed later by the name or the subindex. """
-		if not isinstance(value, Variable) or isinstance(value, (DefType, Domain)):
+		if not isinstance(value, Variable):
+			raise TypeError()
+		# Allow objects with object type 7 (Variable) only. DefType and Domain are sub-classes of Variable and thus will pass the isinstance check.
+		if value.object_type != 7:
 			raise TypeError()
 		if value.subindex in self._items_subindex or value.name in self._items_name:
 			raise ValueError()

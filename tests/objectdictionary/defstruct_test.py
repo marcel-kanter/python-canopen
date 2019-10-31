@@ -38,6 +38,10 @@ class DefStructTestCase(unittest.TestCase):
 		with self.assertRaises(TypeError):
 			ds.add(x)
 		
+		x = canopen.objectdictionary.Domain("domain", 0x40)
+		with self.assertRaises(TypeError):
+			ds.add(x)
+		
 		#### Test step: add wrong index
 		x = canopen.objectdictionary.Variable("var", 200, 0, canopen.objectdictionary.UNSIGNED8, "ro")
 		with self.assertRaises(ValueError):
@@ -63,8 +67,12 @@ class DefStructTestCase(unittest.TestCase):
 		with self.assertRaises(ValueError):
 			ds.add(x)
 		
-		### Test step: add Variable with UNSIGNED32 to subindex 1
+		### Test step: add Variable with UNSIGNED16 to subindex 1, but with rw access
 		x = canopen.objectdictionary.Variable("var2", 0x40, 1, canopen.objectdictionary.UNSIGNED16, "rw")
+		with self.assertRaises(ValueError):
+			ds.add(x)
+		
+		x = canopen.objectdictionary.Variable("var2", 0x40, 0xFF, canopen.objectdictionary.UNSIGNED16, "ro")
 		with self.assertRaises(ValueError):
 			ds.add(x)
 		
@@ -72,6 +80,10 @@ class DefStructTestCase(unittest.TestCase):
 		v2 = canopen.objectdictionary.Variable("var2", 0x40, 1, canopen.objectdictionary.UNSIGNED16, "ro")
 		ds.add(v2)
 		self.assertEqual(len(ds), 2)
+		
+		v3 = canopen.objectdictionary.Variable("var3", 0x40, 0xFF, canopen.objectdictionary.UNSIGNED32, "ro")
+		ds.add(v3)
+		self.assertEqual(len(ds), 3)
 		
 		#### Test step: contains
 		self.assertFalse("xxx" in ds)

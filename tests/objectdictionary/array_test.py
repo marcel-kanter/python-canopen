@@ -66,14 +66,14 @@ class ArrayTestCase(unittest.TestCase):
 		
 		#### Test step: Contents
 		b = canopen.objectdictionary.Array("arr", 100, canopen.objectdictionary.UNSIGNED32)
-		b.add(canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32))
+		b.add(canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED8))
 		self.assertFalse(a == b)
 		
-		a.add(canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32))
+		a.add(canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED8))
 		self.assertTrue(a == b)
 		
 		b = canopen.objectdictionary.Array("arr", 100, canopen.objectdictionary.UNSIGNED32)
-		b.add(canopen.objectdictionary.Variable("x", 100, 0, canopen.objectdictionary.UNSIGNED32))
+		b.add(canopen.objectdictionary.Variable("x", 100, 0, canopen.objectdictionary.UNSIGNED8))
 		self.assertFalse(a == b)
 	
 	def test_collection(self):
@@ -84,7 +84,15 @@ class ArrayTestCase(unittest.TestCase):
 		with self.assertRaises(TypeError):
 			array.add(x)
 		
-		x = canopen.objectdictionary.Record("rec", 300, 0x00)
+		x = canopen.objectdictionary.Record("rec", 100, 0x00)
+		with self.assertRaises(TypeError):
+			array.add(x)
+		
+		x = canopen.objectdictionary.Domain("domain", 100)
+		with self.assertRaises(TypeError):
+			array.add(x)
+		
+		x = canopen.objectdictionary.DefType("deftype", 100)
 		with self.assertRaises(TypeError):
 			array.add(x)
 		
@@ -92,7 +100,7 @@ class ArrayTestCase(unittest.TestCase):
 		with self.assertRaises(ValueError):
 			array.add(x)
 		
-		v1 = canopen.objectdictionary.Variable("var1", 100, 0, canopen.objectdictionary.UNSIGNED32)
+		v1 = canopen.objectdictionary.Variable("var1", 100, 0, canopen.objectdictionary.UNSIGNED8)
 		array.add(v1)
 		self.assertEqual(len(array), 1)
 		
@@ -107,6 +115,10 @@ class ArrayTestCase(unittest.TestCase):
 		array.add(v2)
 		self.assertEqual(len(array), 2)
 		
+		v3 = canopen.objectdictionary.Variable("var3", 100, 0xFF, canopen.objectdictionary.UNSIGNED32)
+		array.add(v3)
+		self.assertEqual(len(array), 3)
+		
 		# contains
 		self.assertFalse("xxx" in array)
 		self.assertFalse(999 in array)
@@ -114,6 +126,8 @@ class ArrayTestCase(unittest.TestCase):
 		self.assertTrue(v1.subindex in array)
 		self.assertTrue(v2.name in array)
 		self.assertTrue(v2.subindex in array)
+		self.assertTrue(v3.name in array)
+		self.assertTrue(v3.subindex in array)
 		
 		# getitem
 		item = array["var1"]

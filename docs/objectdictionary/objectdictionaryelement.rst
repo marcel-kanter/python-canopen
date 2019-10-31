@@ -9,9 +9,9 @@ Class hierarchy
 .. code::
 
 	+ ObjectDictionaryElement
-	+-+ Array
-	| +-- DefStruct
-	+-- Record
-	+-+ Variable
-	  +-- DefType
-	  +-- Domain
+	  + Array
+	  | - DefStruct
+	  + Record
+	  + Variable
+	    - DefType
+	    - Domain
