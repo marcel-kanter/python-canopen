@@ -3,6 +3,22 @@ ObjectDictionary
 
 This class is the representation of an object dictionary. It is a mutable auto-associative mapping and may contain zero or more of ``Array``, ``DefStruct``, ``DefType``, ``Domain``, ``Record`` and ``Variable``.
 
++-----------+-------------+
+| Class     | Object Type |
++===========+=============+
+| Array     | 8           |
++-----------+-------------+
+| DefStruct | 6           |
++-----------+-------------+
+| DefType   | 5           |
++-----------+-------------+
+| Domain    | 2           |
++-----------+-------------+
+| Record    | 9           |
++-----------+-------------+
+| Variable  | 7           |
++-----------+-------------+
+
 Auto-associative mapping
 ------------------------
 
