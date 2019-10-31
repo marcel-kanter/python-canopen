@@ -14,7 +14,7 @@ Additionally, the index of the variable must match the index of the array.
 
 .. code:: python
 
-	the_array = canopen.objectdictionary.Array("arr", 0x1000)
+	the_array = canopen.objectdictionary.Array("arr", 0x1000, canopen.objectdictionary.INTEGER32)
 	
 	one_variable = canopen.objectdictionary.Variable("var1", 0x1000, 0x01, canopen.objectdictionary.INTEGER32)
 	other_variable = canopen.objectdictionary.Variable("var2", 0x1000, 0x01, canopen.objectdictionary.INTEGER32)
@@ -37,7 +37,7 @@ It implements the iterator interface too. The iterator yields all elements (vari
 
 .. code:: python
 
-	the_array = canopen.objectdictionary.Array("arr", 0x1000)
+	the_array = canopen.objectdictionary.Array("arr", 0x1000, canopen.objectdictionary.INTEGER32)
 	
 	# ... add some elements ...
 	

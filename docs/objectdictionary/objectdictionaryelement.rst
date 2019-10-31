@@ -10,8 +10,8 @@ Class hierarchy
 
 	+ ObjectDictionaryElement
 	  + Array
-	  | - DefStruct
-	  + Record
+	  | * DefStruct
+	  * Record
 	  + Variable
-	    - DefType
-	    - Domain
+	    * DefType
+	    * Domain
