@@ -10,10 +10,15 @@ class Record(collections.abc.Collection, ObjectDictionaryElement):
 	
 	This class is the representation of a record of a CANopen object dictionary. It is a mutable auto-associative mapping and may contain zero or more variables.
 	"""
-	def __init__(self, name, index):
+	def __init__(self, name, index, data_type):
+		if int(data_type) < 0x0000 or int(data_type) > 0x1000:
+			raise ValueError()
+		
 		ObjectDictionaryElement.__init__(self, name, index)
 		
 		self._object_type = 9
+		self._data_type = data_type
+		
 		self._items_subindex = {}
 		self._items_name = {}
 	
@@ -23,7 +28,7 @@ class Record(collections.abc.Collection, ObjectDictionaryElement):
 			return True
 		if self.__class__ != other.__class__:
 			return False
-		if self._name != other._name or self._index != other.index:
+		if self._name != other._name or self._index != other.index or self._data_type != other.data_type:
 			return False
 		if self._items_subindex != other._items_subindex:
 			return False
@@ -71,3 +76,10 @@ class Record(collections.abc.Collection, ObjectDictionaryElement):
 		
 		self._items_subindex[value.subindex] = value
 		self._items_name[value.name] = value
+	
+	@property
+	def data_type(self):
+		"""
+		Returns the data type as defined in DS301 v4.02 Table 44: Object dictionary data types.
+		"""
+		return self._data_type

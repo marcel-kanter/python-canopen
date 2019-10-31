@@ -36,8 +36,8 @@ class ObjectDictionaryTestCase(unittest.TestCase):
 		self.assertTrue(a == b)
 		self.assertEqual(a == b, b == a)
 		
-		a.add(canopen.objectdictionary.Record("rec", 200))
-		b.add(canopen.objectdictionary.Record("rec", 200))
+		a.add(canopen.objectdictionary.Record("rec", 200, 0x00))
+		b.add(canopen.objectdictionary.Record("rec", 200, 0x00))
 		self.assertTrue(a == b)
 		self.assertEqual(a == b, b == a)
 		
@@ -62,14 +62,14 @@ class ObjectDictionaryTestCase(unittest.TestCase):
 		with self.assertRaises(TypeError):
 			dictionary.add(x)
 		
-		a = canopen.objectdictionary.Array("arr", 100)
+		a = canopen.objectdictionary.Array("arr", 100, canopen.objectdictionary.UNSIGNED16)
 		dictionary.add(a)
 		self.assertEqual(len(dictionary), 1)
 		
-		x = canopen.objectdictionary.Array("arr", 200)
+		x = canopen.objectdictionary.Array("arr", 200, canopen.objectdictionary.UNSIGNED16)
 		with self.assertRaises(ValueError):
 			dictionary.add(x)
-		x = canopen.objectdictionary.Record("rec", 100)
+		x = canopen.objectdictionary.Record("rec", 100, 0x00)
 		with self.assertRaises(ValueError):
 			dictionary.add(x)
 		
@@ -87,7 +87,7 @@ class ObjectDictionaryTestCase(unittest.TestCase):
 		with self.assertRaises(ValueError):
 			dictionary.add(dt)
 		
-		r = canopen.objectdictionary.Record("rec", 200)
+		r = canopen.objectdictionary.Record("rec", 200, 0x00)
 		dictionary.add(r)
 		self.assertEqual(len(dictionary), 4)
 		

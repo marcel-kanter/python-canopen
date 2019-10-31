@@ -89,7 +89,7 @@ class NodeTestCase(unittest.TestCase):
 		dictionary["defstruct"].add(canopen.objectdictionary.Variable("first", 0x40, 0x00, canopen.objectdictionary.UNSIGNED8, "ro"))
 		dictionary.add(canopen.objectdictionary.DefType("deftype", 0x60))
 		dictionary.add(canopen.objectdictionary.DefType("domain", 0x1000))
-		dictionary.add(canopen.objectdictionary.Record("rec", 0x1234))
+		dictionary.add(canopen.objectdictionary.Record("rec", 0x1234, 0x00))
 		dictionary["rec"].add(canopen.objectdictionary.Variable("boolean", 0x1234, 0x01, canopen.objectdictionary.BOOLEAN, "rw"))
 		dictionary["rec"].add(canopen.objectdictionary.Variable("integer8", 0x1234, 0x02, canopen.objectdictionary.INTEGER8, "rw"))
 		dictionary["rec"].add(canopen.objectdictionary.Variable("integer16", 0x1234, 0x03, canopen.objectdictionary.INTEGER16, "rw"))
@@ -101,7 +101,7 @@ class NodeTestCase(unittest.TestCase):
 		dictionary["rec"].add(canopen.objectdictionary.Variable("real64", 0x1234, 0x11, canopen.objectdictionary.REAL64, "rw"))
 		dictionary["rec"].add(canopen.objectdictionary.Variable("integer40", 0x1234, 0x12, canopen.objectdictionary.INTEGER40, "rw"))
 		dictionary.add(canopen.objectdictionary.Variable("var", 0x5678, 0x00, canopen.objectdictionary.UNSIGNED32, "rw"))
-		dictionary.add(canopen.objectdictionary.Array("arr", 0xabcd))
+		dictionary.add(canopen.objectdictionary.Array("arr", 0xabcd, canopen.objectdictionary.INTEGER8))
 		dictionary["arr"].add(canopen.objectdictionary.Variable("first", 0xabcd, 0x01, canopen.objectdictionary.INTEGER8, "rw"))
 		dictionary["arr"].add(canopen.objectdictionary.Variable("second", 0xabcd, 0x02, canopen.objectdictionary.INTEGER8, "rw"))
 		
@@ -148,7 +148,7 @@ class NodeTestCase(unittest.TestCase):
 	
 	def test_data_access(self):
 		dictionary = canopen.ObjectDictionary()
-		dictionary.add(canopen.objectdictionary.Record("rec", 0x1234))
+		dictionary.add(canopen.objectdictionary.Record("rec", 0x1234, 0x00))
 		dictionary["rec"].add(canopen.objectdictionary.Variable("integer32", 0x1234, 0x04, canopen.objectdictionary.INTEGER32, "rw"))
 		dictionary.add(canopen.objectdictionary.Variable("var", 0x5678, 0x00, canopen.objectdictionary.UNSIGNED32, "rw"))
 		examinee = canopen.Node("n", 1, dictionary)

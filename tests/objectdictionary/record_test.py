@@ -5,25 +5,33 @@ import canopen.objectdictionary
 class RecordTestCase(unittest.TestCase):
 	def test_init(self):
 		with self.assertRaises(ValueError):
-			canopen.objectdictionary.Record("rec", -1)
+			canopen.objectdictionary.Record("rec", -1, 0x00)
 		with self.assertRaises(ValueError):
-			canopen.objectdictionary.Record("rec", 65536)
+			canopen.objectdictionary.Record("rec", 65536, 0x00)
+		with self.assertRaises(ValueError):
+			canopen.objectdictionary.Record("rec", 0, -1)
+		with self.assertRaises(ValueError):
+			canopen.objectdictionary.Record("rec", 0, 65536)
 		
 		name = "rec"
 		index = 100
-		record = canopen.objectdictionary.Record(name, index)
+		data_type = canopen.objectdictionary.UNSIGNED32
+		record = canopen.objectdictionary.Record(name, index, data_type)
 		
 		self.assertEqual(record.object_type, 9)
 		self.assertEqual(record.name, name)
 		self.assertEqual(record.index, index)
+		self.assertEqual(record.data_type, data_type)
 		
 		with self.assertRaises(AttributeError):
 			record.name = name
 		with self.assertRaises(AttributeError):
 			record.index = index
+		with self.assertRaises(AttributeError):
+			record.data_type = data_type
 	
 	def test_equals(self):
-		a = canopen.objectdictionary.Record("rec", 100)
+		a = canopen.objectdictionary.Record("rec", 100, 0x00)
 		
 		#### Test step: Reflexivity
 		self.assertTrue(a == a)
@@ -35,44 +43,48 @@ class RecordTestCase(unittest.TestCase):
 				self.assertFalse(a == value)
 		
 		#### Test step: Consistency
-		b = canopen.objectdictionary.Record("rec", 100)
+		b = canopen.objectdictionary.Record("rec", 100, 0x00)
 		for _ in range(3):
 			self.assertTrue(a == b)
 		
 		#### Test step: Symmetricality, Contents
-		b = canopen.objectdictionary.Record("rec", 100)
+		b = canopen.objectdictionary.Record("rec", 100, 0x00)
 		self.assertTrue(a == b)
 		self.assertEqual(a == b, b == a)
 		
-		b = canopen.objectdictionary.Record("x", 100)
+		b = canopen.objectdictionary.Record("x", 100, 0x00)
 		self.assertFalse(a == b)
 		self.assertEqual(a == b, b == a)
 		
-		b = canopen.objectdictionary.Record("rec", 101)
+		b = canopen.objectdictionary.Record("rec", 101, 0x00)
+		self.assertFalse(a == b)
+		self.assertEqual(a == b, b == a)
+		
+		b = canopen.objectdictionary.Record("rec", 100, 0x01)
 		self.assertFalse(a == b)
 		self.assertEqual(a == b, b == a)
 		
 		#### Test step: Contents
-		b = canopen.objectdictionary.Record("rec", 100)
+		b = canopen.objectdictionary.Record("rec", 100, 0x00)
 		b.add(canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32))
 		self.assertFalse(a == b)
 		
 		a.add(canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32))
 		self.assertTrue(a == b)
 		
-		b = canopen.objectdictionary.Record("rec", 100)
+		b = canopen.objectdictionary.Record("rec", 100, 0x00)
 		b.add(canopen.objectdictionary.Variable("x", 100, 0, canopen.objectdictionary.UNSIGNED32))
 		self.assertFalse(a == b)
 	
 	def test_collection(self):
-		record = canopen.objectdictionary.Record("rec", 100)
+		record = canopen.objectdictionary.Record("rec", 100, 0x00)
 		
 		# add
-		x = canopen.objectdictionary.Array("arr", 200)
+		x = canopen.objectdictionary.Array("arr", 200, canopen.objectdictionary.UNSIGNED32)
 		with self.assertRaises(TypeError):
 			record.add(x)
 		
-		x = canopen.objectdictionary.Record("rec", 300)
+		x = canopen.objectdictionary.Record("rec", 300, 0x00)
 		with self.assertRaises(TypeError):
 			record.add(x)
 		

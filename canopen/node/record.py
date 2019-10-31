@@ -40,3 +40,7 @@ class Record(collections.abc.Collection):
 	@property
 	def name(self):
 		return self._entry.name
+	
+	@property
+	def data_type(self):
+		return self._entry.data_type

@@ -18,7 +18,7 @@ class Vehicle_Download(threading.Thread):
 		try:
 			network = canopen.Network()
 			dictionary = canopen.ObjectDictionary()
-			dictionary.add(canopen.objectdictionary.Record("rec", 0x1234))
+			dictionary.add(canopen.objectdictionary.Record("rec", 0x1234, 0x00))
 			dictionary["rec"].add(canopen.objectdictionary.Variable("unicode", 0x1234, 0x0B, canopen.objectdictionary.UNICODE_STRING, "rw"))
 			dictionary.add(canopen.objectdictionary.Variable("var", 0x5678, 0x00, canopen.objectdictionary.UNSIGNED32, "rw"))
 			node = canopen.Node("a", 1, dictionary)
@@ -150,7 +150,7 @@ class Vehicle_Upload(threading.Thread):
 		try:
 			network = canopen.Network()
 			dictionary = canopen.ObjectDictionary()
-			dictionary.add(canopen.objectdictionary.Record("rec", 0x1234))
+			dictionary.add(canopen.objectdictionary.Record("rec", 0x1234, 0x00))
 			dictionary["rec"].add(canopen.objectdictionary.Variable("unicode", 0x1234, 0x0B, canopen.objectdictionary.UNICODE_STRING, "rw"))
 			dictionary.add(canopen.objectdictionary.Variable("var", 0x5678, 0x00, canopen.objectdictionary.UNSIGNED32, "rw"))
 			node = canopen.Node("a", 1, dictionary)

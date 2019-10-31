@@ -26,11 +26,11 @@ class DefStructTestCase(unittest.TestCase):
 		ds = canopen.objectdictionary.DefStruct("defstruct", 0x40)
 		
 		#### Test step: add wrong type
-		x = canopen.objectdictionary.Array("arr", 0x40)
+		x = canopen.objectdictionary.Array("arr", 0x40, canopen.objectdictionary.UNSIGNED16)
 		with self.assertRaises(TypeError):
 			ds.add(x)
 		
-		x = canopen.objectdictionary.Record("rec", 0x40)
+		x = canopen.objectdictionary.Record("rec", 0x40, 0x00)
 		with self.assertRaises(TypeError):
 			ds.add(x)
 		

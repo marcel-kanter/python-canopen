@@ -1,17 +1,17 @@
 from .datatypes import UNSIGNED8, UNSIGNED16
 from .deftype import DefType
 from .domain import Domain
-from .record import Record
+from .array import Array
 from .variable import Variable
 
 
-class DefStruct(Record):
+class DefStruct(Array):
 	""" Representation of a DefStruct of an object dictionary.
 	
 	This class is the representation of a DefStruct of an object dictionary. It is a mutable auto-associative mapping and may contain zero or more variables.
 	"""
 	def __init__(self, name, index):
-		Record.__init__(self, name, index)
+		Array.__init__(self, name, index, UNSIGNED16)
 		self._object_type = 6
 	
 	def add(self, value):
@@ -25,4 +25,4 @@ class DefStruct(Record):
 		if value.access_type != "ro" and value.access_type != "const":
 			raise ValueError()
 		
-		Record.add(self, value)
+		Array.add(self, value)

@@ -5,25 +5,33 @@ import canopen.objectdictionary
 class ArrayTestCase(unittest.TestCase):
 	def test_init(self):
 		with self.assertRaises(ValueError):
-			canopen.objectdictionary.Array("arr", -1)
+			canopen.objectdictionary.Array("arr", -1, canopen.objectdictionary.UNSIGNED32)
 		with self.assertRaises(ValueError):
-			canopen.objectdictionary.Array("arr", 65536)
+			canopen.objectdictionary.Array("arr", 65536, canopen.objectdictionary.UNSIGNED32)
+		with self.assertRaises(ValueError):
+			canopen.objectdictionary.Array("arr", 0, -1)
+		with self.assertRaises(ValueError):
+			canopen.objectdictionary.Array("arr", 0, 65536)
 		
 		name = "arr"
 		index = 100
-		array = canopen.objectdictionary.Array(name, index)
+		data_type = canopen.objectdictionary.UNSIGNED32
+		array = canopen.objectdictionary.Array(name, index, data_type)
 		
 		self.assertEqual(array.object_type, 8)
 		self.assertEqual(array.name, name)
 		self.assertEqual(array.index, index)
+		self.assertEqual(array.data_type, data_type)
 		
 		with self.assertRaises(AttributeError):
 			array.name = name
 		with self.assertRaises(AttributeError):
 			array.index = index
+		with self.assertRaises(AttributeError):
+			array.data_type = data_type
 	
 	def test_equals(self):
-		a = canopen.objectdictionary.Array("arr", 100)
+		a = canopen.objectdictionary.Array("arr", 100, canopen.objectdictionary.UNSIGNED32)
 		
 		#### Test step: Reflexivity
 		self.assertTrue(a == a)
@@ -35,44 +43,48 @@ class ArrayTestCase(unittest.TestCase):
 				self.assertFalse(a == value)
 		
 		#### Test step: Consistency
-		b = canopen.objectdictionary.Array("arr", 100)
+		b = canopen.objectdictionary.Array("arr", 100, canopen.objectdictionary.UNSIGNED32)
 		for _ in range(3):
 			self.assertTrue(a == b)
 		
 		#### Test step: Symmetricality, Contents
-		b = canopen.objectdictionary.Array("arr", 100)
+		b = canopen.objectdictionary.Array("arr", 100, canopen.objectdictionary.UNSIGNED32)
 		self.assertTrue(a == b)
 		self.assertEqual(a == b, b == a)
 		
-		b = canopen.objectdictionary.Array("x", 100)
+		b = canopen.objectdictionary.Array("x", 100, canopen.objectdictionary.UNSIGNED32)
 		self.assertFalse(a == b)
 		self.assertEqual(a == b, b == a)
 		
-		b = canopen.objectdictionary.Array("arr", 101)
+		b = canopen.objectdictionary.Array("arr", 101, canopen.objectdictionary.UNSIGNED32)
+		self.assertFalse(a == b)
+		self.assertEqual(a == b, b == a)
+		
+		b = canopen.objectdictionary.Array("arr", 100, canopen.objectdictionary.UNSIGNED16)
 		self.assertFalse(a == b)
 		self.assertEqual(a == b, b == a)
 		
 		#### Test step: Contents
-		b = canopen.objectdictionary.Array("arr", 100)
+		b = canopen.objectdictionary.Array("arr", 100, canopen.objectdictionary.UNSIGNED32)
 		b.add(canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32))
 		self.assertFalse(a == b)
 		
 		a.add(canopen.objectdictionary.Variable("var", 100, 0, canopen.objectdictionary.UNSIGNED32))
 		self.assertTrue(a == b)
 		
-		b = canopen.objectdictionary.Array("arr", 100)
+		b = canopen.objectdictionary.Array("arr", 100, canopen.objectdictionary.UNSIGNED32)
 		b.add(canopen.objectdictionary.Variable("x", 100, 0, canopen.objectdictionary.UNSIGNED32))
 		self.assertFalse(a == b)
 	
 	def test_collection(self):
-		array = canopen.objectdictionary.Array("arr", 100)
+		array = canopen.objectdictionary.Array("arr", 100, canopen.objectdictionary.UNSIGNED32)
 		
 		# add
-		x = canopen.objectdictionary.Array("arr", 200)
+		x = canopen.objectdictionary.Array("arr", 200, canopen.objectdictionary.UNSIGNED32)
 		with self.assertRaises(TypeError):
 			array.add(x)
 		
-		x = canopen.objectdictionary.Record("rec", 300)
+		x = canopen.objectdictionary.Record("rec", 300, 0x00)
 		with self.assertRaises(TypeError):
 			array.add(x)
 		

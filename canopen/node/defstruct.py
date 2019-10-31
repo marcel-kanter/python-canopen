@@ -1,8 +1,8 @@
 import canopen.objectdictionary
-from .record import Record
+from .array import Array
 
 
-class DefStruct(Record):
+class DefStruct(Array):
 	def __init__(self, node, entry):
 		if not isinstance(node, canopen.Node):
 			raise TypeError()

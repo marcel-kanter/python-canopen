@@ -59,7 +59,7 @@ class LocalNodeTestCase(unittest.TestCase):
 
 	def test_data_access(self):
 		dictionary = canopen.ObjectDictionary()
-		dictionary.add(canopen.objectdictionary.Record("rec", 0x1234))
+		dictionary.add(canopen.objectdictionary.Record("rec", 0x1234, 0x00))
 		dictionary["rec"].add(canopen.objectdictionary.Variable("integer32", 0x1234, 0x04, canopen.objectdictionary.INTEGER32, "rw"))
 		dictionary.add(canopen.objectdictionary.Variable("var", 0x5678, 0x00, canopen.objectdictionary.UNSIGNED32, "rw"))
 		examinee = canopen.LocalNode("n", 1, dictionary)
