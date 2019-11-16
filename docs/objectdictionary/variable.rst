@@ -38,6 +38,9 @@ Each variable has a data type. The data types are defined in DS301 "Table 44: Ob
 * UNSIGNED56
 * UNSIGNED64
 
+Besides these data types, DS201 defines a type "DATE" (with the time, daylight saving time flag and a date) and "NIL". But the DS2xx series of documents don't specify numbers for the data types.
+The type "BOOLEAN" is reserved in DS1301.
+
 Access type
 -----------
 
