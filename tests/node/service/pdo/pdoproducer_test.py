@@ -8,9 +8,24 @@ from canopen.node.service.pdo import PDOProducer
 
 class PDOProducerTest(unittest.TestCase):
 	def test_init(self):
+		test_data = [-1, 241, 251, 256]
+		for value in test_data:
+			with self.assertRaises(ValueError):
+				PDOProducer(value)
+		
 		examinee = PDOProducer()
 		
 		self.assertEqual(examinee.node, None)
+		
+		test_data = [-1, 241, 251, 256]
+		for value in test_data:
+			with self.assertRaises(ValueError):
+				examinee.transmission_type = value
+		
+		test_data = [0, 1, 2, 3, 4, 8, 240, 252, 253, 254, 255]
+		for value in test_data:
+			examinee.transmission_type = value
+			self.assertEqual(examinee.transmission_type, value)
 		
 		test_data = [None, b"\x22", b"\x11\x00"]
 		for value in test_data:

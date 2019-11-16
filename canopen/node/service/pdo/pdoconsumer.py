@@ -9,9 +9,14 @@ class PDOConsumer(SYNCConsumer):
 	"sync": ("sync", service, counter)
 	"pdo": ("pdo", service)
 	"""
-	def __init__(self):
+	def __init__(self, transmission_type = 0):
+		if int(transmission_type) < 0 or (int(transmission_type) > 240 and int(transmission_type) < 254) or int(transmission_type) > 255:
+			raise ValueError()
+		
 		SYNCConsumer.__init__(self)
+		
 		self._callbacks["pdo"] = []
+		self._transmission_type = int(transmission_type)
 		self._data = None
 	
 	def attach(self, node, cob_id_rx = None, cob_id_sync = None):
@@ -65,3 +70,14 @@ class PDOConsumer(SYNCConsumer):
 	@data.setter
 	def data(self, data):
 		self._data = data
+	
+	@property
+	def transmission_type(self):
+		return self._transmission_type
+	
+	@transmission_type.setter
+	def transmission_type(self, value):
+		x = int(value)
+		if x < 0 or (x > 240 and x < 254) or x > 255:
+			raise ValueError()
+		self._transmission_type = x
