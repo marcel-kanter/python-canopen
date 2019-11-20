@@ -1,3 +1,4 @@
+import can
 import canopen.node
 from canopen.node.service.sync import SYNCConsumer
 
@@ -54,6 +55,16 @@ class PDOProducer(SYNCConsumer):
 			self._node.network.unsubscribe(self.on_pdo, self._cob_id_tx & 0x7FF)
 		
 		SYNCConsumer.detach(self)
+	
+	def send(self):
+		if self._data == None:
+			raise RuntimeError()
+		
+		if self._cob_id_tx & (1 << 29):
+			message = can.Message(arbitration_id = self._cob_id_tx & 0x1FFFFFFF, is_extended_id = True, data = self._data)
+		else:
+			message = can.Message(arbitration_id = self._cob_id_tx & 0x7FF, is_extended_id = False, data = self._data)
+		self._node.network.send(message)
 	
 	def on_pdo(self, message):
 		if not message.is_remote_frame:

@@ -157,6 +157,42 @@ class PDOProducerTest(unittest.TestCase):
 		network.detach()
 		bus1.shutdown()
 		bus2.shutdown()
+	
+	def test_send(self):
+		bus1 = can.Bus(interface = "virtual", channel = 0)
+		bus2 = can.Bus(interface = "virtual", channel = 0)
+		network = canopen.Network()
+		dictionary = canopen.ObjectDictionary()
+		node = canopen.Node("a", 1, dictionary)
+		examinee = PDOProducer()
+		
+		network.attach(bus1)
+		node.attach(network)
+		
+		examinee.data = None
+		with self.assertRaises(RuntimeError):
+			examinee.send()
+		
+		cob_id_txs = [0x181, (1 << 29) | 0x181]
+		for cob_id_tx in cob_id_txs:
+			examinee.attach(node, cob_id_tx)
+			
+			with self.subTest("cub_id_tx=" + hex(cob_id_tx)):
+				data = b"\x00"
+				examinee.data = data
+				examinee.send()
+				
+				message = bus2.recv(0.1)
+				self.assertEqual(message.arbitration_id, 0x181)
+				self.assertEqual(message.is_extended_id, bool(cob_id_tx & (1 << 29)))
+				self.assertEqual(message.data, data)
+				
+			examinee.detach()
+		
+		node.detach()
+		network.detach()
+		bus1.shutdown()
+		bus2.shutdown()
 
 
 if __name__ == "__main__":
