@@ -1,5 +1,5 @@
 from .node import Node
-from .service import NMTMaster, EMCYConsumer, SDOClient, PDOConsumer, PDOProducer
+from .service import NMTMaster, EMCYConsumer, SDOClient, RemotePDOConsumer, RemotePDOProducer
 
 
 class RemoteNode(Node):
@@ -12,8 +12,8 @@ class RemoteNode(Node):
 		self.nmt = NMTMaster()
 		self.emcy = EMCYConsumer()
 		self.sdo = SDOClient()
-		self.rpdo = {1: PDOProducer(), 2: PDOProducer(), 3: PDOProducer(), 4: PDOProducer()}
-		self.tpdo = {1: PDOConsumer(), 2: PDOConsumer(), 3: PDOConsumer(), 4: PDOConsumer()}
+		self.rpdo = {1: RemotePDOConsumer(), 2: RemotePDOConsumer(), 3: RemotePDOConsumer(), 4: RemotePDOConsumer()}
+		self.tpdo = {1: RemotePDOProducer(), 2: RemotePDOProducer(), 3: RemotePDOProducer(), 4: RemotePDOProducer()}
 	
 	def attach(self, network):
 		""" Attach the node and then all services to the network. It does NOT add or assign the node to the network."""

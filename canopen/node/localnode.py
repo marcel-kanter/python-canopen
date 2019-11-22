@@ -1,6 +1,6 @@
 import canopen.objectdictionary
 from .node import Node
-from .service import NMTSlave, EMCYProducer, SDOServer, PDOConsumer, PDOProducer
+from .service import NMTSlave, EMCYProducer, SDOServer, LocalPDOConsumer, LocalPDOProducer
 
 
 class LocalNode(Node):
@@ -14,8 +14,8 @@ class LocalNode(Node):
 		self.nmt = NMTSlave()
 		self.emcy = EMCYProducer()
 		self.sdo = SDOServer()
-		self.rpdo = {1: PDOConsumer(), 2: PDOConsumer(), 3: PDOConsumer(), 4: PDOConsumer()}
-		self.tpdo = {1: PDOProducer(), 2: PDOProducer(), 3: PDOProducer(), 4: PDOProducer()}
+		self.rpdo = {1: LocalPDOConsumer(), 2: LocalPDOConsumer(), 3: LocalPDOConsumer(), 4: LocalPDOConsumer()}
+		self.tpdo = {1: LocalPDOProducer(), 2: LocalPDOProducer(), 3: LocalPDOProducer(), 4: LocalPDOProducer()}
 	
 	def attach(self, network):
 		""" Attach the node and then all services to the network. It does NOT add or assign the node to the network."""
