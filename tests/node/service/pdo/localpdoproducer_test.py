@@ -89,26 +89,48 @@ class LocalPDOProducerTest(unittest.TestCase):
 		node.attach(network)
 		examinee.attach(node)
 		
-		#### Test step: standard frame -> ignored
-		m.reset_mock()
-		message = can.Message(arbitration_id = 0x181, is_extended_id = False, data = b"\x00\x00\x00\x00\x00\x00\x00\x00")
-		bus2.send(message)
-		time.sleep(0.001)
-		m.assert_not_called()
+		with self.subTest("Standard frame -> ignored"):
+			m.reset_mock()
+			message = can.Message(arbitration_id = 0x181, is_extended_id = False, data = b"\x00\x00\x00\x00\x00\x00\x00\x00")
+			bus2.send(message)
+			time.sleep(0.001)
+			m.assert_not_called()
 		
-		#### Test step: Remote transmission of PDO
-		m.reset_mock()
-		message = can.Message(arbitration_id = 0x181, is_extended_id = False, is_remote_frame = True, dlc = 8)
-		bus2.send(message)
-		time.sleep(0.001)
-		m.assert_called()
+		with self.subTest("RTR with transmission type 0"):
+			m.reset_mock()
+			message = can.Message(arbitration_id = 0x181, is_extended_id = False, is_remote_frame = True, dlc = 8)
+			bus2.send(message)
+			time.sleep(0.001)
+			m.assert_called()
 		
-		#### Test step: Remote transmission of PDO, but extended frame type differs -> ignored
-		m.reset_mock()
-		message = can.Message(arbitration_id = 0x181, is_extended_id = True, is_remote_frame = True, dlc = 8)
-		bus2.send(message)
-		time.sleep(0.001)
-		m.assert_not_called()
+		with self.subTest("RTR with transmission type 252, but length differs"):
+			m.reset_mock()
+			examinee.data = b"\x01\x02"
+			examinee.transmission_type = 252
+			message = can.Message(arbitration_id = 0x181, is_extended_id = False, is_remote_frame = True, dlc = 3)
+			bus2.send(message)
+			time.sleep(0.001)
+			m.assert_called()
+			recv_message = bus2.recv(0.1)
+			self.assertEqual(recv_message, None)
+		
+		with self.subTest("RTR with transmission type 252"):
+			m.reset_mock()
+			examinee.data = b"\x01\x02"
+			examinee.transmission_type = 252
+			message = can.Message(arbitration_id = 0x181, is_extended_id = False, is_remote_frame = True, dlc = 2)
+			bus2.send(message)
+			time.sleep(0.001)
+			m.assert_called()
+			recv_message = bus2.recv(0.1)
+			self.assertEqual(recv_message.data, b"\x01\x02")
+		
+		with self.subTest("RTR, but extended frame type differs -> ignored"):
+			m.reset_mock()
+			message = can.Message(arbitration_id = 0x181, is_extended_id = True, is_remote_frame = True, dlc = 8)
+			bus2.send(message)
+			time.sleep(0.001)
+			m.assert_not_called()
 		
 		examinee.detach()
 		node.detach()

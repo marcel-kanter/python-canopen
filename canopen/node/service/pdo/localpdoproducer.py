@@ -71,7 +71,12 @@ class LocalPDOProducer(SYNCConsumer):
 			return
 		if message.is_extended_id != bool(self._cob_id_tx & (1 << 29)):
 			return
+		
 		self.notify("rtr", self)
+		
+		if self._transmission_type == 252 or self._transmission_type == 253:
+			if self._data != None and message.dlc == len(self._data):
+				self.send()
 	
 	@property
 	def data(self):
