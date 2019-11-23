@@ -8,7 +8,7 @@ class LocalPDOProducer(SYNCConsumer):
 	
 	Callbacks
 	"sync": ("sync", service, counter)
-	"pdo": ("pdo", service)
+	"rtr": ("rtr", service)
 	"""
 	def __init__(self, transmission_type = 0):
 		if int(transmission_type) < 0 or (int(transmission_type) > 240 and int(transmission_type) < 252) or int(transmission_type) > 255:
@@ -16,7 +16,7 @@ class LocalPDOProducer(SYNCConsumer):
 		
 		SYNCConsumer.__init__(self)
 		
-		self._callbacks["pdo"] = []
+		self._callbacks["rtr"] = []
 		self._transmission_type = int(transmission_type)
 		self._data = None
 	
@@ -71,7 +71,7 @@ class LocalPDOProducer(SYNCConsumer):
 			return
 		if message.is_extended_id != bool(self._cob_id_tx & (1 << 29)):
 			return
-		self.notify("pdo", self)
+		self.notify("rtr", self)
 	
 	@property
 	def data(self):

@@ -83,7 +83,7 @@ class LocalPDOProducerTest(unittest.TestCase):
 		examinee = LocalPDOProducer()
 		
 		m = Mock()
-		examinee.add_callback("pdo", m)
+		examinee.add_callback("rtr", m)
 		
 		network.attach(bus1)
 		node.attach(network)
