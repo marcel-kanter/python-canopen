@@ -56,6 +56,7 @@ class LocalPDOConsumer(SYNCConsumer):
 		SYNCConsumer.detach(self)
 	
 	def on_pdo(self, message):
+		""" Message handler for incoming PDO messages. """
 		if message.is_remote_frame:
 			return
 		if message.is_extended_id != bool(self._cob_id_rx & (1 << 29)):

@@ -1,3 +1,4 @@
+import struct
 import can
 import canopen.node
 from canopen.node.service.sync import SYNCConsumer
@@ -57,6 +58,8 @@ class LocalPDOProducer(SYNCConsumer):
 		SYNCConsumer.detach(self)
 	
 	def send(self):
+		""" Sends the stored data on the CAN bus.
+		:raises RuntimeError: """
 		if self._data == None:
 			raise RuntimeError()
 		
@@ -77,6 +80,18 @@ class LocalPDOProducer(SYNCConsumer):
 		if self._transmission_type == 252 or self._transmission_type == 253:
 			if self._data != None and message.dlc == len(self._data):
 				self.send()
+	
+	def on_sync(self, message):
+		""" Message handler for incoming SYNC messages. """
+		if message.is_remote_frame:
+			return
+		if message.is_extended_id != bool(self._cob_id_sync & (1 << 29)):
+			return
+		if message.dlc == 1:
+			counter, = struct.unpack_from("<B", message.data)
+		else:
+			counter = None
+		self.notify("sync", self, counter)
 	
 	@property
 	def data(self):

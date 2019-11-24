@@ -153,26 +153,33 @@ class LocalPDOProducerTest(unittest.TestCase):
 		node.attach(network)
 		examinee.attach(node)
 		
-		#### Test step: Sync message
-		cb1.reset_mock()
-		message = can.Message(arbitration_id = 0x80, is_extended_id = False, data = b"\x01")
-		bus2.send(message)
-		time.sleep(0.001)
-		cb1.assert_called()
+		with self.subTest("Sync message without value"):
+			cb1.reset_mock()
+			message = can.Message(arbitration_id = 0x80, is_extended_id = False, dlc = 0)
+			bus2.send(message)
+			time.sleep(0.001)
+			cb1.assert_called_with("sync", examinee, None)
 		
-		#### Test step: sync message, ignore remote frame
-		cb1.reset_mock()
-		message = can.Message(arbitration_id = 0x80, is_extended_id = True, data = b"\x01")
-		bus2.send(message)
-		time.sleep(0.001)
-		cb1.assert_not_called()
+		with self.subTest("Sync message with value"):
+			cb1.reset_mock()
+			message = can.Message(arbitration_id = 0x80, is_extended_id = False, data = b"\x01")
+			bus2.send(message)
+			time.sleep(0.001)
+			cb1.assert_called_with("sync", examinee, 1)
 		
-		#### Test step: sync message, ignore remote frame
-		cb1.reset_mock()
-		message = can.Message(arbitration_id = 0x80, is_extended_id = False, is_remote_frame = True, dlc = 1)
-		bus2.send(message)
-		time.sleep(0.001)
-		cb1.assert_not_called()
+		with self.subTest("Sync message, ignore remote frame"):
+			cb1.reset_mock()
+			message = can.Message(arbitration_id = 0x80, is_extended_id = True, data = b"\x01")
+			bus2.send(message)
+			time.sleep(0.001)
+			cb1.assert_not_called()
+		
+		with self.subTest("Sync message, ignore remote frame"):
+			cb1.reset_mock()
+			message = can.Message(arbitration_id = 0x80, is_extended_id = False, is_remote_frame = True, dlc = 1)
+			bus2.send(message)
+			time.sleep(0.001)
+			cb1.assert_not_called()
 		
 		examinee.detach()
 		node.detach()
