@@ -91,8 +91,14 @@ class LocalPDOProducer(SYNCConsumer):
 			counter, = struct.unpack_from("<B", message.data)
 		else:
 			counter = None
+		
 		self.notify("sync", self, counter)
-	
+		
+		if self._transmission_type == 0:
+			if self._data != None:
+				self.send()
+				self._data = None
+		
 	@property
 	def data(self):
 		return self._data

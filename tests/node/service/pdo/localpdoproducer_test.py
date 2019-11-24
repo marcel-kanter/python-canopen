@@ -154,11 +154,59 @@ class LocalPDOProducerTest(unittest.TestCase):
 		examinee.attach(node)
 		
 		with self.subTest("Sync message without value"):
-			cb1.reset_mock()
-			message = can.Message(arbitration_id = 0x80, is_extended_id = False, dlc = 0)
-			bus2.send(message)
-			time.sleep(0.001)
-			cb1.assert_called_with("sync", examinee, None)
+			with self.subTest("No data set"):
+				cb1.reset_mock()
+				examinee.transmission_type = 0
+				examinee.data = None
+				message = can.Message(arbitration_id = 0x80, is_extended_id = False, dlc = 0)
+				bus2.send(message)
+				time.sleep(0.001)
+				cb1.assert_called_with("sync", examinee, None)
+				recv_message = bus2.recv(0.1)
+				self.assertEqual(recv_message, None)
+			
+			with self.subTest("Some data set, transmission type 0"):
+				cb1.reset_mock()
+				examinee.transmission_type = 0
+				examinee.data = b"\xDE\xAD\xC0\xDE"
+				message = can.Message(arbitration_id = 0x80, is_extended_id = False, dlc = 0)
+				bus2.send(message)
+				time.sleep(0.001)
+				cb1.assert_called_with("sync", examinee, None)
+				recv_message = bus2.recv(0.1)
+				self.assertEqual(recv_message.arbitration_id, 0x181)
+				self.assertEqual(recv_message.is_extended_id, False)
+				self.assertEqual(recv_message.data, b"\xDE\xAD\xC0\xDE")
+				
+				cb1.reset_mock()
+				message = can.Message(arbitration_id = 0x80, is_extended_id = False, dlc = 0)
+				bus2.send(message)
+				time.sleep(0.001)
+				cb1.assert_called_with("sync", examinee, None)
+				recv_message = bus2.recv(0.1)
+				self.assertEqual(recv_message, None)
+			
+			with self.subTest("Event based, transmission type 254"):
+				cb1.reset_mock()
+				examinee.transmission_type = 254
+				examinee.data = b"\xDE\xAD\xC0\xDE"
+				message = can.Message(arbitration_id = 0x80, is_extended_id = False, dlc = 0)
+				bus2.send(message)
+				time.sleep(0.001)
+				cb1.assert_called_with("sync", examinee, None)
+				recv_message = bus2.recv(0.1)
+				self.assertEqual(recv_message, None)
+			
+			with self.subTest("Event based, transmission type 255"):
+				cb1.reset_mock()
+				examinee.transmission_type = 255
+				examinee.data = b"\xDE\xAD\xC0\xDE"
+				message = can.Message(arbitration_id = 0x80, is_extended_id = False, dlc = 0)
+				bus2.send(message)
+				time.sleep(0.001)
+				cb1.assert_called_with("sync", examinee, None)
+				recv_message = bus2.recv(0.1)
+				self.assertEqual(recv_message, None)
 		
 		with self.subTest("Sync message with value"):
 			cb1.reset_mock()
