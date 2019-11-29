@@ -18,12 +18,12 @@ class Timer(threading.Thread):
 		threading.Thread.__init__(self, daemon = True)
 		
 		self._interval = 0.0
-		self._periodic = False
 		self._function = function
 		self._args = args
 		self._kwargs = kwargs
 		
 		self._execute_time = 0.0
+		self._periodic = threading.Event()
 		self._terminate = threading.Event()
 		self._trigger_lock = threading.RLock()
 		self._trigger = threading.Condition(self._trigger_lock)
@@ -45,7 +45,10 @@ class Timer(threading.Thread):
 			return False
 		self._execute_time = time.time() + interval
 		self._interval = interval
-		self._periodic = periodic
+		if periodic:
+			self._periodic.set()
+		else:
+			self._periodic.clear()
 		self._condition.clear()
 		self._trigger.notify()
 		self._trigger.release()
@@ -55,7 +58,7 @@ class Timer(threading.Thread):
 		"""
 		Cancels the current timer cycle.
 		"""
-		self._periodic = False
+		self._periodic.clear()
 		self._condition.set()
 		# wait until the canceled timer cycle has passed by and a restart is possible
 		self._trigger.acquire()
@@ -64,7 +67,7 @@ class Timer(threading.Thread):
 	def run(self):
 		self._trigger.acquire()
 		while not self._terminate.is_set():
-			if not self._periodic:
+			if not self._periodic.is_set():
 				self._trigger.wait()
 			self._condition.wait(self._execute_time - time.time())
 			if not self._condition.is_set():
