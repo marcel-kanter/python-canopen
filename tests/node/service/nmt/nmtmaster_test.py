@@ -183,27 +183,28 @@ class NMTMasterTestCase(unittest.TestCase):
 					node.nmt.start_heartbeat(value)
 		
 		node.nmt.start_heartbeat(0.2)
+		start_time = time.time()
 		
 		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = False, data = b"\x05")
 		bus2.send(message)
 		
-		time.sleep(0.05)
+		time.sleep(0.05 + start_time - time.time())
 		self.assertEqual(node.nmt.state, 0x05)
-		time.sleep(0.1)
+		time.sleep(0.15 + start_time - time.time())
 		
 		cb.assert_not_called()
 		
 		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = False, data = b"\x7F")
 		bus2.send(message)
 		
-		time.sleep(0.05)
+		time.sleep(0.2 + start_time - time.time())
 		self.assertEqual(node.nmt.state, 0x7F)
 		
-		time.sleep(0.1)
+		time.sleep(0.3 + start_time - time.time())
 		
 		cb.assert_not_called()
 		
-		time.sleep(0.1)
+		time.sleep(0.4 + start_time - time.time())
 		
 		cb.assert_called_with("heartbeat", node.nmt)
 		
@@ -244,9 +245,10 @@ class NMTMasterTestCase(unittest.TestCase):
 					node.nmt.start_guarding(guard_time, life_time_factor)
 		
 		# Interval 0, t = 0
-		
 		node.nmt.start_guarding(0.1, 2)
-		time.sleep(0.05)
+		start_time = time.time()
+		
+		time.sleep(0.05 + start_time - time.time())
 		
 		message = bus2.recv(1)
 		self.assertEqual(message.arbitration_id, 0x700 + node.id)
@@ -256,7 +258,7 @@ class NMTMasterTestCase(unittest.TestCase):
 		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = False, data = b"\x05")
 		bus2.send(message)
 		
-		time.sleep(0.1)
+		time.sleep(0.15 + start_time - time.time())
 		cb.assert_not_called()
 		
 		# Interval 1, t = 0.15
@@ -269,7 +271,7 @@ class NMTMasterTestCase(unittest.TestCase):
 		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = False, data = b"\x85")
 		bus2.send(message)
 		
-		time.sleep(0.1)
+		time.sleep(0.25 + start_time - time.time())
 		cb.assert_not_called()
 		
 		# Interval 2, t = 0.25, toggle bit not alternated
@@ -282,7 +284,7 @@ class NMTMasterTestCase(unittest.TestCase):
 		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = False, data = b"\x85")
 		bus2.send(message)
 		
-		time.sleep(0.1)
+		time.sleep(0.35 + start_time - time.time())
 		cb.assert_not_called()
 		
 		# Interval 3, t = 0.35, toggle bit not alternated
@@ -295,7 +297,7 @@ class NMTMasterTestCase(unittest.TestCase):
 		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = False, data = b"\x85")
 		bus2.send(message)
 		
-		time.sleep(0.1)
+		time.sleep(0.45 + start_time - time.time())
 		cb.assert_called_with("guarding", node.nmt)
 		cb.reset_mock()
 		
@@ -309,7 +311,7 @@ class NMTMasterTestCase(unittest.TestCase):
 		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = False, data = b"\x05")
 		bus2.send(message)
 		
-		time.sleep(0.1)
+		time.sleep(0.55 + start_time - time.time())
 		cb.assert_not_called()
 		
 		# Interval 5, t = 0.55, without response
@@ -319,7 +321,7 @@ class NMTMasterTestCase(unittest.TestCase):
 		self.assertEqual(message.is_remote_frame, True)
 		self.assertEqual(message.dlc, 1)
 		
-		time.sleep(0.1)
+		time.sleep(0.65 + start_time - time.time())
 		cb.assert_not_called() # life time factor = 2 => the event occurs on second missed guarding request
 		
 		# Interval 6, t = 0.65, without response
@@ -329,7 +331,7 @@ class NMTMasterTestCase(unittest.TestCase):
 		self.assertEqual(message.is_remote_frame, True)
 		self.assertEqual(message.dlc, 1)
 		
-		time.sleep(0.1)
+		time.sleep(0.75 + start_time - time.time())
 		
 		cb.assert_called_with("guarding", node.nmt)
 		
