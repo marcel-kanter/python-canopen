@@ -174,6 +174,15 @@ class LocalPDOProducerTest(unittest.TestCase):
 				time.sleep(0.001)
 				cb1.assert_called_with("sync", examinee, None)
 				recv_message = bus2.recv(0.1)
+				self.assertEqual(recv_message, None)
+				
+				cb1.reset_mock()
+				examinee.event.set()
+				message = can.Message(arbitration_id = 0x80, is_extended_id = False, dlc = 0)
+				bus2.send(message)
+				time.sleep(0.001)
+				cb1.assert_called_with("sync", examinee, None)
+				recv_message = bus2.recv(0.1)
 				self.assertEqual(recv_message.arbitration_id, 0x181)
 				self.assertEqual(recv_message.is_extended_id, False)
 				self.assertEqual(recv_message.data, b"\xDE\xAD\xC0\xDE")
@@ -185,6 +194,16 @@ class LocalPDOProducerTest(unittest.TestCase):
 				cb1.assert_called_with("sync", examinee, None)
 				recv_message = bus2.recv(0.1)
 				self.assertEqual(recv_message, None)
+				
+				examinee.event.set()
+				message = can.Message(arbitration_id = 0x80, is_extended_id = False, dlc = 0)
+				bus2.send(message)
+				time.sleep(0.001)
+				cb1.assert_called_with("sync", examinee, None)
+				recv_message = bus2.recv(0.1)
+				self.assertEqual(recv_message.arbitration_id, 0x181)
+				self.assertEqual(recv_message.is_extended_id, False)
+				self.assertEqual(recv_message.data, b"\xDE\xAD\xC0\xDE")
 			
 			with self.subTest("Event based, transmission type 254"):
 				cb1.reset_mock()

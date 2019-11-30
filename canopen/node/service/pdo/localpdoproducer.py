@@ -1,4 +1,5 @@
 import struct
+import threading
 import can
 import canopen.node
 from canopen.node.service.sync import SYNCConsumer
@@ -17,6 +18,7 @@ class LocalPDOProducer(SYNCConsumer):
 		
 		SYNCConsumer.__init__(self)
 		
+		self.event = threading.Event()
 		self._callbacks["rtr"] = []
 		self._transmission_type = int(transmission_type)
 		self._data = None
@@ -95,9 +97,9 @@ class LocalPDOProducer(SYNCConsumer):
 		self.notify("sync", self, counter)
 		
 		if self._transmission_type == 0:
-			if self._data != None:
+			if self._data != None and self.event.is_set():
 				self.send()
-				self._data = None
+				self.event.clear()
 		
 	@property
 	def data(self):
