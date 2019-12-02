@@ -433,8 +433,9 @@ class NMTSlaveTestCase(unittest.TestCase):
 		node.nmt.state = canopen.nmt.states.INITIALIZATION
 		
 		node.nmt.start_heartbeat(0.2)
+		start_time = time.time()
 		
-		time.sleep(0.2)
+		time.sleep(0.2 + start_time - time.time())
 		
 		message = bus2.recv(0.1)
 		self.assertEqual(message, None)
@@ -449,7 +450,7 @@ class NMTSlaveTestCase(unittest.TestCase):
 		self.assertEqual(message.is_remote_frame, False)
 		self.assertEqual(message.data, b"\x00")
 		
-		time.sleep(0.2)
+		time.sleep(0.5 + start_time - time.time())
 		
 		# Next message should indicate pre-operational state.
 		message = bus2.recv(0.1)
@@ -460,7 +461,7 @@ class NMTSlaveTestCase(unittest.TestCase):
 		# Stop heartbeat functionality
 		node.nmt.stop()
 		
-		time.sleep(0.2)
+		time.sleep(0.7 + start_time - time.time())
 		
 		message = bus2.recv(0.1)
 		self.assertEqual(message, None)
