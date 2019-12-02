@@ -13,6 +13,10 @@ class Vehicle_Download(threading.Thread):
 		threading.Thread.__init__(self)
 		self._testcase = testcase
 		self._bus = bus
+		self._barrier = threading.Barrier(2)
+	
+	def sync(self, timeout = None):
+		self._barrier.wait(timeout)
 	
 	def run(self):
 		try:
@@ -28,6 +32,8 @@ class Vehicle_Download(threading.Thread):
 			node.attach(network)
 			examinee.attach(node)
 			
+			self._barrier.wait()
+			
 			#### Test step: download, expedited transfer, abort
 			index = 0x5678
 			subindex = 0x00
@@ -38,6 +44,8 @@ class Vehicle_Download(threading.Thread):
 				pass
 			else:
 				assert(False)
+			
+			self._barrier.wait()
 			
 			#### Test step: download, expedited transfer, wrong index in initiate response
 			index = 0x5678
@@ -50,6 +58,8 @@ class Vehicle_Download(threading.Thread):
 			else:
 				assert(False)
 			
+			self._barrier.wait()
+			
 			#### Test step: download, expedited transfer, timeout
 			index = 0x5678
 			subindex = 0x00
@@ -61,11 +71,15 @@ class Vehicle_Download(threading.Thread):
 			else:
 				assert(False)
 			
+			self._barrier.wait()
+			
 			#### Test step: download, expedited transfer
 			index = 0x5678
 			subindex = 0x00
 			value = 0x12345678
 			examinee.download(index, subindex, value)
+			
+			self._barrier.wait()
 			
 			#### Test step: download, segmented transfer, toggle bit error
 			index = 0x1234
@@ -78,11 +92,15 @@ class Vehicle_Download(threading.Thread):
 			else:
 				assert(False)
 			
+			self._barrier.wait()
+			
 			#### Test step: download, segmented transfer only one segment
 			index = 0x1234
 			subindex = 0x0B
 			value = "123"
 			examinee.download(index, subindex, value)
+			
+			self._barrier.wait()
 			
 			#### Test step: download, segmented transfer
 			index = 0x1234
@@ -96,6 +114,8 @@ class Vehicle_Download(threading.Thread):
 			
 			examinee.attach(node, (1 << 29) | (0x1580 + node.id), (1 << 29) | (0x1600 + node.id))
 			
+			self._barrier.wait()
+			
 			#### Test step: download, expedited transfer, abort
 			index = 0x5678
 			subindex = 0x00
@@ -106,6 +126,8 @@ class Vehicle_Download(threading.Thread):
 				pass
 			else:
 				assert(False)
+			
+			self._barrier.wait()
 			
 			#### Test step: download, segmented transfer, toggle bit error
 			index = 0x1234
@@ -118,11 +140,15 @@ class Vehicle_Download(threading.Thread):
 			else:
 				assert(False)
 			
+			self._barrier.wait()
+			
 			#### Test step: download, expedited transfer
 			index = 0x5678
 			subindex = 0x00
 			value = 0x12345678
 			examinee.download(index, subindex, value)
+			
+			self._barrier.wait()
 			
 			#### Test step: download, segmented transfer
 			index = 0x1234
@@ -145,6 +171,10 @@ class Vehicle_Upload(threading.Thread):
 		threading.Thread.__init__(self)
 		self._testcase = testcase
 		self._bus = bus
+		self._barrier = threading.Barrier(2)
+	
+	def sync(self, timeout = None):
+		self._barrier.wait(timeout)
 	
 	def run(self):
 		try:
@@ -160,6 +190,8 @@ class Vehicle_Upload(threading.Thread):
 			node.attach(network)
 			examinee.attach(node)
 			
+			self._barrier.wait()
+			
 			#### Test step: Upload, expedited transfer, only one valid byte sent
 			index = 0x5678
 			subindex = 0x00
@@ -170,6 +202,8 @@ class Vehicle_Upload(threading.Thread):
 				pass
 			else:
 				assert(False)
+			
+			self._barrier.wait()
 			
 			#### Test step: Upload, expedited transfer, abort
 			index = 0x5678
@@ -182,6 +216,8 @@ class Vehicle_Upload(threading.Thread):
 			else:
 				assert(False)
 			
+			self._barrier.wait()
+			
 			#### Test step: Upload, expedited transfer, wrong index in initiate response
 			index = 0x5678
 			subindex = 0x00
@@ -192,6 +228,8 @@ class Vehicle_Upload(threading.Thread):
 				pass
 			else:
 				assert(False)
+			
+			self._barrier.wait()
 			
 			#### Test step: Upload, expedited transfer, timeout
 			index = 0x5678
@@ -204,12 +242,16 @@ class Vehicle_Upload(threading.Thread):
 			else:
 				assert(False)
 			
+			self._barrier.wait()
+			
 			#### Test step: Upload, expedited transfer
 			index = 0x5678
 			subindex = 0x00
 			value = examinee.upload(index, subindex)
 			
 			assert(value == 1234)
+			
+			self._barrier.wait()
 			
 			#### Test step: Upload, segmented transfer, size not indicated
 			index = 0x1234
@@ -222,6 +264,8 @@ class Vehicle_Upload(threading.Thread):
 			else:
 				assert(False)
 			
+			self._barrier.wait()
+			
 			#### Test step: Upload, segmented transfer, toggle bit error
 			index = 0x1234
 			subindex = 0x0B
@@ -233,6 +277,8 @@ class Vehicle_Upload(threading.Thread):
 			else:
 				assert(False)
 			
+			self._barrier.wait()
+			
 			#### Test step: Upload, segmented transfer, size does not match indicated size
 			index = 0x1234
 			subindex = 0x0B
@@ -243,6 +289,8 @@ class Vehicle_Upload(threading.Thread):
 				pass
 			else:
 				assert(False)
+			
+			self._barrier.wait()
 			
 			#### Test step: Upload, segmented transfer
 			index = 0x1234
@@ -256,6 +304,8 @@ class Vehicle_Upload(threading.Thread):
 			#### Start of tests with extended frames
 			examinee.attach(node, (1 << 29) | (0x1580 + node.id), (1 << 29) | (0x1600 + node.id))
 			
+			self._barrier.wait()
+			
 			#### Test step: Upload, expedited transfer, abort
 			index = 0x5678
 			subindex = 0x00
@@ -267,12 +317,16 @@ class Vehicle_Upload(threading.Thread):
 			else:
 				assert(False)
 			
+			self._barrier.wait()
+			
 			#### Test step: Upload, expedited transfer
 			index = 0x5678
 			subindex = 0x00
 			value = examinee.upload(index, subindex)
 			
 			assert(value == 1234)
+			
+			self._barrier.wait()
 			
 			#### Test step: Upload, segmented transfer
 			index = 0x1234
@@ -473,6 +527,8 @@ class SDOClientTestCase(unittest.TestCase):
 		vehicle = Vehicle_Download(self, bus1)
 		vehicle.start()
 		
+		vehicle.sync()
+		
 		#### Test step: download, expedited transfer, abort
 		index = 0x5678
 		subindex = 0x00
@@ -487,6 +543,8 @@ class SDOClientTestCase(unittest.TestCase):
 		d = struct.pack("<BHBL", 0x80, index, subindex, 0x05040000)
 		message_send = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
 		bus2.send(message_send)
+		
+		vehicle.sync()
 		
 		#### Test step: download, expedited transfer, wrong index in initiate response
 		index = 0x5678
@@ -509,6 +567,8 @@ class SDOClientTestCase(unittest.TestCase):
 		self.assertEqual(message_recv.is_extended_id, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index ^ 0xFF, subindex, 0x08000000))
 		
+		vehicle.sync()
+		
 		#### Test step: download, expedited transfer, timeout
 		index = 0x5678
 		subindex = 0x00
@@ -528,6 +588,8 @@ class SDOClientTestCase(unittest.TestCase):
 		self.assertEqual(message_recv.is_extended_id, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x05040000))
 		
+		vehicle.sync()
+		
 		#### Test step: download, expedited transfer
 		index = 0x5678
 		subindex = 0x00
@@ -542,6 +604,8 @@ class SDOClientTestCase(unittest.TestCase):
 		d = struct.pack("<BHBL", 0x60, index, subindex, 0x00000000)
 		message_send = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
 		bus2.send(message_send)
+		
+		vehicle.sync()
 		
 		#### Test step: download, segmented transfer, toggle bit error
 		index = 0x1234
@@ -576,6 +640,8 @@ class SDOClientTestCase(unittest.TestCase):
 		self.assertEqual(message_recv.is_extended_id, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x05030000))
 		
+		vehicle.sync()
+		
 		#### Test step: download, segmented transfer, only one segment
 		index = 0x1234
 		subindex = 0x0B
@@ -602,6 +668,8 @@ class SDOClientTestCase(unittest.TestCase):
 		d = struct.pack("<B7s", 0x20, b"\x00\x00\x00\x00\x00\x00\x00")
 		message_send = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
 		bus2.send(message_send)
+		
+		vehicle.sync()
 		
 		#### Test step: download, segmented transfer
 		index = 0x1234
@@ -662,8 +730,11 @@ class SDOClientTestCase(unittest.TestCase):
 		d = struct.pack("<B7s", 0x30, b"\x00\x00\x00\x00\x00\x00\x00")
 		message_send = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
 		bus2.send(message_send)
-		
+				
 		#### Start of tests with extended frames
+		
+		vehicle.sync()
+		
 		#### Test step: download, expedited transfer, abort
 		index = 0x5678
 		subindex = 0x00
@@ -678,6 +749,8 @@ class SDOClientTestCase(unittest.TestCase):
 		d = struct.pack("<BHBL", 0x80, index, subindex, 0x05040000)
 		message_send = can.Message(arbitration_id = 0x1581, is_extended_id = True, data = d)
 		bus2.send(message_send)
+		
+		vehicle.sync()
 		
 		#### Test step: download, segmented transfer, toggle bit error
 		index = 0x1234
@@ -712,6 +785,8 @@ class SDOClientTestCase(unittest.TestCase):
 		self.assertEqual(message_recv.is_extended_id, True)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x05030000))
 		
+		vehicle.sync()
+		
 		#### Test step: download, expedited transfer
 		index = 0x5678
 		subindex = 0x00
@@ -726,6 +801,8 @@ class SDOClientTestCase(unittest.TestCase):
 		d = struct.pack("<BHBL", 0x60, index, subindex, 0x00000000)
 		message_send = can.Message(arbitration_id = 0x1581, is_extended_id = True, data = d)
 		bus2.send(message_send)
+		
+		vehicle.sync()
 		
 		#### Test step: download, segmented transfer
 		index = 0x1234
@@ -799,6 +876,8 @@ class SDOClientTestCase(unittest.TestCase):
 		vehicle = Vehicle_Upload(self, bus1)
 		vehicle.start()
 		
+		vehicle.sync()
+		
 		#### Test step: Upload, expedited transfer, only one valid byte sent
 		index = 0x5678
 		subindex = 0x00
@@ -821,6 +900,8 @@ class SDOClientTestCase(unittest.TestCase):
 		self.assertEqual(message_recv.is_extended_id, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x06070010))
 		
+		vehicle.sync()
+		
 		#### Test step: Upload, expedited transfer, abort
 		index = 0x5678
 		subindex = 0x00
@@ -836,6 +917,8 @@ class SDOClientTestCase(unittest.TestCase):
 		message_send = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
 		bus2.send(message_send)
 		time.sleep(0.001)
+		
+		vehicle.sync()
 		
 		#### Test step: Upload, expedited transfer, wrong index in initiate response
 		index = 0x5678
@@ -859,6 +942,8 @@ class SDOClientTestCase(unittest.TestCase):
 		self.assertEqual(message_recv.is_extended_id, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index ^ 0xFF, subindex, 0x08000000))
 		
+		vehicle.sync()
+		
 		#### Test step: Upload, expedited transfer, timeout
 		index = 0x5678
 		subindex = 0x00
@@ -878,6 +963,8 @@ class SDOClientTestCase(unittest.TestCase):
 		self.assertEqual(message_recv.is_extended_id, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x05040000))
 		
+		vehicle.sync()
+		
 		#### Test step: Upload, expedited transfer
 		index = 0x5678
 		subindex = 0x00
@@ -893,6 +980,8 @@ class SDOClientTestCase(unittest.TestCase):
 		message_send = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
 		bus2.send(message_send)
 		time.sleep(0.001)
+		
+		vehicle.sync()
 		
 		#### Test step: Upload, segmented transfer, size not indicated
 		index = 0x1234
@@ -915,6 +1004,8 @@ class SDOClientTestCase(unittest.TestCase):
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.is_extended_id, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x05040001))
+		
+		vehicle.sync()
 		
 		#### Test step: Upload, segmented transfer, toggle bit error
 		index = 0x1234
@@ -949,6 +1040,8 @@ class SDOClientTestCase(unittest.TestCase):
 		self.assertEqual(message_recv.is_remote_frame, False)
 		self.assertEqual(message_recv.is_extended_id, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x05030000))
+		
+		vehicle.sync()
 		
 		#### Test step: Upload, segmented transfer, size does not match indicated size
 		index = 0x1234
@@ -996,6 +1089,8 @@ class SDOClientTestCase(unittest.TestCase):
 		self.assertEqual(message_recv.is_extended_id, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x06070010))
 		
+		vehicle.sync()
+		
 		#### Test step: Upload, segmented transfer
 		index = 0x1234
 		subindex = 0x0B
@@ -1037,6 +1132,9 @@ class SDOClientTestCase(unittest.TestCase):
 		time.sleep(0.001)
 		
 		#### Start of tests with extended frames
+		
+		vehicle.sync()
+		
 		#### Test step: Upload, expedited transfer, abort
 		index = 0x5678
 		subindex = 0x00
@@ -1053,6 +1151,8 @@ class SDOClientTestCase(unittest.TestCase):
 		bus2.send(message_send)
 		time.sleep(0.001)
 		
+		vehicle.sync()
+		
 		#### Test step: Upload, expedited transfer
 		index = 0x5678
 		subindex = 0x00
@@ -1068,6 +1168,8 @@ class SDOClientTestCase(unittest.TestCase):
 		message_send = can.Message(arbitration_id = 0x1581, is_extended_id = True, data = d)
 		bus2.send(message_send)
 		time.sleep(0.001)
+		
+		vehicle.sync()
 		
 		#### Test step: Upload, segmented transfer
 		index = 0x1234
