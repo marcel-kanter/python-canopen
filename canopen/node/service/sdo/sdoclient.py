@@ -190,7 +190,7 @@ class SDOClient(Service):
 		
 		self._state = 0x80
 		self._condition.acquire()
-		self._condition.notify(1)
+		self._condition.notify_all()
 		self._condition.release()
 	
 	def _on_upload_segment(self, message):
@@ -215,7 +215,7 @@ class SDOClient(Service):
 				return
 			
 			self._condition.acquire()
-			self._condition.notify(1)
+			self._condition.notify_all()
 			self._condition.release()
 		else:
 			self._toggle_bit ^= (1 << 4)
@@ -244,7 +244,7 @@ class SDOClient(Service):
 		
 		if size == 0:
 			self._condition.acquire()
-			self._condition.notify(1)
+			self._condition.notify_all()
 			self._condition.release()
 		else:
 			self._toggle_bit ^= (1 << 4)
@@ -286,7 +286,7 @@ class SDOClient(Service):
 			self._data_size = size
 			
 			self._condition.acquire()
-			self._condition.notify(1)
+			self._condition.notify_all()
 			self._condition.release()
 		else:
 			if response_command & (1 << 0): # size indicated
@@ -319,7 +319,7 @@ class SDOClient(Service):
 		
 		if self._state & (1 << 1): # Expedited transfer
 			self._condition.acquire()
-			self._condition.notify(1)
+			self._condition.notify_all()
 			self._condition.release()
 		else: # Segmented transfer
 			size = len(self._buffer)
@@ -344,7 +344,7 @@ class SDOClient(Service):
 		self._state = 0x80
 		
 		self._condition.acquire()
-		self._condition.notify(1)
+		self._condition.notify_all()
 		self._condition.release()
 	
 	def _on_block_upload(self, message):
