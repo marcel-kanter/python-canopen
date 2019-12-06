@@ -1,12 +1,10 @@
-import struct
-import threading
 import can
 import canopen.node
 from canopen.node.service.sync import SYNCConsumer
 
 
-class LocalPDOProducer(SYNCConsumer):
-	""" LocalPDOProducer
+class PDOProducer(SYNCConsumer):
+	""" PDOProducer
 	
 	Callbacks
 	"sync": ("sync", service, counter)
@@ -18,13 +16,12 @@ class LocalPDOProducer(SYNCConsumer):
 		
 		SYNCConsumer.__init__(self)
 		
-		self.event = threading.Event()
 		self._callbacks["rtr"] = []
 		self._transmission_type = int(transmission_type)
 		self._data = None
 	
 	def attach(self, node, cob_id_tx = None, cob_id_sync = None):
-		""" Attaches the ``LocalPDOProducer`` to a ``Node``. It does NOT add or assign this ``LocalPDOProducer`` to the ``Node``.
+		""" Attaches the ``PDOProducer`` to a ``Node``. It does NOT add or assign this ``PDOProducer`` to the ``Node``.
 		:param node: A canopen.Node, to which the service should be attached to.
 		:param cob_id_tx: The COB ID for the PDO service, used for the CAN ID of the PDO messages to be sent.
 			Bit 29 selects whether an extended frame is used. The CAN ID is masked out of the lowest 11 or 29 bits.
@@ -48,7 +45,7 @@ class LocalPDOProducer(SYNCConsumer):
 			self._node.network.subscribe(self.on_pdo, self._cob_id_tx & 0x7FF)
 		
 	def detach(self):
-		""" Detaches the ``LocalPDOProducer`` from the ``Node``. It does NOT remove or delete the ``LocalPDOProducer`` from the ``Node``. """
+		""" Detaches the ``PDOProducer`` from the ``Node``. It does NOT remove or delete the ``PDOProducer`` from the ``Node``. """
 		if not self.is_attached():
 			raise RuntimeError()
 		
@@ -60,8 +57,6 @@ class LocalPDOProducer(SYNCConsumer):
 		SYNCConsumer.detach(self)
 	
 	def send(self):
-		""" Sends the stored data on the CAN bus.
-		:raises RuntimeError: """
 		if self._data == None:
 			raise RuntimeError()
 		
@@ -76,31 +71,8 @@ class LocalPDOProducer(SYNCConsumer):
 			return
 		if message.is_extended_id != bool(self._cob_id_tx & (1 << 29)):
 			return
-		
 		self.notify("rtr", self)
-		
-		if self._transmission_type == 252 or self._transmission_type == 253:
-			if self._data != None and message.dlc == len(self._data):
-				self.send()
 	
-	def on_sync(self, message):
-		""" Message handler for incoming SYNC messages. """
-		if message.is_remote_frame:
-			return
-		if message.is_extended_id != bool(self._cob_id_sync & (1 << 29)):
-			return
-		if message.dlc == 1:
-			counter, = struct.unpack_from("<B", message.data)
-		else:
-			counter = None
-		
-		self.notify("sync", self, counter)
-		
-		if self._transmission_type == 0:
-			if self._data != None and self.event.is_set():
-				self.send()
-				self.event.clear()
-		
 	@property
 	def data(self):
 		return self._data

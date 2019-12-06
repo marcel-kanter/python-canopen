@@ -1,31 +1,41 @@
 import canopen.node
-from canopen.node.service import Service
+from canopen.node.service.sync import SYNCConsumer
 
 
-class RemotePDOProducer(Service):
+class PDOConsumer(SYNCConsumer):
+	""" PDOConsumer
+	
+	Callbacks
+	"sync": ("sync", service, counter)
+	"pdo": ("pdo", service)
+	"""
 	def __init__(self, transmission_type = 0):
-		if int(transmission_type) < 0 or (int(transmission_type) > 240 and int(transmission_type) < 252) or int(transmission_type) > 255:
+		if int(transmission_type) < 0 or (int(transmission_type) > 240 and int(transmission_type) < 254) or int(transmission_type) > 255:
 			raise ValueError()
 		
-		Service.__init__(self)
+		SYNCConsumer.__init__(self)
+		
 		self._callbacks["pdo"] = []
 		self._transmission_type = int(transmission_type)
 		self._data = None
 	
-	def attach(self, node, cob_id_rx = None):
-		""" Attaches the ``RemotePDOProducer`` to a ``Node``. It does NOT add or assign this ``RemotePDOProducer`` to the ``Node``.
+	def attach(self, node, cob_id_rx = None, cob_id_sync = None):
+		""" Attaches the ``PDOConsumer`` to a ``Node``. It does NOT add or assign this ``PDOConsumer`` to the ``Node``.
 		:param node: A canopen.Node, to which the service should be attached to.
 		:param cob_id_rx: The COB ID for the PDO service, used for the CAN ID of the PDO messages to be received.
 			Bit 29 selects whether an extended frame is used. The CAN ID is masked out of the lowest 11 or 29 bits.
-			If it is omitted or None is passed, the value defaults to 0x200 + node.id. """
+			If it is omitted or None is passed, the value defaults to 0x200 + node.id.
+		:param cob_id_sync: The COB ID for the PDO service, used for the CAN ID of the SYNC messages to be received.
+			Bit 29 selects whether an extended frame is used. The CAN ID is masked out of the lowest 11 or 29 bits.
+			If it is omitted or None is passed, the value defaults to 0x80. """
 		if not isinstance(node, canopen.node.Node):
 			raise TypeError()
 		if cob_id_rx == None:
-			cob_id_rx = 0x180 + node.id
+			cob_id_rx = 0x200 + node.id
 		if cob_id_rx < 0 or cob_id_rx > 0xFFFFFFFF:
 			raise ValueError()
 		
-		Service.attach(self, node)
+		SYNCConsumer.attach(self, node, cob_id_sync)
 		self._cob_id_rx = cob_id_rx
 		
 		if self._cob_id_rx & (1 << 29):
@@ -34,7 +44,7 @@ class RemotePDOProducer(Service):
 			self._node.network.subscribe(self.on_pdo, self._cob_id_rx & 0x7FF)
 	
 	def detach(self):
-		""" Detaches the ``RemotePDOProducer`` from the ``Node``. It does NOT remove or delete the ``RemotePDOProducer`` from the ``Node``. """
+		""" Detaches the ``PDOConsumer`` from the ``Node``. It does NOT remove or delete the ``PDOConsumer`` from the ``Node``. """
 		if not self.is_attached():
 			raise RuntimeError()
 		
@@ -43,8 +53,8 @@ class RemotePDOProducer(Service):
 		else:
 			self._node.network.unsubscribe(self.on_pdo, self._cob_id_rx & 0x7FF)
 		
-		Service.detach(self)
-
+		SYNCConsumer.detach(self)
+	
 	def on_pdo(self, message):
 		if message.is_remote_frame:
 			return
@@ -68,6 +78,6 @@ class RemotePDOProducer(Service):
 	@transmission_type.setter
 	def transmission_type(self, value):
 		x = int(value)
-		if x < 0 or (x > 240 and x < 252) or x > 255:
+		if x < 0 or (x > 240 and x < 254) or x > 255:
 			raise ValueError()
 		self._transmission_type = x
