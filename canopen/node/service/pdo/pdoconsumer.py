@@ -1,3 +1,4 @@
+import threading
 import canopen.node
 from canopen.node.service.sync import SYNCConsumer
 
@@ -18,6 +19,7 @@ class PDOConsumer(SYNCConsumer):
 		self._callbacks["pdo"] = []
 		self._transmission_type = int(transmission_type)
 		self._data = None
+		self._condition = threading.Condition()
 	
 	def attach(self, node, cob_id_rx = None, cob_id_sync = None):
 		""" Attaches the ``PDOConsumer`` to a ``Node``. It does NOT add or assign this ``PDOConsumer`` to the ``Node``.
@@ -55,6 +57,12 @@ class PDOConsumer(SYNCConsumer):
 		
 		SYNCConsumer.detach(self)
 	
+	def wait(self, timeout = None):
+		self._condition.acquire()
+		gotit = self._condition.wait(timeout)
+		self._condition.release()
+		return gotit
+	
 	def on_pdo(self, message):
 		if message.is_remote_frame:
 			return
@@ -62,6 +70,9 @@ class PDOConsumer(SYNCConsumer):
 			return
 		self._data = message.data
 		self.notify("pdo", self)
+		self._condition.acquire()
+		self._condition.notify_all()
+		self._condition.release()
 	
 	@property
 	def data(self):

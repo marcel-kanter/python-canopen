@@ -1,10 +1,49 @@
 import unittest
 from unittest.mock import Mock
+import threading
+import sys
 import time
 import can
-import canopen
+import canopen.node.service
 from canopen.node.service.pdo import PDOConsumer
 
+
+class Vehicle_Wait(threading.Thread):
+	def __init__(self, testcase, bus):
+		threading.Thread.__init__(self)
+		self._testcase = testcase
+		self._bus = bus
+		self._barrier = threading.Barrier(2)
+	
+	def sync(self, timeout = None):
+		self._barrier.wait(timeout)
+	
+	def run(self):
+		try:
+			network = canopen.Network()
+			dictionary = canopen.ObjectDictionary()
+			node = canopen.Node("a", 1, dictionary)
+			examinee = canopen.node.service.PDOConsumer()
+			
+			network.attach(self._bus)
+			node.attach(network)
+			examinee.attach(node)
+			
+			self._barrier.wait(1)
+			
+			assert(examinee.wait(1))
+			
+			self._barrier.wait(1)
+			
+			assert(examinee.wait())
+			
+			examinee.detach()
+			node.detach()
+			network.detach()
+		except AssertionError:
+			self._testcase.result.addFailure(self._testcase, sys.exc_info())
+		except:
+			self._testcase.result.addError(self._testcase, sys.exc_info())
 
 class PDOConsumerTest(unittest.TestCase):
 	def test_init(self):
@@ -164,6 +203,34 @@ class PDOConsumerTest(unittest.TestCase):
 		examinee.detach()
 		node.detach()
 		network.detach()
+		bus1.shutdown()
+		bus2.shutdown()
+	
+	def test_wait(self):
+		bus1 = can.Bus(interface = "virtual", channel = 0)
+		bus2 = can.Bus(interface = "virtual", channel = 0)
+		
+		vehicle = Vehicle_Wait(self, bus1)
+		vehicle.start()
+
+		vehicle.sync(1)
+		
+		time.sleep(0.1)
+		
+		message = can.Message(arbitration_id = 0x201, is_extended_id = False, data = b"\x11\x22\x33\x44\x55\x66\x77\x88")
+		bus2.send(message)
+		time.sleep(0.001)
+		
+		vehicle.sync(1)
+		
+		time.sleep(0.1)
+		
+		message = can.Message(arbitration_id = 0x201, is_extended_id = False, data = b"\x11\x22\x33\x44\x55\x66\x77\x88")
+		bus2.send(message)
+		time.sleep(0.001)
+		
+		vehicle.join(1)
+		
 		bus1.shutdown()
 		bus2.shutdown()
 
