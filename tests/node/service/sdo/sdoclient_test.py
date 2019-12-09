@@ -10,7 +10,7 @@ import canopen.node.service
 
 class Vehicle_Download(threading.Thread):
 	def __init__(self, testcase, bus):
-		threading.Thread.__init__(self)
+		threading.Thread.__init__(self, daemon = True)
 		self._testcase = testcase
 		self._bus = bus
 		self._barrier = threading.Barrier(2)
@@ -168,7 +168,7 @@ class Vehicle_Download(threading.Thread):
 
 class Vehicle_Upload(threading.Thread):
 	def __init__(self, testcase, bus):
-		threading.Thread.__init__(self)
+		threading.Thread.__init__(self, daemon = True)
 		self._testcase = testcase
 		self._bus = bus
 		self._barrier = threading.Barrier(2)
@@ -864,7 +864,7 @@ class SDOClientTestCase(unittest.TestCase):
 		message_send = can.Message(arbitration_id = 0x1581, is_extended_id = True, data = d)
 		bus2.send(message_send)
 		
-		vehicle.join()
+		vehicle.join(1)
 		
 		bus1.shutdown()
 		bus2.shutdown()
@@ -1211,7 +1211,7 @@ class SDOClientTestCase(unittest.TestCase):
 		bus2.send(message_send)
 		time.sleep(0.001)
 		
-		vehicle.join()
+		vehicle.join(1)
 		
 		bus1.shutdown()
 		bus2.shutdown()

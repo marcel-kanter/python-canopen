@@ -10,7 +10,7 @@ from canopen.node.service.pdo import PDOConsumer
 
 class Vehicle_Wait(threading.Thread):
 	def __init__(self, testcase, bus):
-		threading.Thread.__init__(self)
+		threading.Thread.__init__(self, daemon = True)
 		self._testcase = testcase
 		self._bus = bus
 		self._barrier = threading.Barrier(2)

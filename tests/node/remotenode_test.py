@@ -10,7 +10,7 @@ import canopen.objectdictionary
 
 class Vehicle(threading.Thread):
 	def __init__(self, testcase, bus):
-		threading.Thread.__init__(self)
+		threading.Thread.__init__(self, daemon = True)
 		self._testcase = testcase
 		self._bus = bus
 		self._terminate = threading.Event()
@@ -140,7 +140,7 @@ class RemoteNodeTestCase(unittest.TestCase):
 		bus2.send(message_send)
 		time.sleep(0.001)
 		
-		vehicle.join()
+		vehicle.join(1)
 		
 		bus1.shutdown()
 		bus2.shutdown()
