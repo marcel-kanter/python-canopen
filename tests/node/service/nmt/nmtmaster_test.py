@@ -158,6 +158,19 @@ class NMTMasterTestCase(unittest.TestCase):
 		self.assertEqual(message_recv.is_extended_id, False)
 		self.assertEqual(message_recv.data, struct.pack("<BB", 0x02, 0x0A))
 		
+		#### Test step: Manual send command
+		with self.assertRaises(ValueError):
+			node.nmt.send_command(-1)
+		
+		with self.assertRaises(ValueError):
+			node.nmt.send_command(256)
+		
+		node.nmt.send_command(0x81)
+		message_recv = bus2.recv(1)
+		self.assertEqual(message_recv.arbitration_id, 0x00)
+		self.assertEqual(message_recv.is_extended_id, False)
+		self.assertEqual(message_recv.data, struct.pack("<BB", 0x81, 0x0A))
+		
 		network.detach()
 		bus1.shutdown()
 		bus2.shutdown()

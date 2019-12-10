@@ -46,6 +46,16 @@ class NMTMaster(Service):
 		
 		Service.detach(self)
 	
+	def send_command(self, command):
+		""" Sends a NMT command.
+		"""
+		if int(command) < 0x00 or int(command) > 0xFF:
+			raise ValueError()
+		
+		d = struct.pack("<BB", command, self._node.id)
+		request = can.Message(arbitration_id = 0x000, is_extended_id = False, data = d)
+		self._node.network.send(request)
+	
 	def start_heartbeat(self, heartbeat_time):
 		""" Starts montioring the heartbeat messages.
 		:param heartbeat_time: The time between the heartbeat messages. """
@@ -124,16 +134,12 @@ class NMTMaster(Service):
 			raise ValueError()
 		
 		if value == INITIALIZATION:
-			command = 0x81
+			self.send_command(0x81)
 			# The toggle bit of the next guarding response should be 0. Pretend there was a previous guarding response with the inverted toggle bit.
 			self._toggle_bit = 0x80
 		if value == STOPPED:
-			command = 0x02
+			self.send_command(0x02)
 		if value == OPERATIONAL:
-			command = 0x01
+			self.send_command(0x01)
 		if value == PRE_OPERATIONAL:
-			command = 0x80
-		
-		d = struct.pack("<BB", command, self._node.id)
-		request = can.Message(arbitration_id = 0x000, is_extended_id = False, data = d)
-		self._node.network.send(request)
+			self.send_command(0x80)
