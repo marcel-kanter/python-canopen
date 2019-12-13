@@ -73,46 +73,41 @@ class SDOClient(Service):
 		if not isinstance(item, canopen.objectdictionary.Variable):
 			item = item[subindex]
 		
-		self._condition.acquire()
-		
-		self._index = index
-		self._subindex = subindex
-		self._toggle_bit = 0x00
-		self._buffer = b""
-		
-		request_command = 0x40
-		request_data = b"\x00\x00\x00\x00"
-		
-		self._state = request_command
-		
-		d = struct.pack("<BHB4s", request_command, index, subindex, request_data)
-		if self._cob_id_tx & (1 << 29):
-			request = can.Message(arbitration_id = self._cob_id_tx & 0x1FFFFFFF, is_extended_id = True, data = d)
-		else:
-			request = can.Message(arbitration_id = self._cob_id_tx & 0x7FF, is_extended_id = False, data = d)
-		self._node.network.send(request)
-		
-		if not self._condition.wait(self._timeout):
-			self._abort(index, subindex, SDO_PROTOCOL_TIMED_OUT)
-			self._condition.release()
-			raise TimeoutError()
-		
-		if self._state == 0x40:
-			try:
-				value = item.decode(self._buffer)
-			except:
-				# 0x06070010 Data type does not match; length of service parameter does not match.
-				self._abort(self._index, self._subindex, 0x06070010)
-				self._condition.release()
-				raise Exception()
+		with self._condition:
+			self._index = index
+			self._subindex = subindex
+			self._toggle_bit = 0x00
+			self._buffer = b""
 			
-			self._state = 0x80
-			self._condition.release()
-			return value
-		else:
-			self._state = 0x80
-			self._condition.release()
-			raise Exception()
+			request_command = 0x40
+			request_data = b"\x00\x00\x00\x00"
+			
+			self._state = request_command
+			
+			d = struct.pack("<BHB4s", request_command, index, subindex, request_data)
+			if self._cob_id_tx & (1 << 29):
+				request = can.Message(arbitration_id = self._cob_id_tx & 0x1FFFFFFF, is_extended_id = True, data = d)
+			else:
+				request = can.Message(arbitration_id = self._cob_id_tx & 0x7FF, is_extended_id = False, data = d)
+			self._node.network.send(request)
+			
+			if not self._condition.wait(self._timeout):
+				self._abort(index, subindex, SDO_PROTOCOL_TIMED_OUT)
+				raise TimeoutError()
+			
+			if self._state == 0x40:
+				try:
+					value = item.decode(self._buffer)
+				except:
+					# 0x06070010 Data type does not match; length of service parameter does not match.
+					self._abort(self._index, self._subindex, 0x06070010)
+					raise Exception()
+				
+				self._state = 0x80
+				return value
+			else:
+				self._state = 0x80
+				raise Exception()
 	
 	def download(self, index, subindex, value):
 		item = self._node.dictionary[index]
@@ -120,42 +115,37 @@ class SDOClient(Service):
 		if not isinstance(item, canopen.objectdictionary.Variable):
 			item = item[subindex]
 		
-		self._condition.acquire()
-		
-		self._index = index
-		self._subindex = subindex
-		self._buffer = item.encode(value)
-		self._data_size = len(self._buffer)
-		self._toggle_bit = 0x00
-		
-		if self._data_size > 0 and self._data_size <= 4: # Expedited transfer
-			request_command = 0x20 | ((4 - self._data_size) << 2) | (1 << 1) | (1 << 0)
-			request_data = self._buffer
-		else: # Segmented transfer
-			request_command = 0x20 | (1 << 0)
-			request_data = struct.pack("<L", self._data_size)
-		
-		self._state = request_command
-		
-		d = struct.pack("<BHB4s", request_command, index, subindex, request_data)
-		if self._cob_id_tx & (1 << 29):
-			request = can.Message(arbitration_id = self._cob_id_tx & 0x1FFFFFFF, is_extended_id = True, data = d)
-		else:
-			request = can.Message(arbitration_id = self._cob_id_tx & 0x7FF, is_extended_id = False, data = d)
-		self._node.network.send(request)
-		
-		if not self._condition.wait(self._timeout):
-			self._abort(index, subindex, SDO_PROTOCOL_TIMED_OUT)
-			self._condition.release()
-			raise TimeoutError()
-		
-		if self._state & 0xE0 == 0x20:
+		with self._condition:
+			self._index = index
+			self._subindex = subindex
+			self._buffer = item.encode(value)
+			self._data_size = len(self._buffer)
+			self._toggle_bit = 0x00
+			
+			if self._data_size > 0 and self._data_size <= 4: # Expedited transfer
+				request_command = 0x20 | ((4 - self._data_size) << 2) | (1 << 1) | (1 << 0)
+				request_data = self._buffer
+			else: # Segmented transfer
+				request_command = 0x20 | (1 << 0)
+				request_data = struct.pack("<L", self._data_size)
+			
+			self._state = request_command
+			
+			d = struct.pack("<BHB4s", request_command, index, subindex, request_data)
+			if self._cob_id_tx & (1 << 29):
+				request = can.Message(arbitration_id = self._cob_id_tx & 0x1FFFFFFF, is_extended_id = True, data = d)
+			else:
+				request = can.Message(arbitration_id = self._cob_id_tx & 0x7FF, is_extended_id = False, data = d)
+			self._node.network.send(request)
+			
+			if not self._condition.wait(self._timeout):
+				self._abort(index, subindex, SDO_PROTOCOL_TIMED_OUT)
+				raise TimeoutError()
+			
+			if self._state & 0xE0 != 0x20:
+				self._state = 0x80
+				raise Exception()
 			self._state = 0x80
-			self._condition.release()
-		else:
-			self._state = 0x80
-			self._condition.release()
-			raise Exception()
 	
 	def on_response(self, message):
 		""" Handler for upload and download responses from the SDO server. """
@@ -189,9 +179,8 @@ class SDOClient(Service):
 		self._node.network.send(message)
 		
 		self._state = 0x80
-		self._condition.acquire()
-		self._condition.notify_all()
-		self._condition.release()
+		with self._condition:
+			self._condition.notify_all()
 	
 	def _on_upload_segment(self, message):
 		response_command, response_data = struct.unpack_from("<B7s", message.data)
@@ -214,9 +203,8 @@ class SDOClient(Service):
 				self._abort(self._index, self._subindex, 0x06070010)
 				return
 			
-			self._condition.acquire()
-			self._condition.notify_all()
-			self._condition.release()
+			with self._condition:
+				self._condition.notify_all()
 		else:
 			self._toggle_bit ^= (1 << 4)
 			
@@ -243,9 +231,8 @@ class SDOClient(Service):
 		size = len(self._buffer)
 		
 		if size == 0:
-			self._condition.acquire()
-			self._condition.notify_all()
-			self._condition.release()
+			with self._condition:
+				self._condition.notify_all()
 		else:
 			self._toggle_bit ^= (1 << 4)
 			if size > 7:
@@ -285,9 +272,8 @@ class SDOClient(Service):
 			self._buffer = response_data[:size]
 			self._data_size = size
 			
-			self._condition.acquire()
-			self._condition.notify_all()
-			self._condition.release()
+			with self._condition:
+				self._condition.notify_all()
 		else:
 			if response_command & (1 << 0): # size indicated
 				self._buffer = b""
@@ -318,9 +304,8 @@ class SDOClient(Service):
 			return
 		
 		if self._state & (1 << 1): # Expedited transfer
-			self._condition.acquire()
-			self._condition.notify_all()
-			self._condition.release()
+			with self._condition:
+				self._condition.notify_all()
 		else: # Segmented transfer
 			size = len(self._buffer)
 		
@@ -343,9 +328,8 @@ class SDOClient(Service):
 	def _on_abort(self, message):
 		self._state = 0x80
 		
-		self._condition.acquire()
-		self._condition.notify_all()
-		self._condition.release()
+		with self._condition:
+			self._condition.notify_all()
 	
 	def _on_block_upload(self, message):
 		self._abort(0, 0, COMMAND_SPECIFIER_NOT_VALID)

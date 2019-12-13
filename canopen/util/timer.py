@@ -32,8 +32,8 @@ class Timer(threading.Thread):
 		threading.Thread.start(self)
 		
 		# wait until the timer can be triggered
-		self._trigger.acquire()
-		self._trigger.release()
+		with self._trigger:
+			pass
 	
 	def start(self, interval, periodic = False):
 		"""
@@ -61,19 +61,18 @@ class Timer(threading.Thread):
 		self._periodic.clear()
 		self._condition.set()
 		# wait until the canceled timer cycle has passed by and a restart is possible
-		self._trigger.acquire()
-		self._trigger.release()
+		with self._trigger:
+			pass
 	
 	def run(self):
-		self._trigger.acquire()
-		while not self._terminate.is_set():
-			if not self._periodic.is_set():
-				self._trigger.wait()
-			self._condition.wait(self._execute_time - time.time())
-			if not self._condition.is_set():
-				self._function(*self._args, **self._kwargs)
-			self._execute_time += self._interval
-		self._trigger.release()
+		with self._trigger:
+			while not self._terminate.is_set():
+				if not self._periodic.is_set():
+					self._trigger.wait()
+				self._condition.wait(self._execute_time - time.time())
+				if not self._condition.is_set():
+					self._function(*self._args, **self._kwargs)
+				self._execute_time += self._interval
 	
 	def stop(self):
 		"""
@@ -81,6 +80,5 @@ class Timer(threading.Thread):
 		"""
 		self._terminate.set()
 		self._condition.set()
-		self._trigger.acquire()
-		self._trigger.notify()
-		self._trigger.release()
+		with self._trigger:
+			self._trigger.notify()

@@ -58,9 +58,8 @@ class PDOConsumer(SYNCConsumer):
 		SYNCConsumer.detach(self)
 	
 	def wait(self, timeout = None):
-		self._condition.acquire()
-		gotit = self._condition.wait(timeout)
-		self._condition.release()
+		with self._condition:
+			gotit = self._condition.wait(timeout)
 		return gotit
 	
 	def on_pdo(self, message):
@@ -70,9 +69,8 @@ class PDOConsumer(SYNCConsumer):
 			return
 		self._data = message.data
 		self.notify("pdo", self)
-		self._condition.acquire()
-		self._condition.notify_all()
-		self._condition.release()
+		with self._condition:
+			self._condition.notify_all()
 	
 	@property
 	def data(self):
