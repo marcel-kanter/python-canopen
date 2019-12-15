@@ -93,7 +93,8 @@ class TSVTest(unittest.TestCase):
 		file_2.close()
 	
 	def test_load(self):
-		file = open(os.path.join(os.path.dirname(__file__), "data", "empty.tsv"))
+		# Use an empty temporary file for the test
+		file = tempfile.TemporaryFile("w+", newline = "")
 		dictionary = canopen.objectdictionary.tsv.load(file)
 		
 		self.assertEqual(len(dictionary), 0)
