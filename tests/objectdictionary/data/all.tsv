@@ -1,4 +1,4 @@
-index	name	object type	sub-index	data type	access type	description
+Index	Name	ObjectType	SubIndex	DataType	AccessType	Description
 0x23	Identity	0x6				Data structure definition for Identity object.
 0x23	Highest sub-index supported	0x7	0x0	0x5	ro	
 0x23	Vendor-ID	0x7	0x1	0x6	ro	
