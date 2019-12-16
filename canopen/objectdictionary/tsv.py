@@ -44,27 +44,33 @@ def load(file):
 		
 		if object_type == 6:
 			o = canopen.objectdictionary.DefStruct(name, index)
+			o.description = row["Description"]
 			dictionary.add(o)
 		if object_type == 8:
 			data_type = int(row["DataType"], 16)
 			o = canopen.objectdictionary.Array(name, index, data_type)
+			o.description = row["Description"]
 			dictionary.add(o)
 		if object_type == 9:
 			data_type = int(row["DataType"], 16)
 			o = canopen.objectdictionary.Record(name, index, data_type)
+			o.description = row["Description"]
 			dictionary.add(o)
 		if object_type == 2:
 			access_type = row["AccessType"]
 			o = canopen.objectdictionary.Domain(name, index, access_type)
+			o.description = row["Description"]
 			dictionary.add(o)
 		if object_type == 5:
 			o = canopen.objectdictionary.DefType(name, index)
+			o.description = row["Description"]
 			dictionary.add(o)
 		if object_type == 7:
 			subindex = int(row["SubIndex"], 16)
 			data_type = int(row["DataType"], 16)
 			access_type = row["AccessType"]
 			o = canopen.objectdictionary.Variable(name, index, subindex, data_type, access_type)
+			o.description = row["Description"]
 			# If there is already an object in the dictionary asume it is an Array of Record
 			if index in dictionary:
 				dictionary[index].add(o)

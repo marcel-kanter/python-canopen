@@ -14,7 +14,7 @@ class ObjectDictionaryElement(object):
 			return True
 		if self.__class__ != other.__class__:
 			return False
-		if self._object_type != other.object_type or self._name != other.name or self._index != other.index:
+		if self._object_type != other.object_type or self._name != other.name or self._index != other.index or self._description != other.description:
 			return False
 		return True
 	

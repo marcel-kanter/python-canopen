@@ -45,7 +45,7 @@ class Variable(ObjectDictionaryElement):
 			return True
 		if self.__class__ != other.__class__:
 			return False
-		if self._name != other._name or self._index != other.index or self._subindex != other.subindex or self._data_type != other.data_type or self._access_type != other.access_type or self._default_value != other.default_value:
+		if self._object_type != other.object_type or self._name != other.name or self._index != other.index or self._description != other.description or self._subindex != other.subindex or self._data_type != other.data_type or self._access_type != other.access_type or self._default_value != other.default_value:
 			return False
 		return True
 	
