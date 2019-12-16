@@ -16,19 +16,23 @@ class RecordTestCase(unittest.TestCase):
 		name = "rec"
 		index = 100
 		data_type = canopen.objectdictionary.UNSIGNED32
-		record = canopen.objectdictionary.Record(name, index, data_type)
+		examinee = canopen.objectdictionary.Record(name, index, data_type)
 		
-		self.assertEqual(record.object_type, 9)
-		self.assertEqual(record.name, name)
-		self.assertEqual(record.index, index)
-		self.assertEqual(record.data_type, data_type)
+		self.assertEqual(examinee.object_type, 9)
+		self.assertEqual(examinee.name, name)
+		self.assertEqual(examinee.index, index)
+		self.assertEqual(examinee.data_type, data_type)
 		
 		with self.assertRaises(AttributeError):
-			record.name = name
+			examinee.name = name
 		with self.assertRaises(AttributeError):
-			record.index = index
+			examinee.index = index
 		with self.assertRaises(AttributeError):
-			record.data_type = data_type
+			examinee.data_type = data_type
+		
+		desc = "Franz jagt im komplett verwahrlosten Taxi quer durch Bayern."
+		examinee.description = desc
+		self.assertEqual(examinee.description, desc)
 	
 	def test_equals(self):
 		a = canopen.objectdictionary.Record("rec", 100, 0x00)
@@ -61,6 +65,11 @@ class RecordTestCase(unittest.TestCase):
 		self.assertEqual(a == b, b == a)
 		
 		b = canopen.objectdictionary.Record("rec", 100, 0x01)
+		self.assertFalse(a == b)
+		self.assertEqual(a == b, b == a)
+		
+		b = canopen.objectdictionary.Record("rec", 100, 0x00)
+		b.description = a.description + "XXX"
 		self.assertFalse(a == b)
 		self.assertEqual(a == b, b == a)
 		

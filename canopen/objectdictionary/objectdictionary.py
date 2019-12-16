@@ -1,5 +1,7 @@
 import collections
-from .objectdictionaryelement import ObjectDictionaryElement
+from .array import Array
+from .record import Record
+from .variable import Variable
 
 
 class ObjectDictionary(collections.abc.Collection):
@@ -54,7 +56,7 @@ class ObjectDictionary(collections.abc.Collection):
 	
 	def add(self, value):
 		""" Adds a variable, record or array to the object dictionary. It may be accessed later by the name or the index. """
-		if not isinstance(value, ObjectDictionaryElement):
+		if not isinstance(value, (Array, Record, Variable)):
 			raise TypeError()
 		if value.index in self._items_index or value.name in self._items_name:
 			raise ValueError()

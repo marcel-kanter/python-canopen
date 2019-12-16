@@ -16,19 +16,23 @@ class ArrayTestCase(unittest.TestCase):
 		name = "arr"
 		index = 100
 		data_type = canopen.objectdictionary.UNSIGNED32
-		array = canopen.objectdictionary.Array(name, index, data_type)
+		examinee = canopen.objectdictionary.Array(name, index, data_type)
 		
-		self.assertEqual(array.object_type, 8)
-		self.assertEqual(array.name, name)
-		self.assertEqual(array.index, index)
-		self.assertEqual(array.data_type, data_type)
+		self.assertEqual(examinee.object_type, 8)
+		self.assertEqual(examinee.name, name)
+		self.assertEqual(examinee.index, index)
+		self.assertEqual(examinee.data_type, data_type)
 		
 		with self.assertRaises(AttributeError):
-			array.name = name
+			examinee.name = name
 		with self.assertRaises(AttributeError):
-			array.index = index
+			examinee.index = index
 		with self.assertRaises(AttributeError):
-			array.data_type = data_type
+			examinee.data_type = data_type
+		
+		desc = "Franz jagt im komplett verwahrlosten Taxi quer durch Bayern."
+		examinee.description = desc
+		self.assertEqual(examinee.description, desc)
 	
 	def test_equals(self):
 		a = canopen.objectdictionary.Array("arr", 100, canopen.objectdictionary.UNSIGNED32)
@@ -61,6 +65,11 @@ class ArrayTestCase(unittest.TestCase):
 		self.assertEqual(a == b, b == a)
 		
 		b = canopen.objectdictionary.Array("arr", 100, canopen.objectdictionary.UNSIGNED16)
+		self.assertFalse(a == b)
+		self.assertEqual(a == b, b == a)
+		
+		b = canopen.objectdictionary.Array("arr", 100, canopen.objectdictionary.UNSIGNED32)
+		b.description = a.description + "XXX"
 		self.assertFalse(a == b)
 		self.assertEqual(a == b, b == a)
 		

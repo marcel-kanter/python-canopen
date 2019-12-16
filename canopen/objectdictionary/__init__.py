@@ -1,5 +1,4 @@
 from .objectdictionary import ObjectDictionary
-from .objectdictionaryelement import ObjectDictionaryElement
 from .array import Array
 from .datatypes import *
 from .defstruct import DefStruct

@@ -29,37 +29,41 @@ class VariableTestCase(unittest.TestCase):
 		subindex = 0
 		data_type = canopen.objectdictionary.UNSIGNED32
 		access_type = "rw"
-		variable = canopen.objectdictionary.Variable(name, index, subindex, data_type, access_type)
+		examinee = canopen.objectdictionary.Variable(name, index, subindex, data_type, access_type)
 		
-		self.assertEqual(variable.object_type, 7)
-		self.assertEqual(variable.name, name)
-		self.assertEqual(variable.index, index)
-		self.assertEqual(variable.subindex, subindex)
-		self.assertEqual(variable.default_value, 0)
+		self.assertEqual(examinee.object_type, 7)
+		self.assertEqual(examinee.name, name)
+		self.assertEqual(examinee.index, index)
+		self.assertEqual(examinee.subindex, subindex)
+		self.assertEqual(examinee.default_value, 0)
 		
 		with self.assertRaises(AttributeError):
-			variable.name = name
+			examinee.name = name
 		with self.assertRaises(AttributeError):
-			variable.index = index
+			examinee.index = index
 		with self.assertRaises(AttributeError):
-			variable.subindex = subindex
+			examinee.subindex = subindex
 		with self.assertRaises(AttributeError):
-			variable.data_type = data_type
+			examinee.data_type = data_type
 		with self.assertRaises(ValueError):
-			variable.access_type = "xx"
+			examinee.access_type = "xx"
 				
-		variable.access_type = "wo"
-		self.assertEqual(variable.access_type, "wo")
-		variable.access_type = "ro"
-		self.assertEqual(variable.access_type, "ro")
+		examinee.access_type = "wo"
+		self.assertEqual(examinee.access_type, "wo")
+		examinee.access_type = "ro"
+		self.assertEqual(examinee.access_type, "ro")
 		
-		variable.default_value = 100
-		self.assertEqual(variable.default_value, 100)
+		examinee.default_value = 100
+		self.assertEqual(examinee.default_value, 100)
 		
 		for data_type in [BOOLEAN, INTEGER8, INTEGER16, INTEGER32, UNSIGNED8, UNSIGNED16, UNSIGNED32, REAL32, VISIBLE_STRING, OCTET_STRING, UNICODE_STRING, TIME_OF_DAY, TIME_DIFFERENCE, DOMAIN, INTEGER24, REAL64, INTEGER40, INTEGER48, INTEGER56, INTEGER64, UNSIGNED24, UNSIGNED40, UNSIGNED48, UNSIGNED56, UNSIGNED64]:
 			examinee = canopen.objectdictionary.Variable("var", 100, 0, data_type)
 			self.assertEqual(examinee.data_type, data_type)
 			self.assertEqual(examinee.default_value, examinee.decode(examinee.encode(examinee.default_value)))
+		
+		desc = "Franz jagt im komplett verwahrlosten Taxi quer durch Bayern."
+		examinee.description = desc
+		self.assertEqual(examinee.description, desc)
 	
 	def test_equals(self):
 		a = canopen.objectdictionary.Variable("var", 100, 0, UNSIGNED32, "rw")
@@ -105,6 +109,11 @@ class VariableTestCase(unittest.TestCase):
 		
 		b = canopen.objectdictionary.Variable("var", 100, 0, UNSIGNED32, "rw")
 		b.default_value = 10
+		self.assertFalse(a == b)
+		self.assertEqual(a == b, b == a)
+		
+		b = canopen.objectdictionary.Variable("var", 100, 0, UNSIGNED32, "rw")
+		b.description = a.description + "XXX"
 		self.assertFalse(a == b)
 		self.assertEqual(a == b, b == a)
 	
