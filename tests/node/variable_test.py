@@ -10,6 +10,7 @@ class VariableTestCase(unittest.TestCase):
 		dictionary = canopen.ObjectDictionary()
 		node = InspectionNode("n", 1, dictionary)
 		entry = canopen.objectdictionary.Variable("unsigned32", 0x1234, 0x07, canopen.objectdictionary.UNSIGNED32, "rw")
+		entry.description = "Tempus transit horridum frigus"
 		
 		with self.assertRaises(TypeError):
 			canopen.node.variable.Variable(dictionary, entry)
@@ -26,6 +27,7 @@ class VariableTestCase(unittest.TestCase):
 		self.assertEqual(examinee.data_type, entry.data_type)
 		self.assertEqual(examinee.access_type, entry.access_type)
 		self.assertEqual(examinee.default_value, entry.default_value)
+		self.assertEqual(examinee.description, entry.description)
 		
 		#### Test step: data access set_data
 		value = 100

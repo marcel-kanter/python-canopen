@@ -44,3 +44,7 @@ class Array(collections.abc.Collection):
 	@property
 	def data_type(self):
 		return self._entry.data_type
+	
+	@property
+	def description(self):
+		return self._entry.description
