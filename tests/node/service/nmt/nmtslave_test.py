@@ -522,13 +522,14 @@ class NMTSlaveTestCase(unittest.TestCase):
 		node.nmt.state = canopen.nmt.states.PRE_OPERATIONAL
 		
 		node.nmt.start_guarding(0.2, 2)
+		start_time = time.time()
 		
 		# Interval 0, Trigger guarding with the first RTR
 		
 		message = can.Message(arbitration_id = 0x700 + node.id, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
 		
-		time.sleep(0.05)
+		time.sleep(0.05 + start_time - time.time())
 		
 		message = bus2.recv(0.1)
 		self.assertEqual(message.arbitration_id, 0x700 + node.id)
@@ -537,13 +538,13 @@ class NMTSlaveTestCase(unittest.TestCase):
 		
 		cb.assert_not_called()
 		
-		time.sleep(0.1)
+		time.sleep(0.15 + start_time - time.time())
 		
 		# Interval 1, t = 0.15
 		message = can.Message(arbitration_id = 0x700 + node.id, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
 		
-		time.sleep(0.05)
+		time.sleep(0.2 + start_time - time.time())
 		
 		message = bus2.recv(0.1)
 		self.assertEqual(message.arbitration_id, 0x700 + node.id)
@@ -552,17 +553,17 @@ class NMTSlaveTestCase(unittest.TestCase):
 		
 		cb.assert_not_called()
 		
-		time.sleep(0.15)
+		time.sleep(0.35 + start_time - time.time())
 		
 		# Interval 2, t = 0.35, no RTR
 		cb.assert_not_called()
 		
-		time.sleep(0.2)
+		time.sleep(0.55 + start_time - time.time())
 		
 		cb.assert_not_called()
 		# Interval 3, t = 0.55, no RTR, now the callback should be called
 		
-		time.sleep(0.2)
+		time.sleep(0.75 + start_time - time.time())
 		
 		cb.assert_called_with("guarding", node.nmt)
 		
