@@ -45,7 +45,11 @@ class Variable(object):
 	@property
 	def default_value(self):
 		return self._entry.default_value
-
+	
 	@property
 	def description(self):
 		return self._entry.description
+	
+	@property
+	def size(self):
+		return self._entry.size

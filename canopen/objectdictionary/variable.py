@@ -8,14 +8,14 @@ class Variable(object):
 	"""
 	
 	_canopen_epoch = calendar.timegm((1984, 1, 1, 0, 0, 0))
-	__allowed_types = [BOOLEAN, INTEGER8, INTEGER16, INTEGER32, UNSIGNED8, UNSIGNED16, UNSIGNED32, REAL32, VISIBLE_STRING, OCTET_STRING, UNICODE_STRING, TIME_OF_DAY, TIME_DIFFERENCE, DOMAIN, INTEGER24, REAL64, INTEGER40, INTEGER48, INTEGER56, INTEGER64, UNSIGNED24, UNSIGNED40, UNSIGNED48, UNSIGNED56, UNSIGNED64]
+	__sizes = {BOOLEAN: 1, INTEGER8: 8, INTEGER16: 16, INTEGER32: 32, UNSIGNED8: 8, UNSIGNED16: 16, UNSIGNED32: 32, REAL32: 32, VISIBLE_STRING: 0, OCTET_STRING: 0, UNICODE_STRING: 0, TIME_OF_DAY: 48, TIME_DIFFERENCE: 48, DOMAIN: 0, INTEGER24: 24, REAL64: 64, INTEGER40: 40, INTEGER48: 48, INTEGER56: 56, INTEGER64: 64, UNSIGNED24: 24, UNSIGNED40: 40, UNSIGNED48: 48, UNSIGNED56: 56, UNSIGNED64: 64}
 	
 	def __init__(self, name, index, subindex, data_type, access_type = "rw"):
 		if index < 0 or index > 65535:
 			raise ValueError()
 		if subindex < 0 or subindex > 255:
 			raise ValueError()
-		if data_type not in self.__allowed_types:
+		if data_type not in self.__sizes:
 			raise ValueError()
 		if access_type not in ["rw", "wo", "ro", "const"]:
 			raise ValueError()
@@ -258,14 +258,20 @@ class Variable(object):
 	
 	@property
 	def index(self):
+		""" Returns the index of the Variable.
+		"""
 		return self._index
 	
 	@property
 	def name(self):
+		""" Returns the name of the Variable.
+		"""
 		return self._name
 	
 	@property
 	def description(self):
+		""" Returns the description of the Variable.
+		"""
 		return self._description
 	
 	@description.setter
@@ -274,19 +280,19 @@ class Variable(object):
 	
 	@property
 	def subindex(self):
+		""" Returns the sub-index of the Variable.
+		"""
 		return self._subindex
 	
 	@property
 	def data_type(self):
-		"""
-		Returns the data type as defined in DS301 v4.02 Table 44: Object dictionary data types.
+		""" Returns the data type as defined in DS301 v4.02 Table 44: Object dictionary data types.
 		"""
 		return self._data_type
 	
 	@property
 	def access_type(self):
-		"""
-		Returns the access type as defined in DS301 v4.02 Table 43: Access attributes for data objects.
+		""" Returns the access type as defined in DS301 v4.02 Table 43: Access attributes for data objects.
 		"""
 		return self._access_type
 	
@@ -298,11 +304,17 @@ class Variable(object):
 	
 	@property
 	def default_value(self):
-		"""
-		Returns the default value for this Variable.
+		""" Returns the default value for this Variable.
 		"""
 		return self._default_value
 	
 	@default_value.setter
 	def default_value(self, x):
 		self._default_value = x
+	
+	@property
+	def size(self):
+		""" Returns the size of the Variable in bits as described in DS301 v4.2 chapter 7.4.7 Data type entry usage.
+		For variables with variable length (VISIBLE_STRING, OCTET_STRING, UNICODE_STRING and DOMAIN) it returns 0.
+		"""
+		return self.__sizes[self.data_type]

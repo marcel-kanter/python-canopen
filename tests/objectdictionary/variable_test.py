@@ -120,6 +120,8 @@ class VariableTestCase(unittest.TestCase):
 	def test_boolean(self):
 		variable = canopen.objectdictionary.Variable("BOOLEAN", 100, 0, canopen.objectdictionary.BOOLEAN)
 		
+		self.assertEqual(variable.size, 1)
+		
 		with self.subTest("encode"):
 			test_data = [(False, b"\x00"),
 				(True, b"\x01")]
@@ -138,6 +140,8 @@ class VariableTestCase(unittest.TestCase):
 	
 	def test_integer8(self):
 		variable = canopen.objectdictionary.Variable("INTEGER8", 100, 0, canopen.objectdictionary.INTEGER8)
+		
+		self.assertEqual(variable.size, 8)
 		
 		with self.subTest("encode"):
 			test_data = [(0, b"\x00"),
@@ -164,6 +168,8 @@ class VariableTestCase(unittest.TestCase):
 	
 	def test_integer16(self):
 		variable = canopen.objectdictionary.Variable("INTEGER16", 100, 0, canopen.objectdictionary.INTEGER16)
+		
+		self.assertEqual(variable.size, 16)
 		
 		with self.subTest("encode"):
 			test_data = [(0, b"\x00\x00"),
@@ -201,6 +207,8 @@ class VariableTestCase(unittest.TestCase):
 	def test_integer32(self):
 		variable = canopen.objectdictionary.Variable("INTEGER32", 100, 0, canopen.objectdictionary.INTEGER32)
 		
+		self.assertEqual(variable.size, 32)
+		
 		with self.subTest("encode"):
 			test_data = [(0, b"\x00\x00\x00\x00"),
 				(-1437226411, b"\x55\xAA\x55\xAA"),
@@ -234,6 +242,8 @@ class VariableTestCase(unittest.TestCase):
 	def test_unsigned8(self):
 		variable = canopen.objectdictionary.Variable("UNSIGNED8", 100, 0, canopen.objectdictionary.UNSIGNED8)
 		
+		self.assertEqual(variable.size, 8)
+		
 		with self.subTest("encode"):
 			test_data = [(0, b"\x00"),
 				(85, b"\x55"),
@@ -260,6 +270,8 @@ class VariableTestCase(unittest.TestCase):
 	
 	def test_unsigned16(self):
 		variable = canopen.objectdictionary.Variable("UNSIGNED16", 100, 0, canopen.objectdictionary.UNSIGNED16)
+		
+		self.assertEqual(variable.size, 16)
 		
 		with self.subTest("encode"):
 			test_data = [(0, b"\x00\x00"),
@@ -294,6 +306,8 @@ class VariableTestCase(unittest.TestCase):
 	def test_unsigned32(self):
 		variable = canopen.objectdictionary.Variable("UNSIGNED32", 100, 0, canopen.objectdictionary.UNSIGNED32)
 		
+		self.assertEqual(variable.size, 32)
+		
 		with self.subTest("encode"):
 			test_data = [(0, b"\x00\x00\x00\x00"),
 				(2857740885, b"\x55\xAA\x55\xAA"),
@@ -327,6 +341,8 @@ class VariableTestCase(unittest.TestCase):
 	def test_real32(self):
 		variable = canopen.objectdictionary.Variable("REAL32", 100, 0, canopen.objectdictionary.REAL32)
 		
+		self.assertEqual(variable.size, 32)
+		
 		with self.subTest("encode"):
 			test_data = [(0.0, b"\x00\x00\x00\x00")]
 			for x, y in test_data:
@@ -348,6 +364,8 @@ class VariableTestCase(unittest.TestCase):
 	def test_visible_string(self):
 		variable = canopen.objectdictionary.Variable("VISIBLE_STRING", 100, 0, canopen.objectdictionary.VISIBLE_STRING)
 		
+		self.assertEqual(variable.size, 0)
+		
 		with self.subTest("encode"):
 			test_data = [("TEXT", b"TEXT")]
 			for x, y in test_data:
@@ -362,6 +380,8 @@ class VariableTestCase(unittest.TestCase):
 	
 	def test_octet_string(self):
 		variable = canopen.objectdictionary.Variable("OCTET_STRING", 100, 0, canopen.objectdictionary.OCTET_STRING)
+		
+		self.assertEqual(variable.size, 0)
 		
 		with self.subTest("encode"):
 			test_data = [("TEXT", b"TEXT")]
@@ -378,6 +398,8 @@ class VariableTestCase(unittest.TestCase):
 	def test_unicode_string(self):
 		variable = canopen.objectdictionary.Variable("UNICODE_STRING", 100, 0, canopen.objectdictionary.UNICODE_STRING)
 		
+		self.assertEqual(variable.size, 0)
+		
 		with self.subTest("encode"):
 			test_data = [("TEXT", b"T\x00E\x00X\x00T\x00")]
 			for x, y in test_data:
@@ -392,6 +414,8 @@ class VariableTestCase(unittest.TestCase):
 	
 	def test_time_of_day(self):	
 		variable = canopen.objectdictionary.Variable("TIME_OF_DAY", 100, 0, canopen.objectdictionary.TIME_OF_DAY)
+		
+		self.assertEqual(variable.size, 48)
 		
 		with self.subTest("encode"):
 			test_data = [(calendar.timegm((1984, 1, 1, 0, 0, 0)), struct.pack("<LH", 0, 0))]
@@ -413,6 +437,8 @@ class VariableTestCase(unittest.TestCase):
 	def test_time_difference(self):
 		variable = canopen.objectdictionary.Variable("TIME_DIFFERENCE", 100, 0, canopen.objectdictionary.TIME_DIFFERENCE)
 		
+		self.assertEqual(variable.size, 48)
+		
 		with self.subTest("encode"):
 			test_data = [(0, struct.pack("<LH", 0, 0))]
 			for x, y in test_data:
@@ -433,6 +459,8 @@ class VariableTestCase(unittest.TestCase):
 	def test_domain(self):
 		variable = canopen.objectdictionary.Variable("DOMAIN", 100, 0, canopen.objectdictionary.DOMAIN)
 		
+		self.assertEqual(variable.size, 0)
+		
 		with self.subTest("encode"):
 			test_data = [(b"\xA5\x5A", b"\xA5\x5A")]
 			for x, y in test_data:
@@ -447,6 +475,8 @@ class VariableTestCase(unittest.TestCase):
 	
 	def test_integer24(self):
 		variable = canopen.objectdictionary.Variable("INTEGER24", 100, 0, canopen.objectdictionary.INTEGER24)
+		
+		self.assertEqual(variable.size, 24)
 		
 		with self.subTest("encode"):
 			test_data = [(0, b"\x00\x00\x00"),
@@ -481,6 +511,8 @@ class VariableTestCase(unittest.TestCase):
 	def test_real64(self):
 		variable = canopen.objectdictionary.Variable("REAL64", 100, 0, canopen.objectdictionary.REAL64)
 		
+		self.assertEqual(variable.size, 64)
+		
 		with self.subTest("encode"):
 			test_data = [(0.0, b"\x00\x00\x00\x00\x00\x00\x00\x00")]
 			for x, y in test_data:
@@ -501,6 +533,8 @@ class VariableTestCase(unittest.TestCase):
 	
 	def test_integer40(self):
 		variable = canopen.objectdictionary.Variable("INTEGER40", 100, 0, canopen.objectdictionary.INTEGER40)
+		
+		self.assertEqual(variable.size, 40)
 		
 		with self.subTest("encode"):
 			test_data = [(0, b"\x00\x00\x00\x00\x00"),
@@ -535,6 +569,8 @@ class VariableTestCase(unittest.TestCase):
 	def test_integer48(self):
 		variable = canopen.objectdictionary.Variable("INTEGER48", 100, 0, canopen.objectdictionary.INTEGER48)
 		
+		self.assertEqual(variable.size, 48)
+		
 		with self.subTest("encode"):
 			test_data = [(0, b"\x00\x00\x00\x00\x00\x00"),
 				(-94190070027691, b"\x55\xAA\x55\xAA\x55\xAA"),
@@ -567,6 +603,8 @@ class VariableTestCase(unittest.TestCase):
 	
 	def test_integer56(self):
 		variable = canopen.objectdictionary.Variable("INTEGER56", 100, 0, canopen.objectdictionary.INTEGER56)
+		
+		self.assertEqual(variable.size, 56)
 		
 		with self.subTest("encode"):
 			test_data = [(0, b"\x00\x00\x00\x00\x00\x00\x00"),
@@ -601,6 +639,8 @@ class VariableTestCase(unittest.TestCase):
 	def test_integer64(self):
 		variable = canopen.objectdictionary.Variable("INTEGER64", 100, 0, canopen.objectdictionary.INTEGER64)
 		
+		self.assertEqual(variable.size, 64)
+		
 		with self.subTest("encode"):
 			test_data = [(0, b"\x00\x00\x00\x00\x00\x00\x00\x00"),
 				(-6172840429334713771, b"\x55\xAA\x55\xAA\x55\xAA\x55\xAA"),
@@ -633,6 +673,8 @@ class VariableTestCase(unittest.TestCase):
 	
 	def test_unsigned24(self):
 		variable = canopen.objectdictionary.Variable("UNSIGNED24", 100, 0, canopen.objectdictionary.UNSIGNED24)
+		
+		self.assertEqual(variable.size, 24)
 		
 		with self.subTest("encode"):
 			test_data = [(0, b"\x00\x00\x00"),
@@ -667,6 +709,8 @@ class VariableTestCase(unittest.TestCase):
 	def test_unsigned40(self):	
 		variable = canopen.objectdictionary.Variable("UNSIGNED40", 100, 0, canopen.objectdictionary.UNSIGNED40)
 		
+		self.assertEqual(variable.size, 40)
+		
 		with self.subTest("encode"):
 			test_data = [(0, b"\x00\x00\x00\x00\x00"),
 				(367929961045, b"\x55\xAA\x55\xAA\x55"),
@@ -699,6 +743,8 @@ class VariableTestCase(unittest.TestCase):
 	
 	def test_unsigned48(self):
 		variable = canopen.objectdictionary.Variable("UNSIGNED48", 100, 0, canopen.objectdictionary.UNSIGNED48)
+		
+		self.assertEqual(variable.size, 48)
 		
 		with self.subTest("encode"):
 			test_data = [(0, b"\x00\x00\x00\x00\x00\x00"),
@@ -733,6 +779,8 @@ class VariableTestCase(unittest.TestCase):
 	def test_unsigned56(self):
 		variable = canopen.objectdictionary.Variable("UNSIGNED56", 100, 0, canopen.objectdictionary.UNSIGNED56)
 		
+		self.assertEqual(variable.size, 56)
+		
 		with self.subTest("encode"):
 			test_data = [(0, b"\x00\x00\x00\x00\x00\x00\x00"),
 				(24112657927088725, b"\x55\xAA\x55\xAA\x55\xAA\x55"),
@@ -765,6 +813,8 @@ class VariableTestCase(unittest.TestCase):
 	
 	def test_unsigned64(self):
 		variable = canopen.objectdictionary.Variable("UNSIGNED64", 100, 0, canopen.objectdictionary.UNSIGNED64)
+		
+		self.assertEqual(variable.size, 64)
 		
 		with self.subTest("encode"):
 			test_data = [(0, b"\x00\x00\x00\x00\x00\x00\x00\x00"),
