@@ -57,7 +57,7 @@ class SRDOConsumer(Service):
 			self._node.network.unsubscribe(self.on_message2, self._cob_id_2 & 0x1FFFFFFF)
 		else:
 			self._node.network.unsubscribe(self.on_message2, self._cob_id_2 & 0x7FF)
-
+	
 		Service.detach(self)
 	
 	def on_message1(self, message):
@@ -66,13 +66,17 @@ class SRDOConsumer(Service):
 			return
 		if message.is_extended_id != bool(self._cob_id_1 & (1 << 29)):
 			return
-
+		
+		self._normal_data = message.data
+	
 	def on_message2(self, message):
 		""" Message handler for incoming SRDO messages with complement data. """
 		if message.is_remote_frame:
 			return
 		if message.is_extended_id != bool(self._cob_id_2 & (1 << 29)):
 			return
+		
+		self._complement_data = message.data
 	
 	@property
 	def normal_data(self):

@@ -74,27 +74,52 @@ class SRDOConsumerTestCase(unittest.TestCase):
 		bus2.send(message)
 		time.sleep(0.01)
 		
+		self.assertEqual(examinee.normal_data, b"\x00")
+		
 		message = can.Message(arbitration_id =  0x100 + 2 * node.id, is_extended_id = False, is_remote_frame = False, data = b"\xFF")
 		bus2.send(message)
 		time.sleep(0.01)
+		
+		self.assertEqual(examinee.complement_data, b"\xFF")
 		
 		#### Test step: Ignore RTR
 		message = can.Message(arbitration_id = 0xFF + 2 * node.id, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
 		time.sleep(0.01)
 		
+		self.assertEqual(examinee.normal_data, b"\x00")
+		
 		message = can.Message(arbitration_id =  0x100 + 2 * node.id, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
 		time.sleep(0.01)
+		
+		self.assertEqual(examinee.complement_data, b"\xFF")
 		
 		#### Test step: Ignore wrong frame type
 		message = can.Message(arbitration_id = 0xFF + 2 * node.id, is_extended_id = True, is_remote_frame = False, data = b"\x00")
 		bus2.send(message)
 		time.sleep(0.01)
 		
+		self.assertEqual(examinee.normal_data, b"\x00")
+		
 		message = can.Message(arbitration_id =  0x100 + 2 * node.id, is_extended_id = True, is_remote_frame = False, data = b"\xFF")
 		bus2.send(message)
 		time.sleep(0.01)
+		
+		self.assertEqual(examinee.complement_data, b"\xFF")
+		
+		#### Test step: Correct frame pair, service just collects
+		message = can.Message(arbitration_id = 0xFF + 2 * node.id, is_extended_id = False, is_remote_frame = False, data = b"\xAA")
+		bus2.send(message)
+		time.sleep(0.01)
+		
+		self.assertEqual(examinee.normal_data, b"\xAA")
+		
+		message = can.Message(arbitration_id =  0x100 + 2 * node.id, is_extended_id = False, is_remote_frame = False, data = b"\xCC")
+		bus2.send(message)
+		time.sleep(0.01)
+		
+		self.assertEqual(examinee.complement_data, b"\xCC")
 		
 		examinee.detach()
 		node.detach()
