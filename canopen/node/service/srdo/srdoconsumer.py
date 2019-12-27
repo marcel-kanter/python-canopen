@@ -1,16 +1,20 @@
 import canopen.node
-from canopen.node.service import Service
+from canopen.node.service.sync import SYNCConsumer
 
 
-class SRDOConsumer(Service):
+class SRDOConsumer(SYNCConsumer):
 	""" SRDOConsumer
+	
+	Callbacks
+	"sync": ("sync", service, counter)
 	"""
 	def __init__(self):
-		Service.__init__(self)
+		SYNCConsumer.__init__(self)
+		
 		self._normal_data = None
 		self._complement_data = None
 	
-	def attach(self, node, cob_id_1 = None, cob_id_2 = None):
+	def attach(self, node, cob_id_1 = None, cob_id_2 = None, cob_id_sync = None):
 		""" Attaches the ``SRDOConsumer`` to a ``Node``. It does NOT add or assign this ``SRDOConsumer`` to the ``Node``.
 		:param node: A canopen.Node, to which the service should be attached to.
 		:param cob_id_1: The COB ID for the SRDO service, used for the CAN ID of the normal data frames.
@@ -20,7 +24,10 @@ class SRDOConsumer(Service):
 		:param cob_id_2: The COB ID for the SRDO service, used for the CAN ID of the complement data frames.
 			DS304 only allows even values in the range 0x102 to 0x180. This service supports the whole COB ID range.
 			Bit 29 selects whether an extended frame is used. The CAN ID is masked out of the lowest 11 or 29 bits.
-			If it is omitted or None is passed, the value defaults to 0x100 + 2 * node.id . """
+			If it is omitted or None is passed, the value defaults to 0x100 + 2 * node.id .
+		:param cob_id_sync: The COB ID for the PDO service, used for the CAN ID of the SYNC messages to be received.
+			Bit 29 selects whether an extended frame is used. The CAN ID is masked out of the lowest 11 or 29 bits.
+			If it is omitted or None is passed, the value defaults to 0x80."""
 		if not isinstance(node, canopen.node.Node):
 			raise TypeError()
 		if cob_id_1 == None:
@@ -32,7 +39,7 @@ class SRDOConsumer(Service):
 		if cob_id_2 < 0x0 or cob_id_2 > 0xFFFFFFFF:
 			raise ValueError()
 		
-		Service.attach(self, node)
+		SYNCConsumer.attach(self, node, cob_id_sync)
 		self._cob_id_1 = cob_id_1
 		self._cob_id_2 = cob_id_2
 		
@@ -58,7 +65,7 @@ class SRDOConsumer(Service):
 		else:
 			self._node.network.unsubscribe(self.on_message2, self._cob_id_2 & 0x7FF)
 	
-		Service.detach(self)
+		SYNCConsumer.detach(self)
 	
 	def on_message1(self, message):
 		""" Message handler for incoming SRDO messages with normal data. """
