@@ -7,6 +7,8 @@ class SRDOProducer(Service):
 	"""
 	def __init__(self):
 		Service.__init__(self)
+		self._normal_data = None
+		self._complement_data = None
 	
 	def attach(self, node, cob_id_1 = None, cob_id_2 = None):
 		""" Attaches the ``SRDOProducer`` to a ``Node``. It does NOT add or assign this ``SRDOProducer`` to the ``Node``.
@@ -31,3 +33,19 @@ class SRDOProducer(Service):
 			raise ValueError()
 		
 		Service.attach(self, node)
+	
+	@property
+	def normal_data(self):
+		return self._normal_data
+	
+	@normal_data.setter
+	def normal_data(self, data):
+		self._normal_data = data
+	
+	@property
+	def complement_data(self):
+		return self._complement_data
+	
+	@complement_data.setter
+	def complement_data(self, data):
+		self._complement_data = data

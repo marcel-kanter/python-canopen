@@ -7,6 +7,8 @@ class SRDOConsumer(Service):
 	"""
 	def __init__(self):
 		Service.__init__(self)
+		self._normal_data = None
+		self._complement_data = None
 	
 	def attach(self, node, cob_id_1 = None, cob_id_2 = None):
 		""" Attaches the ``SRDOConsumer`` to a ``Node``. It does NOT add or assign this ``SRDOConsumer`` to the ``Node``.
@@ -71,3 +73,19 @@ class SRDOConsumer(Service):
 			return
 		if message.is_extended_id != bool(self._cob_id_2 & (1 << 29)):
 			return
+	
+	@property
+	def normal_data(self):
+		return self._normal_data
+	
+	@normal_data.setter
+	def normal_data(self, data):
+		self._normal_data = data
+	
+	@property
+	def complement_data(self):
+		return self._complement_data
+	
+	@complement_data.setter
+	def complement_data(self, data):
+		self._complement_data = data

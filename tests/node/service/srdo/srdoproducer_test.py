@@ -5,7 +5,15 @@ import canopen.node.service.srdo
 
 class SRDOProducerTestCase(unittest.TestCase):
 	def test_init(self):
-		canopen.node.service.srdo.SRDOProducer()
+		examinee = canopen.node.service.srdo.SRDOProducer()
+		
+		test_data = [b"\x22", None, b"\x11\x00"]
+		for value in test_data:
+			with self.subTest("value = " + str(value)):
+				examinee.normal_data = value
+				self.assertEqual(examinee.normal_data, value)
+				examinee.complement_data = value
+				self.assertEqual(examinee.complement_data, value)
 	
 	def test_attach_detach(self):
 		dictionary = canopen.ObjectDictionary()
