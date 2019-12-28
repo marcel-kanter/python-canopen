@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import Mock
 import time
 import can
 import canopen.node.service.srdo
@@ -120,6 +121,51 @@ class SRDOConsumerTestCase(unittest.TestCase):
 		time.sleep(0.01)
 		
 		self.assertEqual(examinee.complement_data, b"\xCC")
+		
+		examinee.detach()
+		node.detach()
+		network.detach()
+		bus1.shutdown()
+		bus2.shutdown()
+	
+	def test_sync(self):
+		bus1 = can.Bus(interface = "virtual", channel = 0)
+		bus2 = can.Bus(interface = "virtual", channel = 0)
+		network = canopen.Network()
+		dictionary = canopen.ObjectDictionary()
+		node = canopen.Node("a", 1, dictionary)
+		examinee = canopen.node.service.srdo.SRDOConsumer()
+		
+		cb1 = Mock()
+		examinee.add_callback("sync", cb1)
+		
+		network.attach(bus1)
+		node.attach(network)
+		examinee.attach(node)
+		
+		#### Test step: Sync message
+		test_data = [None, b"", b"\x01"]
+		for data in test_data:
+			with self.subTest("sync message", data = data):
+				cb1.reset_mock()
+				message = can.Message(arbitration_id = 0x80, is_extended_id = False, data = data)
+				bus2.send(message)
+				time.sleep(0.001)
+				cb1.assert_called()
+		
+		#### Test step: sync message, ignore remote frame
+		cb1.reset_mock()
+		message = can.Message(arbitration_id = 0x80, is_extended_id = True, data = b"\x01")
+		bus2.send(message)
+		time.sleep(0.001)
+		cb1.assert_not_called()
+		
+		#### Test step: sync message, ignore remote frame
+		cb1.reset_mock()
+		message = can.Message(arbitration_id = 0x80, is_extended_id = False, is_remote_frame = True, dlc = 1)
+		bus2.send(message)
+		time.sleep(0.001)
+		cb1.assert_not_called()
 		
 		examinee.detach()
 		node.detach()
