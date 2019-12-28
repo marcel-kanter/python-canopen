@@ -144,14 +144,14 @@ class SRDOConsumerTestCase(unittest.TestCase):
 		examinee.attach(node)
 		
 		#### Test step: Sync message
-		test_data = [None, b"", b"\x01"]
-		for data in test_data:
+		test_data = [(None, None), (b"", None), (b"\x01", 1)]
+		for data, counter in test_data:
 			with self.subTest("sync message", data = data):
 				cb1.reset_mock()
 				message = can.Message(arbitration_id = 0x80, is_extended_id = False, data = data)
 				bus2.send(message)
 				time.sleep(0.001)
-				cb1.assert_called()
+				cb1.assert_called_with("sync", examinee, counter)
 		
 		#### Test step: sync message, ignore remote frame
 		cb1.reset_mock()
