@@ -1,3 +1,4 @@
+import can
 import canopen.node
 from canopen.node.service import Service
 
@@ -33,6 +34,25 @@ class SRDOProducer(Service):
 			raise ValueError()
 		
 		Service.attach(self, node)
+		self._cob_id_1 = cob_id_1
+		self._cob_id_2 = cob_id_2
+	
+	def send(self):
+		if self._normal_data == None or self._complement_data == None:
+			raise RuntimeError()
+		
+		if self._cob_id_1 & (1 << 29):
+			message = can.Message(arbitration_id = self._cob_id_1 & 0x1FFFFFFF, is_extended_id = True, data = self._normal_data)
+		else:
+			message = can.Message(arbitration_id = self._cob_id_1 & 0x7FF, is_extended_id = False, data = self._normal_data)
+		self._node.network.send(message)
+		
+		if self._cob_id_2 & (1 << 29):
+			message = can.Message(arbitration_id = self._cob_id_2 & 0x1FFFFFFF, is_extended_id = True, data = self._complement_data)
+		else:
+			message = can.Message(arbitration_id = self._cob_id_2 & 0x7FF, is_extended_id = False, data = self._complement_data)
+		self._node.network.send(message)
+	
 	
 	@property
 	def normal_data(self):
