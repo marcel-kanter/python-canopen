@@ -27,15 +27,9 @@ class Record(collections.abc.Collection):
 	
 	def __eq__(self, other):
 		""" Indicates whether some other object is "equal to" this one. """
-		if self is other:
-			return True
-		if self.__class__ != other.__class__:
+		if type(self) != type(other):
 			return False
-		if self._object_type != other.object_type or self._name != other.name or self._index != other.index or self._description != other.description or self._data_type != other.data_type:
-			return False
-		if self._items_subindex != other._items_subindex:
-			return False
-		return True
+		return self is other or (self._object_type == other._object_type and self._name == other._name and self._index == other._index and self._description == other._description and self._data_type == other._data_type and self._items_subindex == other._items_subindex)
 	
 	def __contains__(self, key):
 		""" Returns True if the record contains a variable with the specified subindex or name. """

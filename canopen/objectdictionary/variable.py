@@ -44,14 +44,10 @@ class Variable(object):
 	
 	def __eq__(self, other):
 		""" Indicates whether some other object is "equal to" this one. """
-		if self is other:
-			return True
-		if self.__class__ != other.__class__:
+		if type(self) != type(other):
 			return False
-		if self._object_type != other.object_type or self._name != other.name or self._index != other.index or self._description != other.description or self._subindex != other.subindex or self._data_type != other.data_type or self._access_type != other.access_type or self._default_value != other.default_value:
-			return False
-		return True
-	
+		return self is other or (self._object_type == other._object_type and self._name == other._name and self._index == other._index and self._description == other._description and self._subindex == other._subindex and self._data_type == other._data_type and self._access_type == other._access_type and self._default_value == other.default_value)
+		
 	def decode(self, data):
 		""" Returns the value for the given byte-like CANopen representation, depending on the type of the CANopen variable. """
 		value = None

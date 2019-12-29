@@ -1,6 +1,6 @@
 import collections
 import can
-import canopen.node
+import canopen
 
 
 class Network(collections.abc.Collection):
