@@ -1,9 +1,41 @@
 import unittest
 from unittest.mock import Mock
+import threading
+import sys
 import time
 import struct
 import can
 import canopen.node.service.sync
+
+
+class Vehicle_Wait(threading.Thread):
+	def __init__(self, testcase, bus):
+		threading.Thread.__init__(self, daemon = True)
+		self._testcase = testcase
+		self._bus = bus
+		self._barrier = threading.Barrier(2)
+	
+	def sync(self, timeout = None):
+		self._barrier.wait(timeout)
+	
+	def run(self):
+		try:
+			self._barrier.wait(1)
+			time.sleep(0.1)
+			message = can.Message(arbitration_id = 0x80, is_extended_id = False, data = b"\x01")
+			self._bus.send(message)
+			
+			self._barrier.wait(1)
+			time.sleep(0.1)
+			message = can.Message(arbitration_id = 0x80, is_extended_id = False, data = b"\x01")
+			self._bus.send(message)
+			
+			self._barrier.wait(1)
+
+		except AssertionError:
+			self._testcase.result.addFailure(self._testcase, sys.exc_info())
+		except:
+			self._testcase.result.addError(self._testcase, sys.exc_info())
 
 
 class SYNCConsumerTestCase(unittest.TestCase):
@@ -97,5 +129,39 @@ class SYNCConsumerTestCase(unittest.TestCase):
 		examinee.detach()
 		node.detach()
 		network.detach()
+		bus1.shutdown()
+		bus2.shutdown()
+		
+	def test_wait_for_sync(self):
+		bus1 = can.Bus(interface = "virtual", channel = 0)
+		bus2 = can.Bus(interface = "virtual", channel = 0)
+		
+		vehicle = Vehicle_Wait(self, bus1)
+		vehicle.start()
+		
+		network = canopen.Network()
+		dictionary = canopen.ObjectDictionary()
+		node = canopen.Node("a", 1, dictionary)
+		examinee = canopen.node.service.SYNCConsumer()
+		
+		network.attach(bus2)
+		node.attach(network)
+		examinee.attach(node)
+		
+		vehicle.sync(1)
+		self.assertTrue(examinee.wait_for_sync(1))
+		
+		vehicle.sync(1)
+		self.assertTrue(examinee.wait_for_sync())
+		
+		vehicle.sync(1)
+		self.assertFalse(examinee.wait_for_sync(0.1))
+		
+		examinee.detach()
+		node.detach()
+		network.detach()
+		
+		vehicle.join(1)
+		
 		bus1.shutdown()
 		bus2.shutdown()
