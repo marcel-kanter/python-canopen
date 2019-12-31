@@ -4,8 +4,14 @@ from setuptools import setup, find_packages
 with open("canopen/__init__.py", "r") as fd:
 	version = re.search(r"^__version__\s*=\s*[\'\"]([^\'\"]*)[\'\"]", fd.read(), re.MULTILINE).group(1)
 
+with open("readme.rst", "r") as f:
+	long_description = f.read()
+
 setup(
 	name = "python-canopen",
+	url = "https://github.com/marcel-kanter/python-canopen",
+	description = "CANopen package for python",
+	long_description = long_description,
 	version = version,
 	packages = find_packages(".", include=["canopen*"]),
 	
@@ -13,7 +19,6 @@ setup(
 	setup_requires = ["pytest-runner"],
 	tests_require = ["pytest", "pytest-timeout", "pytest-cov", "pytest-subtests"],
 	
-	url = "https://github.com/marcel-kanter/python-canopen",
 	
 	classifiers = [
 		"Development Status :: 4 - Beta",
