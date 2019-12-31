@@ -24,7 +24,7 @@ Protocol support
 
 +------------------+----------------+------------------------------------+
 | CANopen Protocol | State          | Comments                           |
-+------------------+----------------+------------------------------------+
++==================+================+====================================+
 | EMCY Consumer    | Testing        |                                    |
 +------------------+----------------+------------------------------------+
 | EMCY Producer    | Testing        |                                    |
@@ -57,3 +57,19 @@ Protocol support
 +------------------+----------------+------------------------------------+
 | TIME Producer    | Testing        |                                    |
 +------------------+----------------+------------------------------------+
+
+Installation
+------------
+
+Install from latest develop branch:
+
+.. code:: console
+
+	pip install https://github.com/marcel-kanter/python-canopen/archive/develop.zip
+
+Check-out with git:
+
+.. code:: console
+
+	git clone https://github.com/marcel-kanter/python-canopen.git
+	pip install -e python-canopen
