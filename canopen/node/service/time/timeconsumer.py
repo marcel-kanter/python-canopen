@@ -1,3 +1,4 @@
+import threading
 import canopen.objectdictionary
 from canopen.node.service import Service
 from canopen.objectdictionary import Variable
@@ -17,6 +18,7 @@ class TIMEConsumer(Service):
 	def __init__(self):
 		Service.__init__(self)
 		self._callbacks = {"time": []}
+		self._time_condition = threading.Condition()
 	
 	def attach(self, node, cob_id_time = None):
 		""" Attaches the ``TIMEConsumer`` to a ``Node``. It does NOT add or assign this ``TIMEConsumer`` to the ``Node``.
@@ -57,3 +59,18 @@ class TIMEConsumer(Service):
 		
 		timestamp = self._helper_variable.decode(message.data)
 		self.notify("time", self, timestamp)
+		with self._time_condition:
+			self._time_condition.notify_all()
+	
+	def wait_for_time(self, timeout = None):
+		""" Wait until the reception of TIME message or until a timeout occurs.
+		
+		When the timeout argument is present and not None, it should be a floating point number specifying a timeout for the operation in seconds (or fractions thereof).
+		
+		:param timeout: The time to wait in seconds, or ``None``
+		
+		:returns: True if the sync message was received, False if the timeout occured
+		"""
+		with self._time_condition:
+			gotit = self._time_condition.wait(timeout)
+		return gotit
