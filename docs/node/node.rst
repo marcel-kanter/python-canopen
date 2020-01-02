@@ -6,6 +6,8 @@ The structure of the objects is defined with an object dictionary. Since the obj
 
 The functions for data access are not implemented.
 
+The identifier of the node can have a value of 1 to 127 or 255. If the node is not attached to a network, the identifier can be changed. The node cannot be attached if the identifier is 255.
+
 Attach/detach
 -------------
 

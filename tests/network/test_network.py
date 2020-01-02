@@ -104,6 +104,14 @@ class NetworkTestCase(unittest.TestCase):
 		network.add(n2)
 		self.assertEqual(len(network), 2)
 		
+		nu = canopen.Node("nu", 255, dictionary)
+		with self.assertRaises(RuntimeError):
+			network.add(nu)
+		self.assertEqual(len(network), 2)
+		
+		nu.id = 30
+		network.add(nu)
+		
 		# contains
 		self.assertFalse("xxx" in network)
 		self.assertFalse(99 in network)
@@ -111,6 +119,8 @@ class NetworkTestCase(unittest.TestCase):
 		self.assertTrue(n1.id in network)
 		self.assertTrue(n2.name in network)
 		self.assertTrue(n2.id in network)
+		self.assertTrue(nu.name in network)
+		self.assertTrue(nu.id in network)
 		
 		# getitem
 		item = network["n1"]

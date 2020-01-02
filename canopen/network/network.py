@@ -58,10 +58,12 @@ class Network(collections.abc.Collection):
 			raise TypeError()
 		if node.id in self._items_id or node.name in self._items_name:
 			raise ValueError()
+		if node.id == 255:
+			raise RuntimeError()
 		
+		node.attach(self)
 		self._items_id[node.id] = node
 		self._items_name[node.name] = node
-		node.attach(self)
 	
 	def attach(self, bus, builtin_notifier = True):
 		""" Attach the network to a CAN bus.

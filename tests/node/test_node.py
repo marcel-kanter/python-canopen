@@ -14,23 +14,25 @@ class NodeTestCase(unittest.TestCase):
 		with self.assertRaises(TypeError):
 			canopen.Node("n", 1, None)
 		
-		name = "n"
-		node_id = 1
-		node = canopen.Node(name, node_id, dictionary)
-		
-		self.assertEqual(node.dictionary, dictionary)
-		self.assertEqual(node.id, node_id)
-		self.assertEqual(node.name, name)
-		self.assertEqual(node.network, None)
-		
-		with self.assertRaises(AttributeError):
-			node.dictionary = dictionary
-		with self.assertRaises(AttributeError):
-			node.id = node_id
-		with self.assertRaises(AttributeError):
-			node.name = name
-		with self.assertRaises(AttributeError):
-			node.network = None
+		test_data = [("xyz", 1), ("abc", 255)]
+		for name, node_id in test_data:
+			node = canopen.Node(name, node_id, dictionary)
+			
+			self.assertEqual(node.dictionary, dictionary)
+			self.assertEqual(node.id, node_id)
+			self.assertEqual(node.name, name)
+			self.assertEqual(node.network, None)
+			
+			with self.assertRaises(AttributeError):
+				node.dictionary = dictionary
+			with self.assertRaises(ValueError):
+				node.id = -1
+			with self.assertRaises(ValueError):
+				node.id = 128
+			with self.assertRaises(AttributeError):
+				node.name = name
+			with self.assertRaises(AttributeError):
+				node.network = None
 	
 	def test_equals(self):
 		dictionary = canopen.ObjectDictionary()
@@ -69,9 +71,24 @@ class NodeTestCase(unittest.TestCase):
 			
 		self.assertFalse(node.is_attached())
 		
+		# Attaching a node with an unassigned node id is impossible
+		node.id = 255
+		self.assertEqual(node.id, 255)
+		
+		with self.assertRaises(RuntimeError):
+			node.attach(network1)
+		
+		# Change the node id to 10 and attach
+		node.id = 10
+		self.assertEqual(node.id, 10)
+		
 		node.attach(network1)
 		self.assertTrue(node.is_attached())
 		self.assertEqual(node.network, network1)
+		
+		# Changing the node id when the node is attached
+		with self.assertRaises(RuntimeError):
+			node.id = 1
 		
 		with self.assertRaises(ValueError):
 			node.attach(network1)
@@ -82,6 +99,12 @@ class NodeTestCase(unittest.TestCase):
 		
 		node.detach()
 		self.assertFalse(node.is_attached())
+		
+		node.id = 255
+		self.assertEqual(node.id, 255)
+		
+		node.id = 127
+		self.assertEqual(node.id, 127)
 	
 	def test_collection(self):
 		dictionary = canopen.ObjectDictionary()

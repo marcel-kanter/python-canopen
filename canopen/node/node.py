@@ -14,7 +14,14 @@ class Node(collections.abc.Collection):
 	This class is a basic representation of a CANopen node. It is an auto-associative mapping and may contain zero or more variables, records or arrays.
 	"""
 	def __init__(self, name, node_id, dictionary):
-		if node_id < 1 or node_id > 127:
+		"""
+		:param name: Name of the node
+		
+		:param node_id: Identifier of the node. Must be 1 ... 127 or 255
+		
+		:param dictionary: Object dictionary to use with this node
+		"""
+		if node_id < 1 or (node_id > 127 and node_id != 255):
 			raise ValueError()
 		if not isinstance(dictionary, canopen.ObjectDictionary):
 			raise TypeError()
@@ -66,6 +73,9 @@ class Node(collections.abc.Collection):
 			raise TypeError()
 		if self._network == network:
 			raise ValueError()
+		if self._id == 255:
+			raise RuntimeError()
+		
 		if self.is_attached():
 			self.detach()
 		
@@ -95,6 +105,14 @@ class Node(collections.abc.Collection):
 	@property
 	def id(self):
 		return self._id
+	
+	@id.setter
+	def id(self, node_id):
+		if self.is_attached():
+			raise RuntimeError()
+		if node_id < 1 or (node_id > 127 and node_id != 255):
+			raise ValueError()
+		self._id = node_id
 	
 	@property
 	def name(self):

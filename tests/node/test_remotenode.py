@@ -17,7 +17,7 @@ class Vehicle(threading.Thread):
 	
 	def stop(self):
 		self._terminate.set()
-		
+	
 	def run(self):
 		try:
 			network = canopen.Network()
@@ -72,8 +72,6 @@ class RemoteNodeTestCase(unittest.TestCase):
 		
 		with self.assertRaises(AttributeError):
 			node.dictionary = dictionary
-		with self.assertRaises(AttributeError):
-			node.id = id
 		with self.assertRaises(AttributeError):
 			node.name = name
 		with self.assertRaises(AttributeError):

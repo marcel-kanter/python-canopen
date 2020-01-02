@@ -26,12 +26,10 @@ class LocalNodeTestCase(unittest.TestCase):
 		with self.assertRaises(AttributeError):
 			node.dictionary = dictionary
 		with self.assertRaises(AttributeError):
-			node.id = node_id
-		with self.assertRaises(AttributeError):
 			node.name = name
 		with self.assertRaises(AttributeError):
 			node.network = None
-
+	
 	def test_attach_detach(self):
 		network1 = canopen.Network()
 		network2 = canopen.Network()
@@ -56,7 +54,7 @@ class LocalNodeTestCase(unittest.TestCase):
 		self.assertEqual(node.network, network2)
 		
 		node.detach()
-
+	
 	def test_data_access(self):
 		dictionary = canopen.ObjectDictionary()
 		dictionary.add(canopen.objectdictionary.Record("rec", 0x1234, 0x00))
