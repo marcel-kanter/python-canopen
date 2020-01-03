@@ -46,7 +46,7 @@ class NMTSlaveTestCase(unittest.TestCase):
 		m_pre_operational = Mock()
 		m_reset_application = Mock()
 		m_reset_communication = Mock()
-		m_raises = Mock()
+		m_raises = Mock(side_effect = self.__callback_raises)
 		
 		#### Test step: add callback
 		examinee.add_callback("start", m_start)
