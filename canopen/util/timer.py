@@ -43,7 +43,7 @@ class Timer(threading.Thread):
 			raise ValueError()
 		if not self._trigger.acquire(False):
 			return False
-		self._execute_time = time.time() + interval
+		self._execute_time = time.perf_counter() + interval
 		self._interval = interval
 		if periodic:
 			self._periodic.set()
@@ -69,7 +69,7 @@ class Timer(threading.Thread):
 			while not self._terminate.is_set():
 				if not self._periodic.is_set():
 					self._trigger.wait()
-				self._condition.wait(self._execute_time - time.time())
+				self._condition.wait(self._execute_time - time.perf_counter())
 				if not self._condition.is_set():
 					self._function(*self._args, **self._kwargs)
 				self._execute_time += self._interval
