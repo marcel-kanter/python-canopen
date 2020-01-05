@@ -36,3 +36,8 @@ class ObjectMapping(object):
 		entry = variable
 		
 		self._items.append((entry, length))
+	
+	def clear(self):
+		""" Removes all mapped variables.
+		"""
+		self._items.clear()

@@ -8,7 +8,7 @@ class ObjectMappingTest(unittest.TestCase):
 		examinee = ObjectMapping()
 		self.assertEqual(len(examinee), 0)
 	
-	def test_append(self):
+	def test_list(self):
 		d = canopen.ObjectDictionary()
 		d.add(canopen.objectdictionary.Variable("var", 0x2000, 0x00, canopen.objectdictionary.INTEGER32))
 		
@@ -31,6 +31,15 @@ class ObjectMappingTest(unittest.TestCase):
 		examinee.append(d["var"], 10)
 		self.assertEqual(len(examinee), 3)
 		self.assertEqual(examinee[2], (d["var"], 10))
+		
+		examinee.clear()
+		self.assertEqual(len(examinee), 0)
+		with self.assertRaises(IndexError):
+			examinee[0]
+		with self.assertRaises(IndexError):
+			examinee[1]
+		with self.assertRaises(IndexError):
+			examinee[2]
 
 
 if __name__ == "__main__":
