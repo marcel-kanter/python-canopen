@@ -1,2 +1,2 @@
-from .emcyconsumer import EMCYConsumer
-from .emcyproducer import EMCYProducer
+from canopen.node.service.emcy.emcyconsumer import EMCYConsumer
+from canopen.node.service.emcy.emcyproducer import EMCYProducer

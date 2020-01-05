@@ -504,7 +504,7 @@ class SDOClientTestCase(unittest.TestCase):
 		self.assertEqual(message_recv.is_extended_id, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, 0x0000, 0x00, 0x05040001))
 		
-		# Network indication response -> Not implemented and thus  abort
+		# Network indication response -> Not implemented and thus abort
 		message = can.Message(arbitration_id = 0x581, is_extended_id = False, data = b"\xE0\x00\x00\x00\x00\x00\x00\x00")
 		bus2.send(message)
 		

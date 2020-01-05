@@ -1,3 +1,3 @@
-from .node import Node
-from .localnode import LocalNode
-from .remotenode import RemoteNode
+from canopen.node.node import Node
+from canopen.node.localnode import LocalNode
+from canopen.node.remotenode import RemoteNode

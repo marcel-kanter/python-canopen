@@ -1,1 +1,1 @@
-from .errorcodes import *
+from canopen.emcy.errorcodes import *

@@ -1,1 +1,1 @@
-from .states import *
+from canopen.nmt.states import *

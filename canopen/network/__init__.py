@@ -1,1 +1,1 @@
-from .network import Network, MessageListener
+from canopen.network.network import Network, MessageListener

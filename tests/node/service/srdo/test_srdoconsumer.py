@@ -77,7 +77,7 @@ class SRDOConsumerTestCase(unittest.TestCase):
 		
 		self.assertEqual(examinee.normal_data, b"\x00")
 		
-		message = can.Message(arbitration_id =  0x100 + 2 * node.id, is_extended_id = False, is_remote_frame = False, data = b"\xFF")
+		message = can.Message(arbitration_id = 0x100 + 2 * node.id, is_extended_id = False, is_remote_frame = False, data = b"\xFF")
 		bus2.send(message)
 		time.sleep(0.01)
 		
@@ -90,7 +90,7 @@ class SRDOConsumerTestCase(unittest.TestCase):
 		
 		self.assertEqual(examinee.normal_data, b"\x00")
 		
-		message = can.Message(arbitration_id =  0x100 + 2 * node.id, is_extended_id = False, is_remote_frame = True, dlc = 1)
+		message = can.Message(arbitration_id = 0x100 + 2 * node.id, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
 		time.sleep(0.01)
 		
@@ -103,7 +103,7 @@ class SRDOConsumerTestCase(unittest.TestCase):
 		
 		self.assertEqual(examinee.normal_data, b"\x00")
 		
-		message = can.Message(arbitration_id =  0x100 + 2 * node.id, is_extended_id = True, is_remote_frame = False, data = b"\xFF")
+		message = can.Message(arbitration_id = 0x100 + 2 * node.id, is_extended_id = True, is_remote_frame = False, data = b"\xFF")
 		bus2.send(message)
 		time.sleep(0.01)
 		
@@ -116,7 +116,7 @@ class SRDOConsumerTestCase(unittest.TestCase):
 		
 		self.assertEqual(examinee.normal_data, b"\xAA")
 		
-		message = can.Message(arbitration_id =  0x100 + 2 * node.id, is_extended_id = False, is_remote_frame = False, data = b"\xCC")
+		message = can.Message(arbitration_id = 0x100 + 2 * node.id, is_extended_id = False, is_remote_frame = False, data = b"\xCC")
 		bus2.send(message)
 		time.sleep(0.01)
 		

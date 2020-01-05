@@ -1,1 +1,1 @@
-from .abortcodes import *
+from canopen.sdo.abortcodes import *

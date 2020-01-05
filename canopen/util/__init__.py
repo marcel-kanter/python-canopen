@@ -1,1 +1,1 @@
-from .timer import Timer
+from canopen.util.timer import Timer

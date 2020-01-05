@@ -1,8 +1,8 @@
-from .service import Service
+from canopen.node.service.service import Service
 
-from .emcy import EMCYConsumer, EMCYProducer
-from .nmt import NMTMaster, NMTSlave
-from .pdo import PDOConsumer, PDOProducer
-from .sdo import SDOClient, SDOServer
-from .sync import SYNCConsumer, SYNCProducer
-from .time import TIMEConsumer, TIMEProducer
+from canopen.node.service.emcy import EMCYConsumer, EMCYProducer
+from canopen.node.service.nmt import NMTMaster, NMTSlave
+from canopen.node.service.pdo import PDOConsumer, PDOProducer
+from canopen.node.service.sdo import SDOClient, SDOServer
+from canopen.node.service.sync import SYNCConsumer, SYNCProducer
+from canopen.node.service.time import TIMEConsumer, TIMEProducer

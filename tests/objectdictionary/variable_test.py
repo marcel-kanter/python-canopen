@@ -289,7 +289,7 @@ class VariableTestCase(unittest.TestCase):
 		
 		with self.subTest("decode"):
 			test_data = [(b"\x00\x00", 0),
-				(b"\x55\xAA",  43605),
+				(b"\x55\xAA", 43605),
 				(b"\xAA\x55", 21930),
 				(b"\x55\xAA\xFF", 43605),
 				(b"\xAA\x55\x55", 21930)]

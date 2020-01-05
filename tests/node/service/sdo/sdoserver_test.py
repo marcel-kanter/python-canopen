@@ -606,7 +606,7 @@ class SDOServerTestCase(unittest.TestCase):
 		# Initiate: index: +, subindex: +, rw: +, e = 1 & s = 1 & n = 2 -> Confirm on variable with 2 bytes length or less
 		index = 0x1234
 		subindex = 0x03
-		d = struct.pack("<BHBL", 0x2B, index, subindex,  0x12345678)
+		d = struct.pack("<BHBL", 0x2B, index, subindex, 0x12345678)
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
 		bus2.send(message)
 		

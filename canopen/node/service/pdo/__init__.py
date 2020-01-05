@@ -1,2 +1,2 @@
-from .pdoconsumer import PDOConsumer
-from .pdoproducer import PDOProducer
+from canopen.node.service.pdo.pdoconsumer import PDOConsumer
+from canopen.node.service.pdo.pdoproducer import PDOProducer

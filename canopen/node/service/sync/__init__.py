@@ -1,2 +1,2 @@
-from .syncconsumer import SYNCConsumer
-from .syncproducer import SYNCProducer
+from canopen.node.service.sync.syncconsumer import SYNCConsumer
+from canopen.node.service.sync.syncproducer import SYNCProducer
