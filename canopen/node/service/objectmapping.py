@@ -1,3 +1,6 @@
+from canopen.node.service.mappedvariable import MappedVariable
+
+
 class ObjectMapping(object):
 	def __init__(self):
 		self._items = []
@@ -8,7 +11,7 @@ class ObjectMapping(object):
 		
 		:param slot: The slot from with the variable should be returned. Must be a non-negativer integer lower than the number of mapped variables.
 		
-		:returns: A tuple in the form of (entry, length) with entry beeing a Variable or a tuple in the form of (index, subindex)
+		:returns: A tuple in the form of (entry, length) with entry beeing a MappedVariable
 		
 		:raises: IndexError
 		"""
@@ -33,7 +36,7 @@ class ObjectMapping(object):
 		if int(length) < 0:
 			raise ValueError()
 		
-		entry = variable
+		entry = MappedVariable(self, len(self._items), variable)
 		
 		self._items.append((entry, length))
 	

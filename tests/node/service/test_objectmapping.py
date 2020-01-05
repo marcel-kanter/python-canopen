@@ -20,17 +20,26 @@ class ObjectMappingTest(unittest.TestCase):
 		with self.assertRaises(IndexError):
 			examinee[0]
 		
-		examinee.append((0x1000, 0x00), 0)
+		examinee.append((0x1000, 0x00), 20)
 		self.assertEqual(len(examinee), 1)
-		self.assertEqual(examinee[0], ((0x1000, 0x00), 0))
+		variable, length = examinee[0]
+		self.assertEqual(variable.index, 0x1000)
+		self.assertEqual(variable.subindex, 0x00)
+		self.assertEqual(length, 20)
 		
 		examinee.append((0x1000, 0x00), 1)
 		self.assertEqual(len(examinee), 2)
-		self.assertEqual(examinee[1], ((0x1000, 0x00), 1))
+		variable, length = examinee[1]
+		self.assertEqual(variable.index, 0x1000)
+		self.assertEqual(variable.subindex, 0x00)
+		self.assertEqual(length, 1)
 		
 		examinee.append(d["var"], 10)
 		self.assertEqual(len(examinee), 3)
-		self.assertEqual(examinee[2], (d["var"], 10))
+		variable, length = examinee[2]
+		self.assertEqual(variable.index, d["var"].index)
+		self.assertEqual(variable.subindex, d["var"].subindex)
+		self.assertEqual(length, 10)
 		
 		examinee.clear()
 		self.assertEqual(len(examinee), 0)
