@@ -1,4 +1,4 @@
-import canopen.node
+from canopen.node import Node
 
 
 class Service(object):
@@ -12,7 +12,7 @@ class Service(object):
 	
 	def attach(self, node):
 		""" Attaches the ``Service`` to a ``Node``. It does NOT add or assign this ``Service`` to the ``Node``. """
-		if not isinstance(node, canopen.node.Node):
+		if not isinstance(node, Node):
 			raise TypeError()
 		if self._node == node:
 			raise ValueError()
