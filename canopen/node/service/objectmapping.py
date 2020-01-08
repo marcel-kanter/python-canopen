@@ -1,8 +1,18 @@
+from canopen.node.service.service import Service
 from canopen.node.service.mappedvariable import MappedVariable
 
 
 class ObjectMapping(object):
-	def __init__(self):
+	def __init__(self, service):
+		"""
+		:param service: The service to which this mapping belongs to. Must be of type canpen.node.service.Service
+		
+		:raises: TypeError
+		"""
+		if not isinstance(service, Service):
+			raise TypeError()
+		
+		self._service = service
 		self._items = []
 	
 	def __getitem__(self, slot):
