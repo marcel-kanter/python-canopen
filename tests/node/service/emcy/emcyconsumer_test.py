@@ -3,109 +3,88 @@ from unittest.mock import Mock
 import time
 import struct
 import can
-import canopen.node.service
+
+from canopen import Node, Network
+from canopen.objectdictionary import ObjectDictionary
+from canopen.node.service.emcy import EMCYConsumer
 
 
 class EMCYConsumerTestCase(unittest.TestCase):
 	def test_init(self):
-		canopen.node.service.EMCYConsumer()
+		dictionary = ObjectDictionary()
+		node = Node("n", 1, dictionary)
+		examinee = EMCYConsumer(node)
+		
+		self.assertEqual(examinee.node, node)
 	
 	def test_attach_detach(self):
-		dictionary = canopen.ObjectDictionary()
-		network = canopen.Network()
-		node1 = canopen.Node("a", 1, dictionary)
-		node2 = canopen.Node("b", 2, dictionary)
-		examinee = canopen.node.service.EMCYConsumer()
+		dictionary = ObjectDictionary()
+		node = Node("n", 1, dictionary)
+		examinee = EMCYConsumer(node)
+		network = Network()
 		
-		node1.attach(network)
-		node2.attach(network)
-		
-		self.assertEqual(examinee.node, None)
+		node.attach(network)
 		
 		with self.assertRaises(RuntimeError):
 			examinee.detach()
-		
-		with self.assertRaises(TypeError):
-			examinee.attach(None)
 		
 		test_data = [-1, 0x100000000]
 		for value in test_data:
 			with self.subTest(value = value):
 				with self.assertRaises(ValueError):
-					examinee.attach(node1, value)
+					examinee.attach(value)
 		
-		examinee.attach(node1)
-		self.assertEqual(examinee.node, node1)
+		examinee.attach()
+		self.assertTrue(examinee.is_attached())
 		
-		with self.assertRaises(ValueError):
-			examinee.attach(node1)
-		
-		examinee.attach(node2, (1 << 29) | (0x80 + node2.id))
-		self.assertEqual(examinee.node, node2)
+		examinee.attach((1 << 29) | (0x80 + node.id))
+		self.assertTrue(examinee.is_attached())
 		
 		examinee.detach()
-		self.assertEqual(examinee.node, None)
+		self.assertFalse(examinee.is_attached())
 		
-		node1.detach()
-		node2.detach()
+		node.detach()
 	
 	def test_callback(self):
-		consumer = canopen.node.service.EMCYConsumer()
+		dictionary = ObjectDictionary()
+		node = Node("n", 1, dictionary)
+		examinee = EMCYConsumer(node)
 		
 		cb1 = Mock()
 		cb2 = Mock()
 		
-		#### Test step: Callback is not callable
-		with self.assertRaises(TypeError):
-			consumer.add_callback("emcy", None)
-		
-		#### Test step: Event not known
-		with self.assertRaises(ValueError):
-			consumer.add_callback("xxx", cb1)
-		
 		#### Test step: Add callbacks, one which raises an exception
-		consumer.add_callback("emcy", cb1)
-		consumer.add_callback("emcy", self.__callback_raise)
-		consumer.add_callback("emcy", self.__callback_emcy)
-		consumer.add_callback("emcy", cb2)
-		
-		#### Test step: Try to notify an unknown event
-		with self.assertRaises(ValueError):
-			consumer.notify("xxx", consumer, 0x1000, 0x00, b"\x00\x00\x00\x00\x00")
+		examinee.add_callback("emcy", cb1)
+		examinee.add_callback("emcy", self.__callback_raise)
+		examinee.add_callback("emcy", self.__callback_emcy)
+		examinee.add_callback("emcy", cb2)
 		
 		#### Test step: Notify a known event
-		consumer.notify("emcy", consumer, 0x1000, 0x00, b"\x00\x00\x00\x00\x00")
+		examinee.notify("emcy", examinee, 0x1000, 0x00, b"\x00\x00\x00\x00\x00")
 		
-		cb1.assert_called_once_with("emcy", consumer, 0x1000, 0x00, b"\x00\x00\x00\x00\x00")
-		cb2.assert_called_once_with("emcy", consumer, 0x1000, 0x00, b"\x00\x00\x00\x00\x00")
+		cb1.assert_called_once_with("emcy", examinee, 0x1000, 0x00, b"\x00\x00\x00\x00\x00")
+		cb2.assert_called_once_with("emcy", examinee, 0x1000, 0x00, b"\x00\x00\x00\x00\x00")
 		
 		#### Test step: Remove callbacks
-		with self.assertRaises(TypeError):
-			consumer.remove_callback("emcy", None)
-		
-		with self.assertRaises(ValueError):
-			consumer.remove_callback("xxx", cb1)
-		
-		consumer.remove_callback("emcy", cb1)
-		consumer.remove_callback("emcy", cb2)
-		consumer.remove_callback("emcy", self.__callback_raise)
-		consumer.remove_callback("emcy", self.__callback_emcy)
+		examinee.remove_callback("emcy", cb1)
+		examinee.remove_callback("emcy", cb2)
+		examinee.remove_callback("emcy", self.__callback_raise)
+		examinee.remove_callback("emcy", self.__callback_emcy)
 	
 	def test_on_emcy(self):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		node = canopen.Node("a", 1, dictionary)
-		consumer = canopen.node.service.EMCYConsumer()
-		
-		cb1 = Mock()
+		dictionary = ObjectDictionary()
+		node = Node("a", 1, dictionary)
+		examinee = EMCYConsumer(node)
+		network = Network()
 		
 		network.attach(bus1)
 		node.attach(network)
-		consumer.attach(node)
+		examinee.attach()
 		
-		consumer.add_callback("emcy", cb1)
+		cb1 = Mock()
+		examinee.add_callback("emcy", cb1)
 		
 		#### Test step: EMCY write no error, or error reset
 		with self.subTest("EMCY write no error, or error reset"):
@@ -114,7 +93,7 @@ class EMCYConsumerTestCase(unittest.TestCase):
 			message = can.Message(arbitration_id = 0x80 + node.id, is_extended_id = False, data = d)
 			bus2.send(message)
 			time.sleep(0.001)
-			cb1.assert_called_once_with("emcy", consumer, 0x0000, 0x00, b"\x00\x00\x00\x00\x00")
+			cb1.assert_called_once_with("emcy", examinee, 0x0000, 0x00, b"\x00\x00\x00\x00\x00")
 		
 		#### Test step: EMCY write with differing extended frame bit
 		with self.subTest("EMCY write with differing extended frame bit"):
@@ -134,7 +113,7 @@ class EMCYConsumerTestCase(unittest.TestCase):
 			time.sleep(0.001)
 			cb1.assert_not_called()
 		
-		consumer.detach()
+		examinee.detach()
 		node.detach()
 		network.detach()
 		bus1.shutdown()

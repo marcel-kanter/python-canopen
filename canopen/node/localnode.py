@@ -21,11 +21,11 @@ class LocalNode(Node):
 		"""
 		Node.__init__(self, name, node_id, dictionary)
 		self._data = {}
-		self.nmt = NMTSlave()
-		self.emcy = EMCYProducer()
-		self.sdo = SDOServer()
-		self.rpdo = {1: PDOConsumer(), 2: PDOConsumer(), 3: PDOConsumer(), 4: PDOConsumer()}
-		self.tpdo = {1: PDOProducer(), 2: PDOProducer(), 3: PDOProducer(), 4: PDOProducer()}
+		self.nmt = NMTSlave(self)
+		self.emcy = EMCYProducer(self)
+		self.sdo = SDOServer(self)
+		self.rpdo = {1: PDOConsumer(self), 2: PDOConsumer(self), 3: PDOConsumer(self), 4: PDOConsumer(self)}
+		self.tpdo = {1: PDOProducer(self), 2: PDOProducer(self), 3: PDOProducer(self), 4: PDOProducer(self)}
 	
 	def attach(self, network):
 		""" Attach the node and then all services to the network. It does NOT add or assign the node to the network.
@@ -37,17 +37,17 @@ class LocalNode(Node):
 		:raises: RuntimeError, TypeError, ValueError
 		"""
 		Node.attach(self, network)
-		self.nmt.attach(self)
-		self.sdo.attach(self)
-		self.emcy.attach(self)
-		self.tpdo[1].attach(self, 0x180 + self._id)
-		self.tpdo[2].attach(self, 0x280 + self._id)
-		self.tpdo[3].attach(self, 0x380 + self._id)
-		self.tpdo[4].attach(self, 0x480 + self._id)
-		self.rpdo[1].attach(self, 0x200 + self._id)
-		self.rpdo[2].attach(self, 0x300 + self._id)
-		self.rpdo[3].attach(self, 0x400 + self._id)
-		self.rpdo[4].attach(self, 0x500 + self._id)
+		self.nmt.attach()
+		self.sdo.attach()
+		self.emcy.attach()
+		self.tpdo[1].attach(0x180 + self._id)
+		self.tpdo[2].attach(0x280 + self._id)
+		self.tpdo[3].attach(0x380 + self._id)
+		self.tpdo[4].attach(0x480 + self._id)
+		self.rpdo[1].attach(0x200 + self._id)
+		self.rpdo[2].attach(0x300 + self._id)
+		self.rpdo[3].attach(0x400 + self._id)
+		self.rpdo[4].attach(0x500 + self._id)
 	
 	def detach(self):
 		""" Detaches all services and then the node from the network. It does NOT remove or delete the node from the network.

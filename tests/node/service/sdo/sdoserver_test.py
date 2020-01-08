@@ -2,16 +2,18 @@ import unittest
 import time
 import struct
 import can
-import canopen.node.service
-import canopen.objectdictionary
 
-
+from canopen import Node, Network
+from canopen.objectdictionary import ObjectDictionary, Record, Variable, BOOLEAN, INTEGER8, INTEGER16, INTEGER32, UNSIGNED8, UNSIGNED16, UNSIGNED32, DOMAIN, INTEGER24, REAL64, INTEGER40
+from canopen.node.service.sdo import SDOServer
 from tests.node.inspectionnode import InspectionNode
 
 
 class SDOServerTestCase(unittest.TestCase):
 	def test_init(self):
-		examinee = canopen.node.service.SDOServer()
+		dictionary = ObjectDictionary()
+		node = Node("n", 1, dictionary)
+		examinee = SDOServer(node, timeout = 2)
 		
 		examinee.timeout = None
 		self.assertEqual(examinee.timeout, None)
@@ -23,60 +25,52 @@ class SDOServerTestCase(unittest.TestCase):
 			examinee.timeout = 0
 		
 		with self.assertRaises(ValueError):
-			examinee.timeout = -1 
+			examinee.timeout = -1  
 	
 	def test_attach_detach(self):
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		node1 = canopen.Node("a", 1, dictionary)
-		node2 = canopen.Node("b", 2, dictionary)
-		examinee = canopen.node.service.SDOServer()
+		dictionary = ObjectDictionary()
+		node = Node("n", 1, dictionary)
+		examinee = SDOServer(node)
+		network = Network()
 		
-		node1.attach(network)
-		node2.attach(network)
-		
-		self.assertEqual(examinee.node, None)
+		node.attach(network)
 		
 		with self.assertRaises(RuntimeError):
 			examinee.detach()
 		
-		with self.assertRaises(TypeError):
-			examinee.attach(None)
+		examinee.attach()
+		self.assertTrue(examinee.is_attached())
 		
-		examinee.attach(node1)
-		self.assertEqual(examinee.node, node1)
-		
-		with self.assertRaises(ValueError):
-			examinee.attach(node1)
+		examinee.attach()
+		self.assertTrue(examinee.is_attached())
 		
 		test_data = [-1, 0x100000000]
 		for value in test_data:
 			with self.subTest(value = value):
 				with self.assertRaises(ValueError):
-					examinee.attach(node1, value, 0)
+					examinee.attach(value, 0)
 				with self.assertRaises(ValueError):
-					examinee.attach(node1, 0, value)
+					examinee.attach(0, value)
 		
-		examinee.attach(node2, (1 << 29) | (0x600 + node2.id), (1 << 29) | (0x580 + node2.id))
-		self.assertEqual(examinee.node, node2)
+		examinee.attach((1 << 29) | (0x600 + node.id), (1 << 29) | (0x580 + node.id))
+		self.assertTrue(examinee.is_attached())
 		
 		examinee.detach()
-		self.assertEqual(examinee.node, None)
+		self.assertFalse(examinee.is_attached())
 		
-		node1.detach()
-		node2.detach()
+		node.detach()
 	
 	def test_request(self):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		node = canopen.Node("a", 1, dictionary)
-		examinee = canopen.node.service.SDOServer()
+		network = Network()
+		dictionary = ObjectDictionary()
+		node = Node("1", 0x01, dictionary)
+		examinee = SDOServer(node)
 		
 		network.attach(bus1)
 		node.attach(network)
-		examinee.attach(node)
+		examinee.attach()
 		
 		# Wrong data length -> Ignored by SDOServer
 		message_send = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\x00")
@@ -124,27 +118,27 @@ class SDOServerTestCase(unittest.TestCase):
 	def test_download(self):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		dictionary.add(canopen.objectdictionary.Record("rec", 0x1234, 0x00))
-		dictionary["rec"].add(canopen.objectdictionary.Variable("boolean", 0x1234, 0x01, canopen.objectdictionary.BOOLEAN, "rw"))
-		dictionary["rec"].add(canopen.objectdictionary.Variable("integer8", 0x1234, 0x02, canopen.objectdictionary.INTEGER8, "rw"))
-		dictionary["rec"].add(canopen.objectdictionary.Variable("integer16", 0x1234, 0x03, canopen.objectdictionary.INTEGER16, "rw"))
-		dictionary["rec"].add(canopen.objectdictionary.Variable("integer32", 0x1234, 0x04, canopen.objectdictionary.INTEGER32, "rw"))
-		dictionary["rec"].add(canopen.objectdictionary.Variable("unsigned8", 0x1234, 0x05, canopen.objectdictionary.UNSIGNED8, "ro"))
-		dictionary["rec"].add(canopen.objectdictionary.Variable("unsigned16", 0x1234, 0x06, canopen.objectdictionary.UNSIGNED16, "wo"))
-		dictionary["rec"].add(canopen.objectdictionary.Variable("domain", 0x1234, 0x0F, canopen.objectdictionary.DOMAIN, "rw"))
-		dictionary["rec"].add(canopen.objectdictionary.Variable("integer24", 0x1234, 0x10, canopen.objectdictionary.INTEGER24, "rw"))
-		dictionary["rec"].add(canopen.objectdictionary.Variable("real64", 0x1234, 0x11, canopen.objectdictionary.REAL64, "rw"))
-		dictionary["rec"].add(canopen.objectdictionary.Variable("integer40", 0x1234, 0x12, canopen.objectdictionary.INTEGER40, "rw"))
-		dictionary.add(canopen.objectdictionary.Variable("var", 0x5678, 0x00, canopen.objectdictionary.UNSIGNED32, "rw"))
-		dictionary.add(canopen.objectdictionary.Variable("const", 0x7777, 0x00, canopen.objectdictionary.UNSIGNED32, "const"))
+		dictionary = ObjectDictionary()
+		dictionary.add(Record("rec", 0x1234, 0x00))
+		dictionary["rec"].add(Variable("boolean", 0x1234, 0x01, BOOLEAN, "rw"))
+		dictionary["rec"].add(Variable("integer8", 0x1234, 0x02, INTEGER8, "rw"))
+		dictionary["rec"].add(Variable("integer16", 0x1234, 0x03, INTEGER16, "rw"))
+		dictionary["rec"].add(Variable("integer32", 0x1234, 0x04, INTEGER32, "rw"))
+		dictionary["rec"].add(Variable("unsigned8", 0x1234, 0x05, UNSIGNED8, "ro"))
+		dictionary["rec"].add(Variable("unsigned16", 0x1234, 0x06, UNSIGNED16, "wo"))
+		dictionary["rec"].add(Variable("domain", 0x1234, 0x0F, DOMAIN, "rw"))
+		dictionary["rec"].add(Variable("integer24", 0x1234, 0x10, INTEGER24, "rw"))
+		dictionary["rec"].add(Variable("real64", 0x1234, 0x11, REAL64, "rw"))
+		dictionary["rec"].add(Variable("integer40", 0x1234, 0x12, INTEGER40, "rw"))
+		dictionary.add(Variable("var", 0x5678, 0x00, UNSIGNED32, "rw"))
+		dictionary.add(Variable("const", 0x7777, 0x00, UNSIGNED32, "const"))
 		node = InspectionNode("a", 1, dictionary)
-		examinee = canopen.node.service.SDOServer()
+		examinee = SDOServer(node)
+		network = Network()
 		
 		network.attach(bus1)
 		node.attach(network)
-		examinee.attach(node)
+		examinee.attach()
 		
 		#### Test step
 		# Initiate: index: - -> Abort with index unknown
@@ -315,7 +309,7 @@ class SDOServerTestCase(unittest.TestCase):
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x06020000))
 		
 		# Restore Variable in dictionary
-		dictionary.add(canopen.objectdictionary.Variable("var", 0x5678, 0x00, 0x07, "rw"))
+		dictionary.add(Variable("var", 0x5678, 0x00, 0x07, "rw"))
 		
 		#### Test step
 		# Initiate: e = 0 & s = 1 & size in data -> Confirm
@@ -354,7 +348,7 @@ class SDOServerTestCase(unittest.TestCase):
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x06090011))
 		
 		# Restore Variable in dictionary
-		dictionary["rec"].add(canopen.objectdictionary.Variable("domain", 0x1234, 0x0F, canopen.objectdictionary.DOMAIN, "rw"))
+		dictionary["rec"].add(Variable("domain", 0x1234, 0x0F, DOMAIN, "rw"))
 		
 		#### Test step
 		# Initiate: e = 0 & s = 1 & size in data -> Confirm
@@ -649,7 +643,7 @@ class SDOServerTestCase(unittest.TestCase):
 		
 		#### Start of tests with extended frames
 		
-		examinee.attach(node, (1 << 29) | (0x1600 + node.id), (1 << 29) | (0x1580 + node.id))
+		examinee.attach((1 << 29) | (0x1600 + node.id), (1 << 29) | (0x1580 + node.id))
 		
 		#### Test step
 		# Initiate: index: - -> Abort with index unknown
@@ -713,7 +707,6 @@ class SDOServerTestCase(unittest.TestCase):
 		self.assertEqual(node[0x1234][0x04].value, 0x12345678)
 		
 		examinee.detach()
-		
 		node.detach()
 		network.detach()
 		bus1.shutdown()
@@ -722,26 +715,26 @@ class SDOServerTestCase(unittest.TestCase):
 	def test_upload(self):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		dictionary.add(canopen.objectdictionary.Record("rec", 0x1234, 0x00))
-		dictionary["rec"].add(canopen.objectdictionary.Variable("boolean", 0x1234, 0x01, canopen.objectdictionary.BOOLEAN, "rw"))
-		dictionary["rec"].add(canopen.objectdictionary.Variable("integer8", 0x1234, 0x02, canopen.objectdictionary.INTEGER8, "rw"))
-		dictionary["rec"].add(canopen.objectdictionary.Variable("integer16", 0x1234, 0x03, canopen.objectdictionary.INTEGER16, "rw"))
-		dictionary["rec"].add(canopen.objectdictionary.Variable("integer32", 0x1234, 0x04, canopen.objectdictionary.INTEGER32, "rw"))
-		dictionary["rec"].add(canopen.objectdictionary.Variable("unsigned8", 0x1234, 0x05, canopen.objectdictionary.UNSIGNED8, "ro"))
-		dictionary["rec"].add(canopen.objectdictionary.Variable("unsigned16", 0x1234, 0x06, canopen.objectdictionary.UNSIGNED16, "wo"))
-		dictionary["rec"].add(canopen.objectdictionary.Variable("domain", 0x1234, 0x0F, canopen.objectdictionary.DOMAIN, "rw"))
-		dictionary["rec"].add(canopen.objectdictionary.Variable("integer24", 0x1234, 0x10, canopen.objectdictionary.INTEGER24, "rw"))
-		dictionary["rec"].add(canopen.objectdictionary.Variable("real64", 0x1234, 0x11, canopen.objectdictionary.REAL64, "rw"))
-		dictionary["rec"].add(canopen.objectdictionary.Variable("integer40", 0x1234, 0x12, canopen.objectdictionary.INTEGER40, "rw"))
-		dictionary.add(canopen.objectdictionary.Variable("var", 0x5678, 0x00, canopen.objectdictionary.UNSIGNED32, "rw"))
+		network = Network()
+		dictionary = ObjectDictionary()
+		dictionary.add(Record("rec", 0x1234, 0x00))
+		dictionary["rec"].add(Variable("boolean", 0x1234, 0x01, BOOLEAN, "rw"))
+		dictionary["rec"].add(Variable("integer8", 0x1234, 0x02, INTEGER8, "rw"))
+		dictionary["rec"].add(Variable("integer16", 0x1234, 0x03, INTEGER16, "rw"))
+		dictionary["rec"].add(Variable("integer32", 0x1234, 0x04, INTEGER32, "rw"))
+		dictionary["rec"].add(Variable("unsigned8", 0x1234, 0x05, UNSIGNED8, "ro"))
+		dictionary["rec"].add(Variable("unsigned16", 0x1234, 0x06, UNSIGNED16, "wo"))
+		dictionary["rec"].add(Variable("domain", 0x1234, 0x0F, DOMAIN, "rw"))
+		dictionary["rec"].add(Variable("integer24", 0x1234, 0x10, INTEGER24, "rw"))
+		dictionary["rec"].add(Variable("real64", 0x1234, 0x11, REAL64, "rw"))
+		dictionary["rec"].add(Variable("integer40", 0x1234, 0x12, INTEGER40, "rw"))
+		dictionary.add(Variable("var", 0x5678, 0x00, UNSIGNED32, "rw"))
 		node = InspectionNode("a", 1, dictionary)
-		examinee = canopen.node.service.SDOServer()
+		examinee = SDOServer(node)
 		
 		network.attach(bus1)
 		node.attach(network)
-		examinee.attach(node)
+		examinee.attach()
 		
 		# Fill in some data
 		node[0x5678].value = 12345
@@ -918,7 +911,7 @@ class SDOServerTestCase(unittest.TestCase):
 		
 		#### Start of tests with extended frames
 		
-		examinee.attach(node, (1 << 29) | (0x1600 + node.id), (1 << 29) | (0x1580 + node.id))
+		examinee.attach((1 << 29) | (0x1600 + node.id), (1 << 29) | (0x1580 + node.id))
 		
 		#### Test step
 		# Initiate: index: - -> Abort with index unknown
@@ -980,7 +973,6 @@ class SDOServerTestCase(unittest.TestCase):
 		self.assertEqual(message_recv.data, struct.pack("<B7s", 0x1D, b"\x00\x00\x00\x00\x00\x00\x00"))
 		
 		examinee.detach()
-		
 		node.detach()
 		network.detach()
 		bus1.shutdown()

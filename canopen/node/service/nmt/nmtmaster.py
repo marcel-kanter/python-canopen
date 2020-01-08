@@ -1,6 +1,7 @@
 import struct
 import can
 import canopen.util
+
 from canopen.node.service import Service
 from canopen.nmt.states import *
 
@@ -14,40 +15,69 @@ class NMTMaster(Service):
 	"heartbeat": ("heartbeat", service)
 	"guarding": ("guarding", service)
 	"""
-	def __init__(self):
-		Service.__init__(self)
-		self._state = 0
-		self._toggle_bit = 0x00
-		self._callbacks = {"heartbeat": [], "guarding": []}
+	def __init__(self, node):
+		""" Initializes the service
 		
+		:param node: The node, to which this service belongs to.
+			Must be of type canopen.node.Node
+		
+		:raises: TypeError
+		"""
+		Service.__init__(self, node)
+		self.add_event("heartbeat")
+		self.add_event("guarding")
+		self._identifier_ec = None
+		
+		# The state and toggle bit of the next guarding response is unknown, but maybe the node is in initialization state. Pretend there was a previous guarding response with the inverted toggle bit.
+		self._state = INITIALIZATION
+		self._toggle_bit = 0x80
 		self._counter = 0
 		self._heartbeat_time = 0
 		self._guard_time = 0
 		self._life_time_factor = 0
 		self._timer = canopen.util.Timer(self.timer_callback)
 	
-	def attach(self, node):
-		""" Attaches the ``NMTMaster`` to a ``Node``. It does NOT add or assign this ``NMTMaster`` to the ``Node``.
-		:param node: A canopen.Node, to which the service should be attached to. """
-		Service.attach(self, node)
-		self._state = 0
-		# The toggle bit of the next guarding response is unknown, but maybe the node is in initialization state. Pretend there was a previous guarding response with the inverted toggle bit.
-		self._toggle_bit = 0x80
-		self._identifier_ec = 0x700 + self._node.id
-		self._node.network.subscribe(self.on_error_control, self._identifier_ec)
+	def attach(self):
+		""" Attach handler. Must be called when the node gets attached to the network.
+		
+		:raises: ValueError
+		"""
+		if self.is_attached():
+			self.detach()
+		
+		identifier_ec = 0x700 + self._node.id
+		
+		self._node.network.subscribe(self.on_error_control, identifier_ec)
+		
+		self._identifier_ec = identifier_ec
 	
 	def detach(self):
-		""" Detaches the ``NMTMaster`` from the ``Node``. It does NOT remove or delete the ``NMTMaster`` from the ``Node``. """
+		""" Detach handler. Must be called when the node gets detached from the network.
+		Raises RuntimeError if not attached.
+		
+		:raises: RuntimeError
+		"""
 		if not self.is_attached():
 			raise RuntimeError()
 		
-		self._node.network.unsubscribe(self.on_error_control, self._identifier_ec)
 		self.stop()
+		self._node.network.unsubscribe(self.on_error_control, self._identifier_ec)
 		
-		Service.detach(self)
+		self._identifier_ec = None
+	
+	def is_attached(self):
+		""" Returns True if the service is attached.
+		"""
+		return self._identifier_ec != None
 	
 	def send_command(self, command):
 		""" Sends a NMT command.
+		Raises ValueError if the command is out of range.
+		
+		:param command: The command to send.
+			Must be an integer in the range 0x00 ... 0xFF
+		
+		:raises: ValueError
 		"""
 		if int(command) < 0x00 or int(command) > 0xFF:
 			raise ValueError()

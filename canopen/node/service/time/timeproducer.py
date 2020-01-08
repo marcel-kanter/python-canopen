@@ -1,5 +1,6 @@
 import can
 import canopen.objectdictionary
+
 from canopen.node.service import Service
 from canopen.objectdictionary import Variable
 
@@ -12,21 +13,45 @@ class TIMEProducer(Service):
 	
 	_helper_variable = Variable("helper", 0, 0, canopen.objectdictionary.TIME_OF_DAY)
 	
-	def __init__(self):
-		Service.__init__(self)
+	def __init__(self, node):
+		""" Initializes the service
+		
+		:param node: The node, to which this service belongs to. Must be of type canopen.node.Node
+		
+		:raises: TypeError
+		"""
+		Service.__init__(self, node)
+		self._cob_id_time = None
 	
-	def attach(self, node, cob_id_time = None):
-		""" Attaches the ``TIMEProducer`` to a ``Node``. It does NOT add or assign this ``TIMEProducer`` to the ``Node``.
-		:param node: A canopen.Node, to which the service should be attached to.
+	def attach(self, cob_id_time = None):
+		""" Attach handler. Must be called when the node gets attached to the network.
+		
 		:param cob_id_time: The COB ID for the TIME service. Bit 29 selects whether an extended frame is used. The CAN ID is masked out of the lowest 11 or 29 bits.
-			If it is omitted or None is passed, the value defaults to 0x100. """
+			If it is omitted or None is passed, the value defaults to 0x100.
+		
+		:raises: ValueError
+		"""
 		if cob_id_time == None:
 			cob_id_time = 0x100
 		if cob_id_time < 0 or cob_id_time > 0xFFFFFFFF:
 			raise ValueError()
+		if self.is_attached():
+			self.detach()
 		
-		Service.attach(self, node)
 		self._cob_id_time = cob_id_time
+	
+	def detach(self):
+		""" Detach handler. Must be called when the node gets detached from the network.
+		"""
+		if not self.is_attached():
+			raise RuntimeError()
+		
+		self._cob_id_time = None
+		
+	def is_attached(self):
+		""" Returns True if the service is attached.
+		"""
+		return self._cob_id_time != None
 	
 	def send(self, t):
 		""" Sends a TIME message on the bus.

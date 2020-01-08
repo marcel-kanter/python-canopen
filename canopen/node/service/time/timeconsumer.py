@@ -1,5 +1,6 @@
 import threading
 import canopen.objectdictionary
+
 from canopen.node.service import Service
 from canopen.objectdictionary import Variable
 
@@ -15,38 +16,55 @@ class TIMEConsumer(Service):
 	
 	_helper_variable = Variable("helper", 0, 0, canopen.objectdictionary.TIME_OF_DAY)
 	
-	def __init__(self):
-		Service.__init__(self)
-		self._callbacks = {"time": []}
+	def __init__(self, node):
+		Service.__init__(self, node)
+		self.add_event("time")
+		self._cob_id_time = None
+		
 		self._time_condition = threading.Condition()
 	
-	def attach(self, node, cob_id_time = None):
-		""" Attaches the ``TIMEConsumer`` to a ``Node``. It does NOT add or assign this ``TIMEConsumer`` to the ``Node``.
-		:param node: A canopen.Node, to which the service should be attached to.
+	def attach(self, cob_id_time = None):
+		""" Attach handler. Must be called when the node gets attached to the network.
+		
 		:param cob_id_time: The COB ID for the TIME service. Bit 29 selects whether an extended frame is used. The CAN ID is masked out of the lowest 11 or 29 bits.
-			If it is omitted or None is passed, the value defaults to 0x100. """
+			It defaults to 0x100 if it is omitted or None.
+		
+		:raises: ValueError
+		"""
 		if cob_id_time == None:
 			cob_id_time = 0x100
 		if cob_id_time < 0 or cob_id_time > 0xFFFFFFFF:
 			raise ValueError()
+		if self.is_attached():
+			self.detach()
 		
-		Service.attach(self, node)
-		self._cob_id_time = cob_id_time
-		
-		if self._cob_id_time & (1 << 29):
-			self._node.network.subscribe(self.on_time, self._cob_id_time & 0x1FFFFFFF)
+		if cob_id_time & (1 << 29):
+			self._node.network.subscribe(self.on_time, cob_id_time & 0x1FFFFFFF)
 		else:
-			self._node.network.subscribe(self.on_time, self._cob_id_time & 0x7FF)
+			self._node.network.subscribe(self.on_time, cob_id_time & 0x7FF)
+		
+		self._cob_id_time = cob_id_time
 	
 	def detach(self):
-		""" Detaches the ``TIMEConsumer`` from the ``Node``. It does NOT remove or delete the ``TIMEConsumer`` from the ``Node``. """
+		""" Detach handler. Must be called when the node gets detached from the network.
+		Raises RuntimeError if not attached.
+		
+		:raises: RuntimeError
+		"""
 		if not self.is_attached():
 			raise RuntimeError()
+		
 		if self._cob_id_time & (1 << 29):
 			self._node.network.unsubscribe(self.on_time, self._cob_id_time & 0x1FFFFFFF)
 		else:
 			self._node.network.unsubscribe(self.on_time, self._cob_id_time & 0x7FF)
-		Service.detach(self)
+		
+		self._cob_id_time = None
+	
+	def is_attached(self):
+		""" Returns True if the service is attached.
+		"""
+		return self._cob_id_time != None
 	
 	def on_time(self, message):
 		""" Message handler for incoming SYNC messages. """

@@ -1,5 +1,5 @@
 import threading
-import canopen.node
+
 from canopen.node.service.sync import SYNCConsumer
 
 
@@ -10,54 +10,71 @@ class PDOConsumer(SYNCConsumer):
 	"sync": ("sync", service, counter)
 	"pdo": ("pdo", service)
 	"""
-	def __init__(self, transmission_type = 0):
+	def __init__(self, node, transmission_type = 0):
+		""" Initializes the service
+		
+		:param node: The node, to which this service belongs to. Must be of type canopen.node.Node
+		
+		:param transmission_type:
+		
+		:raises: TypeError
+		"""
 		if int(transmission_type) < 0 or (int(transmission_type) > 240 and int(transmission_type) < 254) or int(transmission_type) > 255:
 			raise ValueError()
 		
-		SYNCConsumer.__init__(self)
-		
-		self._callbacks["pdo"] = []
+		SYNCConsumer.__init__(self, node)
+		self.add_event("pdo")
+		self._cob_id_rx = None
+
 		self._transmission_type = int(transmission_type)
 		self._data = None
 		self._condition = threading.Condition()
 	
-	def attach(self, node, cob_id_rx = None, cob_id_sync = None):
-		""" Attaches the ``PDOConsumer`` to a ``Node``. It does NOT add or assign this ``PDOConsumer`` to the ``Node``.
-		:param node: A canopen.Node, to which the service should be attached to.
+	def attach(self, cob_id_rx = None, cob_id_sync = None):
+		""" Attach handler. Must be called when the node gets attached to the network.
+		
 		:param cob_id_rx: The COB ID for the PDO service, used for the CAN ID of the PDO messages to be received.
 			Bit 29 selects whether an extended frame is used. The CAN ID is masked out of the lowest 11 or 29 bits.
-			If it is omitted or None is passed, the value defaults to 0x200 + node.id.
+			It defaults to 0x200 + node.id if it is omitted.
+		
 		:param cob_id_sync: The COB ID for the PDO service, used for the CAN ID of the SYNC messages to be received.
 			Bit 29 selects whether an extended frame is used. The CAN ID is masked out of the lowest 11 or 29 bits.
-			If it is omitted or None is passed, the value defaults to 0x80. """
-		if not isinstance(node, canopen.node.Node):
-			raise TypeError()
+			It defaults to 0x80 if it is omitted.
+		
+		:raises: ValueError
+		"""
 		if cob_id_rx == None:
-			cob_id_rx = 0x200 + node.id
+			cob_id_rx = 0x200 + self._node.id
 		if cob_id_rx < 0 or cob_id_rx > 0xFFFFFFFF:
 			raise ValueError()
 		
-		SYNCConsumer.attach(self, node, cob_id_sync)
-		self._cob_id_rx = cob_id_rx
+		SYNCConsumer.attach(self, cob_id_sync)
 		
-		if self._cob_id_rx & (1 << 29):
-			self._node.network.subscribe(self.on_pdo, self._cob_id_rx & 0x1FFFFFFF)
+		if cob_id_rx & (1 << 29):
+			self._node.network.subscribe(self.on_pdo, cob_id_rx & 0x1FFFFFFF)
 		else:
-			self._node.network.subscribe(self.on_pdo, self._cob_id_rx & 0x7FF)
+			self._node.network.subscribe(self.on_pdo, cob_id_rx & 0x7FF)
+		
+		self._cob_id_rx = cob_id_rx
 	
 	def detach(self):
-		""" Detaches the ``PDOConsumer`` from the ``Node``. It does NOT remove or delete the ``PDOConsumer`` from the ``Node``. """
-		if not self.is_attached():
-			raise RuntimeError()
+		""" Detach handler. Must be called when the node gets detached from the network.
+		"""
+		SYNCConsumer.detach(self)
 		
 		if self._cob_id_rx & (1 << 29):
 			self._node.network.unsubscribe(self.on_pdo, self._cob_id_rx & 0x1FFFFFFF)
 		else:
 			self._node.network.unsubscribe(self.on_pdo, self._cob_id_rx & 0x7FF)
 		
-		SYNCConsumer.detach(self)
+		self._cob_id_rx = None
 	
-	def wait(self, timeout = None):
+	def is_attached(self):
+		""" Returns True if the service is attached.
+		"""
+		return self._cob_id_rx != None
+	
+	def wait_for_pdo(self, timeout = None):
 		with self._condition:
 			gotit = self._condition.wait(timeout)
 		return gotit

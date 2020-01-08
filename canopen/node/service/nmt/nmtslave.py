@@ -18,12 +18,25 @@ class NMTSlave(Service):
 	"reset-communication": ("reset-communication", service)
 	"guarding": ("guarding", service)
 	"""
-	def __init__(self):
-		Service.__init__(self)
-		self._state = 0
-		self._toggle_bit = 0
-		self._callbacks = {"start": [], "stop": [], "pre-operational": [], "reset-application": [], "reset-communication": [], "guarding" : []}
+	def __init__(self, node):
+		""" Initializes the service
 		
+		:param node: The node, to which this service belongs to.
+			Must be of type canopen.node.Node
+		
+		:raises: TypeError
+		"""
+		Service.__init__(self, node)
+		self.add_event("start")
+		self.add_event("stop")
+		self.add_event("pre-operational")
+		self.add_event("reset-application")
+		self.add_event("reset-communication")
+		self.add_event("guarding")
+		self._identifier_ec = None
+		
+		self._state = INITIALIZATION
+		self._toggle_bit = 0
 		self._counter = 0
 		self._heartbeat_time = 0
 		self._guard_time = 0
@@ -31,30 +44,48 @@ class NMTSlave(Service):
 		self._guarding_running = False
 		self._timer = canopen.util.Timer(self.timer_callback)
 	
-	def attach(self, node):
-		""" Attaches the ``NMTSlave`` to a ``Node``. It does NOT add or assign this ``NMTSlave`` to the ``Node``.
-		:param node: A canopen.Node, to which the service should be attached to. """
-		Service.attach(self, node)
-		self._state = 0
-		self._toggle_bit = 0
-		self._identifier_ec = 0x700 + self._node.id
+	def attach(self):
+		""" Attach handler. Must be called when the node gets attached to the network.
+		
+		:raises: ValueError
+		"""
+		if self.is_attached():
+			self.detach()
+		
+		identifier_ec = 0x700 + self._node.id
+		
 		self._node.network.subscribe(self.on_node_control, 0x000)
-		self._node.network.subscribe(self.on_error_control, self._identifier_ec)
+		self._node.network.subscribe(self.on_error_control, identifier_ec)
+		
+		self._identifier_ec = identifier_ec
 	
 	def detach(self):
-		""" Detaches the ``NMTSlave`` from the ``Node``. It does NOT remove or delete the ``NMTSlave`` from the ``Node``. """
+		""" Detach handler. Must be called when the node gets detached from the network.
+		Raises RuntimeError if not attached.
+		
+		:raises: RuntimeError
+		"""
 		if not self.is_attached():
 			raise RuntimeError()
 		
+		self.stop()
 		self._node.network.unsubscribe(self.on_error_control, self._identifier_ec)
 		self._node.network.unsubscribe(self.on_node_control, 0x000)
-		self.stop()
 		
-		Service.detach(self)
+		self._identifier_ec = None
+	
+	def is_attached(self):
+		""" Returns True if the service is attached.
+		"""
+		return self._identifier_ec != None
 	
 	def start_heartbeat(self, heartbeat_time):
 		""" Sends a heartbeat message and then every heartbeat_time seconds.
-		:param heartbeat_time: The time between the heartbeat messages. """
+		
+		:param heartbeat_time: The time between the heartbeat messages.
+		
+		:raises: ValueError
+		"""
 		if heartbeat_time <= 0:
 			raise ValueError()
 		
@@ -68,9 +99,14 @@ class NMTSlave(Service):
 			self._timer.start(self._heartbeat_time, True)
 		
 	def start_guarding(self, guard_time, life_time_factor):
-		""" Starts monitoring the node guarding requests on reception of the next request. 
+		""" Starts monitoring the node guarding requests on reception of the next request.
+		
 		:param guard_time: The time between the node guarding requests.
-		:param life_time_factor: The life time factor as defined in DS301."""
+		
+		:param life_time_factor: The life time factor as defined in DS301.
+		
+		:raises: ValueError
+		"""
 		if guard_time <= 0:
 			raise ValueError()
 		if life_time_factor <= 0:
@@ -152,10 +188,19 @@ class NMTSlave(Service):
 	
 	@property
 	def state(self):
+		""" Returns the current state.
+		"""
 		return self._state
 	
 	@state.setter
 	def state(self, value):
+		""" Sets the state and starts node guarding/heartbeat if configured.
+		
+		:param value: The new state to set.
+			Must be one of INITIALIZATION, STOPPED, OPERATIONAL, PRE_OPERATIONAL
+		
+		:raises: ValueError
+		"""
 		if value not in [INITIALIZATION, STOPPED, OPERATIONAL, PRE_OPERATIONAL]:
 			raise ValueError()
 		

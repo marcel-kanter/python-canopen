@@ -5,7 +5,10 @@ import sys
 import time
 import struct
 import can
-import canopen.node.service.sync
+
+from canopen import Node, Network
+from canopen.objectdictionary import ObjectDictionary
+from canopen.node.service.sync import SYNCConsumer
 
 
 class Vehicle_Wait(threading.Thread):
@@ -20,17 +23,17 @@ class Vehicle_Wait(threading.Thread):
 	
 	def run(self):
 		try:
-			self._barrier.wait(1)
+			self.sync(1)
 			time.sleep(0.1)
 			message = can.Message(arbitration_id = 0x80, is_extended_id = False, data = b"\x01")
 			self._bus.send(message)
 			
-			self._barrier.wait(1)
+			self.sync(1)
 			time.sleep(0.1)
 			message = can.Message(arbitration_id = 0x80, is_extended_id = False, data = b"\x01")
 			self._bus.send(message)
 			
-			self._barrier.wait(1)
+			self.sync(1)
 
 		except AssertionError:
 			self._testcase.result.addFailure(self._testcase, sys.exc_info())
@@ -40,58 +43,51 @@ class Vehicle_Wait(threading.Thread):
 
 class SYNCConsumerTestCase(unittest.TestCase):
 	def test_init(self):
-		canopen.node.service.sync.SYNCConsumer()
+		dictionary = ObjectDictionary()
+		node = Node("n", 1, dictionary)
+		examinee = SYNCConsumer(node)
+		
+		self.assertEqual(examinee.node, node)
 	
 	def test_attach_detach(self):
-		dictionary = canopen.ObjectDictionary()
-		network = canopen.Network()
-		node1 = canopen.Node("a", 1, dictionary)
-		node2 = canopen.Node("b", 2, dictionary)
-		examinee = canopen.node.service.sync.SYNCConsumer()
+		dictionary = ObjectDictionary()
+		node = Node("n", 1, dictionary)
+		examinee = SYNCConsumer(node)
+		network = Network()
 		
-		node1.attach(network)
-		node2.attach(network)
-		
-		self.assertEqual(examinee.node, None)
+		node.attach(network)
 		
 		with self.assertRaises(RuntimeError):
 			examinee.detach()
-		
-		with self.assertRaises(TypeError):
-			examinee.attach(None)
 		
 		test_data = [-1, 0x100000000]
 		for value in test_data:
 			with self.subTest(value = value):
 				with self.assertRaises(ValueError):
-					examinee.attach(node1, value)
+					examinee.attach(value)
 		
-		examinee.attach(node1)
-		self.assertEqual(examinee.node, node1)
+		examinee.attach()
+		self.assertTrue(examinee.is_attached())
 		
-		with self.assertRaises(ValueError):
-			examinee.attach(node1)
-		
-		examinee.attach(node2, (1 << 29) | 0x80)
-		self.assertEqual(examinee.node, node2)
+		examinee.attach((1 << 29) | (0x80))
+		self.assertTrue(examinee.is_attached())
 		
 		examinee.detach()
-		self.assertEqual(examinee.node, None)
+		self.assertFalse(examinee.is_attached())
 		
-		node1.detach()
-		node2.detach()
+		node.detach()
 	
 	def test_on_sync(self):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		node = canopen.Node("a", 1, dictionary)
-		examinee = canopen.node.service.sync.SYNCConsumer()
+		dictionary = ObjectDictionary()
+		node = Node("a", 1, dictionary)
+		examinee = SYNCConsumer(node)
+		network = Network()
 		
 		network.attach(bus1)
 		node.attach(network)
-		examinee.attach(node)
+		examinee.attach()
 		
 		cb = Mock()
 		examinee.add_callback("sync", cb)
@@ -135,18 +131,17 @@ class SYNCConsumerTestCase(unittest.TestCase):
 	def test_wait_for_sync(self):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
+		dictionary = ObjectDictionary()
+		node = Node("a", 1, dictionary)
+		examinee = SYNCConsumer(node)
+		network = Network()
 		
-		vehicle = Vehicle_Wait(self, bus1)
-		vehicle.start()
-		
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		node = canopen.Node("a", 1, dictionary)
-		examinee = canopen.node.service.SYNCConsumer()
-		
-		network.attach(bus2)
+		network.attach(bus1)
 		node.attach(network)
-		examinee.attach(node)
+		examinee.attach()
+		
+		vehicle = Vehicle_Wait(self, bus2)
+		vehicle.start()
 		
 		vehicle.sync(1)
 		self.assertTrue(examinee.wait_for_sync(1))
@@ -157,11 +152,14 @@ class SYNCConsumerTestCase(unittest.TestCase):
 		vehicle.sync(1)
 		self.assertFalse(examinee.wait_for_sync(0.1))
 		
+		vehicle.join(1)
+		
 		examinee.detach()
 		node.detach()
 		network.detach()
-		
-		vehicle.join(1)
-		
 		bus1.shutdown()
 		bus2.shutdown()
+
+
+if __name__ == "__main__":
+	unittest.main()

@@ -107,6 +107,8 @@ class Network(collections.abc.Collection):
 		if not callable(callback):
 			raise TypeError()
 		
+		message_id = int(message_id)
+		
 		if message_id not in self._subscribers:
 			self._subscribers[message_id] = []
 		self._subscribers[message_id].append(callback)

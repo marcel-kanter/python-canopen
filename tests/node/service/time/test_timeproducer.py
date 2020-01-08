@@ -2,59 +2,55 @@ import unittest
 import calendar
 import struct
 import can
-import canopen.node.service.time
+
+from canopen import Node, Network
+from canopen.objectdictionary import ObjectDictionary
+from canopen.node.service.time import TIMEProducer
 
 
 class TIMEProducerTestCase(unittest.TestCase):
 	def test_init(self):
-		canopen.node.service.time.TIMEProducer()
+		dictionary = ObjectDictionary()
+		node = Node("n", 1, dictionary)
+		examinee = TIMEProducer(node)
+		
+		self.assertEqual(examinee.node, node)
 	
 	def test_attach_detach(self):
-		dictionary = canopen.ObjectDictionary()
-		network = canopen.Network()
-		node1 = canopen.Node("a", 1, dictionary)
-		node2 = canopen.Node("b", 2, dictionary)
-		examinee = canopen.node.service.time.TIMEProducer()
+		dictionary = ObjectDictionary()
+		node = Node("n", 1, dictionary)
+		examinee = TIMEProducer(node)
+		network = Network()
 		
-		node1.attach(network)
-		node2.attach(network)
-		
-		self.assertEqual(examinee.node, None)
+		node.attach(network)
 		
 		with self.assertRaises(RuntimeError):
 			examinee.detach()
-		
-		with self.assertRaises(TypeError):
-			examinee.attach(None, 0x100)
 		
 		test_data = [-1, 0x100000000]
 		for value in test_data:
 			with self.subTest(value = value):
 				with self.assertRaises(ValueError):
-					examinee.attach(node1, value)
+					examinee.attach(value)
 		
-		examinee.attach(node1)
-		self.assertEqual(examinee.node, node1)
+		examinee.attach()
+		self.assertTrue(examinee.is_attached())
 		
-		with self.assertRaises(ValueError):
-			examinee.attach(node1, 0x100)
-		
-		examinee.attach(node2, (1 <<29) | 0x100)
-		self.assertEqual(examinee.node, node2)
+		examinee.attach((1 << 29) | (0x100))
+		self.assertTrue(examinee.is_attached())
 		
 		examinee.detach()
-		self.assertEqual(examinee.node, None)
+		self.assertFalse(examinee.is_attached())
 		
-		node1.detach()
-		node2.detach()
+		node.detach()
 	
 	def test_send(self):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		node = canopen.Node("a", 1, dictionary)
-		examinee = canopen.node.service.time.TIMEProducer()
+		dictionary = ObjectDictionary()
+		node = Node("a", 1, dictionary)
+		examinee = TIMEProducer(node)
+		network = Network()
 		
 		network.attach(bus1)
 		node.attach(network)
@@ -62,7 +58,7 @@ class TIMEProducerTestCase(unittest.TestCase):
 		test_data = [0x100, (1 << 29) | 0x100]
 		for cob_id in test_data:
 			with self.subTest(cob_id = cob_id):
-				examinee.attach(node, cob_id)
+				examinee.attach(cob_id)
 				
 				#### Test step: Send CANopen epoch
 				value = calendar.timegm((1984, 1, 1, 0, 0, 0))

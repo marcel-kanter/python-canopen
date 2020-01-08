@@ -2,12 +2,19 @@ import unittest
 from unittest.mock import Mock
 import time
 import can
-import canopen.node.service.srdo
+
+from canopen import Node, Network
+from canopen.objectdictionary import ObjectDictionary
+from canopen.node.service.srdo import SRDOConsumer
 
 
 class SRDOConsumerTestCase(unittest.TestCase):
 	def test_init(self):
-		examinee = canopen.node.service.srdo.SRDOConsumer()
+		dictionary = ObjectDictionary()
+		node = Node("n", 1, dictionary)
+		examinee = SRDOConsumer(node)
+		
+		self.assertEqual(examinee.node, node)
 		
 		test_data = [b"\x22", None, b"\x11\x00"]
 		for value in test_data:
@@ -18,57 +25,48 @@ class SRDOConsumerTestCase(unittest.TestCase):
 				self.assertEqual(examinee.complement_data, value)
 	
 	def test_attach_detach(self):
-		dictionary = canopen.ObjectDictionary()
-		network = canopen.Network()
-		node1 = canopen.Node("a", 1, dictionary)
-		node2 = canopen.Node("b", 2, dictionary)
-		examinee = canopen.node.service.srdo.SRDOConsumer()
+		dictionary = ObjectDictionary()
+		node = Node("n", 1, dictionary)
+		examinee = SRDOConsumer(node)
+		network = Network()
 		
-		node1.attach(network)
-		node2.attach(network)
-		
-		self.assertEqual(examinee.node, None)
+		node.attach(network)
 		
 		with self.assertRaises(RuntimeError):
 			examinee.detach()
-		
-		with self.assertRaises(TypeError):
-			examinee.attach(None)
 		
 		test_data = [-1, 0x100000000]
 		for value in test_data:
 			with self.subTest(value = value):
 				with self.assertRaises(ValueError):
-					examinee.attach(node1, value, 0)
+					examinee.attach(value, 0, 0)
 				with self.assertRaises(ValueError):
-					examinee.attach(node1, 0, value)
+					examinee.attach(0, value, 0)
+				with self.assertRaises(ValueError):
+					examinee.attach(0, 0, value)
 		
-		examinee.attach(node1)
-		self.assertEqual(examinee.node, node1)
+		examinee.attach()
+		self.assertTrue(examinee.is_attached())
 		
-		with self.assertRaises(ValueError):
-			examinee.attach(node1)
-		
-		examinee.attach(node2, (1 << 29) | 0xFF + 2 * node2.id, (1 << 29) | 0x100 + 2 * node2.id)
-		self.assertEqual(examinee.node, node2)
+		examinee.attach((1 << 29) | 0xFF + 2 * node.id, (1 << 29) | 0x100 + 2 * node.id)
+		self.assertTrue(examinee.is_attached())
 		
 		examinee.detach()
-		self.assertEqual(examinee.node, None)
+		self.assertFalse(examinee.is_attached())
 		
-		node1.detach()
-		node2.detach()
+		node.detach()
 	
 	def test_on_message(self):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		node = canopen.Node("a", 1, dictionary)
-		examinee = canopen.node.service.srdo.SRDOConsumer()
+		dictionary = ObjectDictionary()
+		node = Node("a", 1, dictionary)
+		examinee = SRDOConsumer(node)
+		network = Network()
 		
 		network.attach(bus1)
 		node.attach(network)
-		examinee.attach(node)
+		examinee.attach()
 		
 		#### Test step: Correct frame pair
 		message = can.Message(arbitration_id = 0xFF + 2 * node.id, is_extended_id = False, is_remote_frame = False, data = b"\x00")
@@ -131,17 +129,17 @@ class SRDOConsumerTestCase(unittest.TestCase):
 	def test_sync(self):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		node = canopen.Node("a", 1, dictionary)
-		examinee = canopen.node.service.srdo.SRDOConsumer()
+		dictionary = ObjectDictionary()
+		node = Node("a", 1, dictionary)
+		examinee = SRDOConsumer(node)
+		network = Network()
 		
 		cb1 = Mock()
 		examinee.add_callback("sync", cb1)
 		
 		network.attach(bus1)
 		node.attach(network)
-		examinee.attach(node)
+		examinee.attach()
 		
 		#### Test step: Sync message
 		test_data = [(None, None), (b"", None), (b"\x01", 1)]
@@ -172,3 +170,7 @@ class SRDOConsumerTestCase(unittest.TestCase):
 		network.detach()
 		bus1.shutdown()
 		bus2.shutdown()
+
+
+if __name__ == "__main__":
+	unittest.main()

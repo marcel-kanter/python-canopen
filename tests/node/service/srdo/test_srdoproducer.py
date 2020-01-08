@@ -2,10 +2,18 @@ import unittest
 import can
 import canopen.node.service.srdo
 
+from canopen import Node, Network
+from canopen.objectdictionary import ObjectDictionary
+from canopen.node.service.srdo import SRDOProducer
+
 
 class SRDOProducerTestCase(unittest.TestCase):
 	def test_init(self):
-		examinee = canopen.node.service.srdo.SRDOProducer()
+		dictionary = ObjectDictionary()
+		node = Node("n", 1, dictionary)
+		examinee = SRDOProducer(node)
+		
+		self.assertEqual(examinee.node, node)
 		
 		test_data = [b"\x22", None, b"\x11\x00"]
 		for value in test_data:
@@ -16,56 +24,46 @@ class SRDOProducerTestCase(unittest.TestCase):
 				self.assertEqual(examinee.complement_data, value)
 	
 	def test_attach_detach(self):
-		dictionary = canopen.ObjectDictionary()
-		network = canopen.Network()
-		node1 = canopen.Node("a", 1, dictionary)
-		node2 = canopen.Node("b", 2, dictionary)
-		examinee = canopen.node.service.srdo.SRDOProducer()
+		dictionary = ObjectDictionary()
+		node = Node("n", 1, dictionary)
+		examinee = SRDOProducer(node)
+		network = Network()
 		
-		node1.attach(network)
-		node2.attach(network)
-		
-		self.assertEqual(examinee.node, None)
+		node.attach(network)
 		
 		with self.assertRaises(RuntimeError):
 			examinee.detach()
-		
-		with self.assertRaises(TypeError):
-			examinee.attach(None)
 		
 		test_data = [-1, 0x100000000]
 		for value in test_data:
 			with self.subTest(value = value):
 				with self.assertRaises(ValueError):
-					examinee.attach(node1, value, 0)
+					examinee.attach(value, 0)
 				with self.assertRaises(ValueError):
-					examinee.attach(node1, 0, value)
+					examinee.attach(0, value)
 		
-		examinee.attach(node1)
-		self.assertEqual(examinee.node, node1)
+		examinee.attach()
+		self.assertTrue(examinee.is_attached())
 		
-		with self.assertRaises(ValueError):
-			examinee.attach(node1)
-		
-		examinee.attach(node2, (1 << 29) | 0x80)
-		self.assertEqual(examinee.node, node2)
+		examinee.attach((1 << 29) | 0xFF + 2 * node.id, (1 << 29) | 0x100 + 2 * node.id)
+		self.assertTrue(examinee.is_attached())
 		
 		examinee.detach()
-		self.assertEqual(examinee.node, None)
+		self.assertFalse(examinee.is_attached())
 		
-		node1.detach()
-		node2.detach()
+		node.detach()
 	
 	def test_send(self):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		node = canopen.Node("a", 1, dictionary)
-		examinee = canopen.node.service.srdo.SRDOProducer()
+		dictionary = ObjectDictionary()
+		node = Node("a", 1, dictionary)
+		examinee = SRDOProducer(node)
+		network = Network()
 		
 		network.attach(bus1)
 		node.attach(network)
+		examinee.attach()
 		
 		examinee.data = None
 		with self.assertRaises(RuntimeError):
@@ -76,7 +74,7 @@ class SRDOProducerTestCase(unittest.TestCase):
 			normal_data = b"\xAA"
 			complement_data = b"\x55"
 			
-			examinee.attach(node, cob_id_1, cob_id_2)
+			examinee.attach(cob_id_1, cob_id_2)
 			
 			with self.subTest("cub_id_1=" + hex(cob_id_1) + ", cob_id_2=" + hex(cob_id_2)):
 				examinee.normal_data = normal_data

@@ -1,64 +1,60 @@
 import unittest
 import struct
 import can
-import canopen.node.service
+
+from canopen import Node, Network
+from canopen.objectdictionary import ObjectDictionary
+from canopen.node.service.emcy import EMCYProducer
 from canopen.emcy.errorcodes import *
 
 
 class EMCYProducerTestCase(unittest.TestCase):
 	def test_init(self):
-		canopen.node.service.EMCYProducer()
+		dictionary = ObjectDictionary()
+		node = Node("n", 1, dictionary)
+		examinee = EMCYProducer(node)
+		
+		self.assertEqual(examinee.node, node)
 	
 	def test_attach_detach(self):
-		dictionary = canopen.ObjectDictionary()
-		network = canopen.Network()
-		node1 = canopen.Node("a", 1, dictionary)
-		node2 = canopen.Node("b", 2, dictionary)
-		examinee = canopen.node.service.EMCYProducer()
+		dictionary = ObjectDictionary()
+		node = Node("n", 1, dictionary)
+		examinee = EMCYProducer(node)
+		network = Network()
 		
-		node1.attach(network)
-		node2.attach(network)
-		
-		self.assertEqual(examinee.node, None)
+		node.attach(network)
 		
 		with self.assertRaises(RuntimeError):
 			examinee.detach()
-		
-		with self.assertRaises(TypeError):
-			examinee.attach(None)
 		
 		test_data = [-1, 0x100000000]
 		for value in test_data:
 			with self.subTest(value = value):
 				with self.assertRaises(ValueError):
-					examinee.attach(node1, value)
+					examinee.attach(value)
 		
-		examinee.attach(node1)
-		self.assertEqual(examinee.node, node1)
+		examinee.attach()
+		self.assertTrue(examinee.is_attached())
 		
-		with self.assertRaises(ValueError):
-			examinee.attach(node1)
-		
-		examinee.attach(node2)
-		self.assertEqual(examinee.node, node2)
+		examinee.attach((1 << 29) | (0x80 + node.id))
+		self.assertTrue(examinee.is_attached())
 		
 		examinee.detach()
-		self.assertEqual(examinee.node, None)
+		self.assertFalse(examinee.is_attached())
 		
-		node1.detach()
-		node2.detach()
+		node.detach()
 	
 	def test_send(self):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		node = canopen.Node("a", 1, dictionary)
-		examinee = canopen.node.service.EMCYProducer()
+		dictionary = ObjectDictionary()
+		node = Node("a", 1, dictionary)
+		examinee = EMCYProducer(node)
+		network = Network()
 		
 		network.attach(bus1)
 		node.attach(network)
-		examinee.attach(node)
+		examinee.attach()
 		
 		#### Test step: Invalid value ranges
 		error_register = 0
@@ -114,7 +110,7 @@ class EMCYProducerTestCase(unittest.TestCase):
 		
 		examinee.detach()
 		
-		examinee.attach(node, (1 << 29) | (0x80 + node.id))
+		examinee.attach((1 << 29) | (0x80 + node.id))
 		
 		#### Test step: Send some error_codes
 		test_data = [(NO_ERROR, 0x00), (GENERIC_ERROR, 0x10), (SOFTWARE_ERROR, 0x14)]

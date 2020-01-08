@@ -1,5 +1,5 @@
 import can
-import canopen.node
+
 from canopen.node.service.sync import SYNCConsumer
 
 
@@ -10,52 +10,67 @@ class PDOProducer(SYNCConsumer):
 	"sync": ("sync", service, counter)
 	"rtr": ("rtr", service)
 	"""
-	def __init__(self, transmission_type = 0):
+	def __init__(self, node, transmission_type = 0):
+		""" Initializes the service
+		
+		:param node: The node, to which this service belongs to. Must be of type canopen.node.Node
+		
+		:param transmission_type:
+		
+		:raises: TypeError
+		"""
 		if int(transmission_type) < 0 or (int(transmission_type) > 240 and int(transmission_type) < 252) or int(transmission_type) > 255:
 			raise ValueError()
 		
-		SYNCConsumer.__init__(self)
+		SYNCConsumer.__init__(self, node)
+		self.add_event("rtr")
+		self._cob_id_tx = None
 		
-		self._callbacks["rtr"] = []
 		self._transmission_type = int(transmission_type)
 		self._data = None
 	
-	def attach(self, node, cob_id_tx = None, cob_id_sync = None):
-		""" Attaches the ``PDOProducer`` to a ``Node``. It does NOT add or assign this ``PDOProducer`` to the ``Node``.
-		:param node: A canopen.Node, to which the service should be attached to.
+	def attach(self, cob_id_tx = None, cob_id_sync = None):
+		""" Attach handler. Must be called when the node gets attached to the network.
+		
 		:param cob_id_tx: The COB ID for the PDO service, used for the CAN ID of the PDO messages to be sent.
 			Bit 29 selects whether an extended frame is used. The CAN ID is masked out of the lowest 11 or 29 bits.
-			If it is omitted or None is passed, the value defaults to 0x180 + node.id .
+			Ii defaults to 0x180 + node.id if it is omitted.
+
 		:param cob_id_sync: The COB ID for the PDO service, used for the CAN ID of the SYNC messages to be received.
 			Bit 29 selects whether an extended frame is used. The CAN ID is masked out of the lowest 11 or 29 bits.
-			If it is omitted or None is passed, the value defaults to 0x80. """
-		if not isinstance(node, canopen.node.Node):
-			raise TypeError()
+			It defaults to 0x80 if it is omitted.
+		"""
 		if cob_id_tx == None:
-			cob_id_tx = 0x180 + node.id
+			cob_id_tx = 0x180 + self._node.id
 		if cob_id_tx < 0 or cob_id_tx > 0xFFFFFFFF:
 			raise ValueError()
 		
-		SYNCConsumer.attach(self, node, cob_id_sync)
+		SYNCConsumer.attach(self, cob_id_sync)
+		
+		if cob_id_tx & (1 << 29):
+			self._node.network.subscribe(self.on_pdo, cob_id_tx & 0x1FFFFFFF)
+		else:
+			self._node.network.subscribe(self.on_pdo, cob_id_tx & 0x7FF)
+			
 		self._cob_id_tx = cob_id_tx
 		
-		if self._cob_id_tx & (1 << 29):
-			self._node.network.subscribe(self.on_pdo, self._cob_id_tx & 0x1FFFFFFF)
-		else:
-			self._node.network.subscribe(self.on_pdo, self._cob_id_tx & 0x7FF)
-		
 	def detach(self):
-		""" Detaches the ``PDOProducer`` from the ``Node``. It does NOT remove or delete the ``PDOProducer`` from the ``Node``. """
-		if not self.is_attached():
-			raise RuntimeError()
+		""" Detach handler. Must be called when the node gets detached from the network.
+		"""
+		SYNCConsumer.detach(self)
 		
 		if self._cob_id_tx & (1 << 29):
 			self._node.network.unsubscribe(self.on_pdo, self._cob_id_tx & 0x1FFFFFFF)
 		else:
 			self._node.network.unsubscribe(self.on_pdo, self._cob_id_tx & 0x7FF)
 		
-		SYNCConsumer.detach(self)
+		self._cob_id_tx = None
 	
+	def is_attached(self):
+		""" Returns True if the service is attached.
+		"""
+		return self._cob_id_tx != None
+
 	def send(self):
 		if self._data == None:
 			raise RuntimeError()

@@ -2,20 +2,25 @@ import unittest
 from unittest.mock import Mock
 import time
 import can
-import canopen
+
+from canopen import Node, Network
+from canopen.objectdictionary import ObjectDictionary
 from canopen.node.service.pdo import PDOProducer
 
 
 class PDOProducerTest(unittest.TestCase):
 	def test_init(self):
+		dictionary = ObjectDictionary()
+		node = Node("n", 1, dictionary)
+		
 		test_data = [-1, 241, 251, 256]
 		for value in test_data:
 			with self.assertRaises(ValueError):
-				PDOProducer(value)
+				PDOProducer(node, value)
 		
-		examinee = PDOProducer()
+		examinee = PDOProducer(node)
 		
-		self.assertEqual(examinee.node, None)
+		self.assertEqual(examinee.node, node)
 		
 		test_data = [-1, 241, 251, 256]
 		for value in test_data:
@@ -34,60 +39,49 @@ class PDOProducerTest(unittest.TestCase):
 				self.assertEqual(examinee.data, value)
 	
 	def test_attach_detach(self):
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		node1 = canopen.Node("a", 1, dictionary)
-		node2 = canopen.Node("b", 2, dictionary)
-		examinee = PDOProducer()
+		dictionary = ObjectDictionary()
+		node = Node("n", 1, dictionary)
+		examinee = PDOProducer(node)
+		network = Network()
 		
-		network.add(node1)
-		network.add(node2)
-		
-		self.assertEqual(examinee.node, None)
+		node.attach(network)
 		
 		with self.assertRaises(RuntimeError):
 			examinee.detach()
-		
-		with self.assertRaises(TypeError):
-			examinee.attach(None)
 		
 		test_data = [-1, 0x100000000]
 		for value in test_data:
 			with self.subTest(value = value):
 				with self.assertRaises(ValueError):
-					examinee.attach(node1, value, 0)
+					examinee.attach(value, 0)
 				with self.assertRaises(ValueError):
-					examinee.attach(node1, 0, value)
+					examinee.attach(0, value)
 		
-		examinee.attach(node1)
-		self.assertEqual(examinee.node, node1)
+		examinee.attach()
+		self.assertTrue(examinee.is_attached())
 		
-		with self.assertRaises(ValueError):
-			examinee.attach(node1)
-		
-		examinee.attach(node2, (1 << 29) | (0x180 + node2.id), (1 << 29) | 0x80)
-		self.assertEqual(examinee.node, node2)
+		examinee.attach((1 << 29) | (0x180 + node.id), (1 << 29) | 0x80)
+		self.assertTrue(examinee.is_attached())
 		
 		examinee.detach()
-		self.assertEqual(examinee.node, None)
+		self.assertFalse(examinee.is_attached())
 		
-		del network[node1.name]
-		del network[node2.name]
+		node.detach()
 	
 	def test_pdo(self):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		node = canopen.Node("a", 1, dictionary)
-		examinee = PDOProducer()
+		dictionary = ObjectDictionary()
+		node = Node("a", 1, dictionary)
+		examinee = PDOProducer(node)
+		network = Network()
 		
 		m = Mock()
 		examinee.add_callback("rtr", m)
 		
 		network.attach(bus1)
 		node.attach(network)
-		examinee.attach(node)
+		examinee.attach()
 		
 		#### Test step: standard frame -> ignored
 		m.reset_mock()
@@ -119,17 +113,17 @@ class PDOProducerTest(unittest.TestCase):
 	def test_sync(self):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		node = canopen.Node("a", 1, dictionary)
-		examinee = PDOProducer()
+		dictionary = ObjectDictionary()
+		node = Node("a", 1, dictionary)
+		examinee = PDOProducer(node)
+		network = Network()
 		
 		cb1 = Mock()
 		examinee.add_callback("sync", cb1)
 		
 		network.attach(bus1)
 		node.attach(network)
-		examinee.attach(node)
+		examinee.attach()
 		
 		#### Test step: Sync message
 		cb1.reset_mock()
@@ -161,10 +155,10 @@ class PDOProducerTest(unittest.TestCase):
 	def test_send(self):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		node = canopen.Node("a", 1, dictionary)
-		examinee = PDOProducer()
+		dictionary = ObjectDictionary()
+		node = Node("a", 1, dictionary)
+		examinee = PDOProducer(node)
+		network = Network()
 		
 		network.attach(bus1)
 		node.attach(network)
@@ -175,7 +169,7 @@ class PDOProducerTest(unittest.TestCase):
 		
 		cob_id_txs = [0x181, (1 << 29) | 0x181]
 		for cob_id_tx in cob_id_txs:
-			examinee.attach(node, cob_id_tx)
+			examinee.attach(cob_id_tx)
 			
 			with self.subTest("cub_id_tx=" + hex(cob_id_tx)):
 				data = b"\x00"

@@ -4,7 +4,9 @@ import threading
 import sys
 import time
 import can
-import canopen.node.service
+
+from canopen import Node, Network
+from canopen.objectdictionary import ObjectDictionary
 from canopen.node.service.pdo import PDOConsumer
 
 
@@ -20,26 +22,18 @@ class Vehicle_Wait(threading.Thread):
 	
 	def run(self):
 		try:
-			network = canopen.Network()
-			dictionary = canopen.ObjectDictionary()
-			node = canopen.Node("a", 1, dictionary)
-			examinee = canopen.node.service.PDOConsumer()
+			self.sync(1)
+			time.sleep(0.1)
+			message = can.Message(arbitration_id = 0x201, is_extended_id = False, data = b"\x11\x22\x33\x44\x55\x66\x77\x88")
+			self._bus.send(message)
+		
+			self.sync(1)
+			time.sleep(0.1)
+			message = can.Message(arbitration_id = 0x201, is_extended_id = False, data = b"\x11\x22\x33\x44\x55\x66\x77\x88")
+			self._bus.send(message)
 			
-			network.attach(self._bus)
-			node.attach(network)
-			examinee.attach(node)
+			self.sync(1)
 			
-			self._barrier.wait(1)
-			
-			assert(examinee.wait(1))
-			
-			self._barrier.wait(1)
-			
-			assert(examinee.wait())
-			
-			examinee.detach()
-			node.detach()
-			network.detach()
 		except AssertionError:
 			self._testcase.result.addFailure(self._testcase, sys.exc_info())
 		except:
@@ -47,14 +41,17 @@ class Vehicle_Wait(threading.Thread):
 
 class PDOConsumerTest(unittest.TestCase):
 	def test_init(self):
+		dictionary = ObjectDictionary()
+		node = Node("n", 1, dictionary)
+		
 		test_data = [-1, 241, 253, 256]
 		for value in test_data:
 			with self.assertRaises(ValueError):
-				PDOConsumer(value)
+				PDOConsumer(node, value)
 		
-		examinee = PDOConsumer()
+		examinee = PDOConsumer(node)
 		
-		self.assertEqual(examinee.node, None)
+		self.assertEqual(examinee.node, node)
 		
 		test_data = [-1, 241, 253, 256]
 		for value in test_data:
@@ -73,61 +70,49 @@ class PDOConsumerTest(unittest.TestCase):
 				self.assertEqual(examinee.data, value)
 	
 	def test_attach_detach(self):
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		node1 = canopen.Node("a", 1, dictionary)
-		node2 = canopen.Node("b", 2, dictionary)
-		examinee = PDOConsumer()
+		dictionary = ObjectDictionary()
+		node = Node("n", 1, dictionary)
+		examinee = PDOConsumer(node)
+		network = Network()
 		
-		network.add(node1)
-		network.add(node2)
-		
-		self.assertEqual(examinee.node, None)
+		node.attach(network)
 		
 		with self.assertRaises(RuntimeError):
 			examinee.detach()
-		
-		with self.assertRaises(TypeError):
-			examinee.attach(None)
 		
 		test_data = [-1, 0x100000000]
 		for value in test_data:
 			with self.subTest(value = value):
 				with self.assertRaises(ValueError):
-					examinee.attach(node1, value, 0)
+					examinee.attach(value, 0)
 				with self.assertRaises(ValueError):
-					examinee.attach(node1, 0, value)
+					examinee.attach(0, value)
 		
-		examinee.attach(node1)
-		self.assertEqual(examinee.node, node1)
+		examinee.attach()
+		self.assertTrue(examinee.is_attached())
 		
-		with self.assertRaises(ValueError):
-			examinee.attach(node1)
-		
-		examinee.attach(node2, (1 << 29) | (0x200 + node2.id), (1 << 29) | 0x80)
-		self.assertEqual(examinee.node, node2)
+		examinee.attach((1 << 29) | (0x200 + node.id), (1 << 29) | 0x80)
+		self.assertTrue(examinee.is_attached())
 		
 		examinee.detach()
-		self.assertEqual(examinee.node, None)
+		self.assertFalse(examinee.is_attached())
 		
-		del network[node1.name]
-		del network[node2.name]
+		node.detach()
 	
 	def test_pdo(self):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		node = canopen.Node("a", 1, dictionary)
-		examinee = PDOConsumer()
+		dictionary = ObjectDictionary()
+		node = Node("a", 1, dictionary)
+		examinee = PDOConsumer(node)
+		network = Network()
 		
 		cb1 = Mock()
 		examinee.add_callback("pdo", cb1)
 		
 		network.attach(bus1)
 		node.attach(network)
-		
-		examinee.attach(node)
+		examinee.attach()
 		
 		#### Test step: PDO message
 		test_data = [b"\x11\x22\x33\x44\x55\x66\x77\x88", b"\x00", b""]
@@ -155,7 +140,6 @@ class PDOConsumerTest(unittest.TestCase):
 		cb1.assert_not_called()
 		
 		examinee.detach()
-		
 		node.detach()
 		network.detach()
 		bus1.shutdown()
@@ -164,17 +148,17 @@ class PDOConsumerTest(unittest.TestCase):
 	def test_sync(self):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		node = canopen.Node("a", 1, dictionary)
-		examinee = PDOConsumer()
+		dictionary = ObjectDictionary()
+		node = Node("a", 1, dictionary)
+		examinee = PDOConsumer(node)
+		network = Network()
 		
 		cb1 = Mock()
 		examinee.add_callback("sync", cb1)
 		
 		network.attach(bus1)
 		node.attach(network)
-		examinee.attach(node)
+		examinee.attach()
 		
 		#### Test step: Sync message
 		test_data = [(None, None), (b"", None), (b"\x01", 1)]
@@ -206,31 +190,35 @@ class PDOConsumerTest(unittest.TestCase):
 		bus1.shutdown()
 		bus2.shutdown()
 	
-	def test_wait(self):
+	def test_wait_for_pdo(self):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
+		dictionary = ObjectDictionary()
+		node = Node("a", 1, dictionary)
+		examinee = PDOConsumer(node)
+		network = Network()
 		
-		vehicle = Vehicle_Wait(self, bus1)
+		network.attach(bus1)
+		node.attach(network)
+		examinee.attach()
+		
+		vehicle = Vehicle_Wait(self, bus2)
 		vehicle.start()
 
 		vehicle.sync(1)
-		
-		time.sleep(0.1)
-		
-		message = can.Message(arbitration_id = 0x201, is_extended_id = False, data = b"\x11\x22\x33\x44\x55\x66\x77\x88")
-		bus2.send(message)
-		time.sleep(0.001)
-		
+		self.assertTrue(examinee.wait_for_pdo(1))
+			
 		vehicle.sync(1)
+		self.assertTrue(examinee.wait_for_pdo())
 		
-		time.sleep(0.1)
-		
-		message = can.Message(arbitration_id = 0x201, is_extended_id = False, data = b"\x11\x22\x33\x44\x55\x66\x77\x88")
-		bus2.send(message)
-		time.sleep(0.001)
+		vehicle.sync(1)		
+		self.assertFalse(examinee.wait_for_sync(0.1))
 		
 		vehicle.join(1)
 		
+		examinee.detach()
+		node.detach()
+		network.detach()
 		bus1.shutdown()
 		bus2.shutdown()
 

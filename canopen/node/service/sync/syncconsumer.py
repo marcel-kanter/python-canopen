@@ -1,5 +1,6 @@
 import struct
 import threading
+
 from canopen.node.service import Service
 
 
@@ -12,38 +13,61 @@ class SYNCConsumer(Service):
 	"sync": ("sync", service, counter)
 	"""
 	
-	def __init__(self):
-		Service.__init__(self)
-		self._callbacks = {"sync": []}
+	def __init__(self, node):
+		""" Initializes the service
+		
+		:param node: The node, to which this service belongs to. Must be of type canopen.node.Node
+		
+		:raises: TypeError
+		"""
+		Service.__init__(self, node)
+		self.add_event("sync")
+		self._cob_id_sync = None
+		
 		self._sync_condition = threading.Condition()
 	
-	def attach(self, node, cob_id_sync = None):
-		""" Attaches the ``SYNCConsumer`` to a ``Node``. It does NOT add or assign this ``SYNCConsumer`` to the ``Node``.
-		:param node: A canopen.Node, to which the service should be attached to.
+	def attach(self, cob_id_sync = None):
+		""" Attach handler. Must be called when the node gets attached to the network.
+		
 		:param cob_id_sync: The COB ID for the SYNC service. Bit 29 selects whether an extended frame is used. The CAN ID is masked out of the lowest 11 or 29 bits.
-			If it is omitted or None is passed, the value defaults to 0x80. """
+			It defaults to 0x80 if it is omitted or None.
+		
+		:raises: ValueError
+		"""
 		if cob_id_sync == None:
 			cob_id_sync = 0x80
 		if cob_id_sync < 0 or cob_id_sync > 0xFFFFFFFF:
 			raise ValueError()
+		if self.is_attached():
+			self.detach()
 		
-		Service.attach(self, node)
-		self._cob_id_sync = cob_id_sync
-		
-		if self._cob_id_sync & (1 << 29):
-			self._node.network.subscribe(self.on_sync, self._cob_id_sync & 0x1FFFFFFF)
+		if cob_id_sync & (1 << 29):
+			self._node.network.subscribe(self.on_sync, cob_id_sync & 0x1FFFFFFF)
 		else:
-			self._node.network.subscribe(self.on_sync, self._cob_id_sync & 0x7FF)
+			self._node.network.subscribe(self.on_sync, cob_id_sync & 0x7FF)
+		
+		self._cob_id_sync = cob_id_sync
 	
 	def detach(self):
-		""" Detaches the ``SYNCConsumer`` from the ``Node``. It does NOT remove or delete the ``SYNCConsumer`` from the ``Node``. """
+		""" Detach handler. Must be called when the node gets detached from the network.
+		Raises RuntimeError if not attached.
+		
+		:raises: RuntimeError
+		"""
 		if not self.is_attached():
 			raise RuntimeError()
+		
 		if self._cob_id_sync & (1 << 29):
 			self._node.network.unsubscribe(self.on_sync, self._cob_id_sync & 0x1FFFFFFF)
 		else:
 			self._node.network.unsubscribe(self.on_sync, self._cob_id_sync & 0x7FF)
-		Service.detach(self)
+		
+		self._cob_id_sync = None
+	
+	def is_attached(self):
+		""" Returns True if the service is attached.
+		"""
+		return self._cob_id_sync != None
 	
 	def on_sync(self, message):
 		""" Message handler for incoming SYNC messages. """
@@ -55,6 +79,7 @@ class SYNCConsumer(Service):
 			counter, = struct.unpack_from("<B", message.data)
 		else:
 			counter = None
+		
 		self.notify("sync", self, counter)
 		with self._sync_condition:
 			self._sync_condition.notify_all()

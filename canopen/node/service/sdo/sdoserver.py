@@ -1,9 +1,9 @@
 import struct
 import can
-from canopen.sdo.abortcodes import *
+
 from canopen.node.service import Service
-import canopen.node
-import canopen.objectdictionary
+from canopen.sdo.abortcodes import TOGGLE_BIT_NOT_ALTERNATED, COMMAND_SPECIFIER_NOT_VALID, OBJECT_DOES_NOT_EXIST, SUBINDEX_DOES_NOT_EXIST, NO_DATA_AVAILABLE
+from canopen.objectdictionary import Variable
 
 
 class SDOServer(Service):
@@ -13,8 +13,18 @@ class SDOServer(Service):
 	Block upload and download is not implemented.
 	Network indication is not implemented.
 	"""
-	def __init__(self, timeout = 1):
-		Service.__init__(self)
+	def __init__(self, node, timeout = 1):
+		""" Initializes the service
+		
+		:param node: The node, to which this service belongs to.
+			Must be of type canopen.node.Node
+		
+		:raises: TypeError
+		"""
+		Service.__init__(self, node)
+		self._cob_id_rx = None
+		self._cob_id_tx = None
+		
 		self._state = 0x80
 		self._toggle_bit = 0x00
 		self._data_size = 0
@@ -23,35 +33,39 @@ class SDOServer(Service):
 		self._subindex = 0
 		self._timeout = timeout
 	
-	def attach(self, node, cob_id_rx = None, cob_id_tx = None):
-		""" Attaches the ``SDOServer`` to a ``Node``. It does NOT add or assign this ``SDOServer`` to the ``Node``.
-		:param node: A canopen.Node, to which the service should be attached to.
+	def attach(self, cob_id_rx = None, cob_id_tx = None):
+		""" Attach handler. Must be called when the node gets attached to the network.
+		
 		:param cob_id_rx: The COB ID for the SDO service, used for the CAN ID of the SDO messages to be received.
 			Bit 29 selects whether an extended frame is used. The CAN ID is masked out of the lowest 11 or 29 bits.
 			If it is omitted or None is passed, the value defaults to 0x600 + node.id.
+
 		:param cob_id_tx: The COB ID for the SDO service, used for the CAN ID of the SDO messages to be sent.
 			Bit 29 selects whether an extended frame is used. The CAN ID is masked out of the lowest 11 or 29 bits.
-			If it is omitted or None is passed, the value defaults to 0x580 + node.id. """
-		if not isinstance(node, canopen.node.Node):
-			raise TypeError()
+			If it is omitted or None is passed, the value defaults to 0x580 + node.id.
+
+		:raises: ValueError
+		"""
 		if cob_id_rx == None:
-			cob_id_rx = 0x600 + node.id
+			cob_id_rx = 0x600 + self._node.id
 		if cob_id_rx < 0 or cob_id_rx > 0xFFFFFFFF:
 			raise ValueError()
 		if cob_id_tx == None:
-			cob_id_tx = 0x580 + node.id
+			cob_id_tx = 0x580 + self._node.id
 		if cob_id_tx < 0 or cob_id_tx > 0xFFFFFFFF:
 			raise ValueError()
+		if self.is_attached():
+			self.detach()
 		
-		Service.attach(self, node)
 		self._state = 0x80
+		
+		if cob_id_rx & (1 << 29):
+			self._node.network.subscribe(self.on_request, cob_id_rx & 0x1FFFFFFF)
+		else:
+			self._node.network.subscribe(self.on_request, cob_id_rx & 0x7FF)
+		
 		self._cob_id_rx = cob_id_rx
 		self._cob_id_tx = cob_id_tx
-		
-		if self._cob_id_rx & (1 << 29):
-			self._node.network.subscribe(self.on_request, self._cob_id_rx & 0x1FFFFFFF)
-		else:
-			self._node.network.subscribe(self.on_request, self._cob_id_rx & 0x7FF)
 	
 	def detach(self):
 		""" Detaches the ``SDOServer`` from the ``Node``. It does NOT remove or delete the ``SDOServer`` from the ``Node``. """
@@ -63,7 +77,13 @@ class SDOServer(Service):
 		else:
 			self._node.network.unsubscribe(self.on_request, self._cob_id_rx & 0x7FF)
 		
-		Service.detach(self)
+		self._cob_id_rx = None
+		self._cob_id_tx = None
+	
+	def is_attached(self):
+		""" Returns True if the service is attached.
+		"""
+		return self._cob_id_rx != None
 	
 	def on_request(self, message):
 		""" Handler for upload and download requests to the SDO server. """
@@ -126,7 +146,7 @@ class SDOServer(Service):
 				self._abort(self._index, self._subindex, OBJECT_DOES_NOT_EXIST)
 				return
 			
-			if not isinstance(item, canopen.objectdictionary.Variable):
+			if not isinstance(item, Variable):
 				try:
 					item = item[self._subindex]
 				except:
@@ -169,7 +189,7 @@ class SDOServer(Service):
 			self._abort(index, subindex, OBJECT_DOES_NOT_EXIST)
 			return
 		
-		if not isinstance(item, canopen.objectdictionary.Variable):
+		if not isinstance(item, Variable):
 			try:
 				item = item[subindex]
 			except:
@@ -232,7 +252,7 @@ class SDOServer(Service):
 			self._abort(index, subindex, OBJECT_DOES_NOT_EXIST)
 			return
 		
-		if not isinstance(item, canopen.objectdictionary.Variable):
+		if not isinstance(item, Variable):
 			try:
 				item = item[subindex]
 			except:

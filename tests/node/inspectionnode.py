@@ -1,10 +1,10 @@
 from unittest.mock import Mock
-import canopen.node
+from canopen import Node
 
 
-class InspectionNode(canopen.Node):
+class InspectionNode(Node):
 	def __init__(self, name, node_id, dictionary):
-		canopen.Node.__init__(self, name, node_id, dictionary)
+		Node.__init__(self, name, node_id, dictionary)
 		self.raise_exception = False
 		self.data = {}
 		self.get_data = Mock(side_effect = self._sideeffect_get_data)

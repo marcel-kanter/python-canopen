@@ -2,45 +2,73 @@ import unittest
 from unittest.mock import Mock
 import time
 import can
-import canopen.node.service
-import canopen.nmt.states
+
+from canopen import Node, Network
+from canopen.objectdictionary import ObjectDictionary
+from canopen.node.service.nmt import NMTSlave
+
+from canopen.nmt.states import *
 
 
 class NMTSlaveTestCase(unittest.TestCase):
 	def test_init(self):
-		nmt = canopen.node.service.NMTSlave()
-		self.assertEqual(nmt.state, canopen.nmt.states.INITIALIZATION)
+		dictionary = ObjectDictionary()
+		node = Node("n", 1, dictionary)
+		examinee = NMTSlave(node)
+		
+		self.assertEqual(examinee.node, node)
+		
+		self.assertEqual(examinee.state, INITIALIZATION)
+		
 		
 		#### Test step: Check if unallowed values raise a ValueError
 		with self.assertRaises(ValueError):
-			nmt.state = 0x11
+			examinee.state = 0x11
 		
 		#### Test step: Check if only transition to pre-operational state is allowed
 		with self.assertRaises(ValueError):
-			nmt.state = canopen.nmt.states.STOPPED
+			examinee.state = STOPPED
 		
 		with self.assertRaises(ValueError):
-			nmt.state = canopen.nmt.states.OPERATIONAL
+			examinee.state = OPERATIONAL
 		
-		nmt.state = canopen.nmt.states.PRE_OPERATIONAL
-		self.assertEqual(nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
+		examinee.state = PRE_OPERATIONAL
+		self.assertEqual(examinee.state, PRE_OPERATIONAL)
 		
 		#### Test step: Check if all transitions are possible - the test cycles one time completely through all states in both directions
-		test_data = [canopen.nmt.states.PRE_OPERATIONAL, canopen.nmt.states.OPERATIONAL, canopen.nmt.states.STOPPED, canopen.nmt.states.PRE_OPERATIONAL, canopen.nmt.states.STOPPED, canopen.nmt.states.OPERATIONAL, canopen.nmt.states.PRE_OPERATIONAL]
+		test_data = [PRE_OPERATIONAL, OPERATIONAL, STOPPED, PRE_OPERATIONAL, STOPPED, OPERATIONAL, PRE_OPERATIONAL]
 		for value in test_data:
 			with self.subTest(value = value):
-				nmt.state = value
-				self.assertEqual(nmt.state, value)
+				examinee.state = value
+				self.assertEqual(examinee.state, value)
+	
+	def test_attach_detach(self):
+		dictionary = ObjectDictionary()
+		node = Node("n", 1, dictionary)
+		examinee = NMTSlave(node)
+		network = Network()
+		
+		node.attach(network)
+		
+		with self.assertRaises(RuntimeError):
+			examinee.detach()
+				
+		examinee.attach()
+		self.assertTrue(examinee.is_attached())
+		
+		examinee.attach()
+		self.assertTrue(examinee.is_attached())
+		
+		examinee.detach()
+		self.assertFalse(examinee.is_attached())
+		
+		node.detach()
 	
 	def test_callback(self):
-		examinee = canopen.node.service.NMTSlave()
-		
-		with self.assertRaises(TypeError):
-			examinee.add_callback("start", None)
-		
-		with self.assertRaises(ValueError):
-			examinee.add_callback("xxx", self.__callback_start)
-		
+		dictionary = ObjectDictionary()
+		node = Node("n", 1, dictionary)
+		examinee = NMTSlave(node)
+				
 		m_start = Mock()
 		m_stop = Mock()
 		m_pre_operational = Mock()
@@ -57,10 +85,7 @@ class NMTSlaveTestCase(unittest.TestCase):
 		
 		examinee.add_callback("start", m_raises)
 		
-		#### Test step: notify
-		with self.assertRaises(ValueError):
-			examinee.notify("xxx", examinee)
-		
+		#### Test step: notify		
 		examinee.notify("start", examinee)
 		m_start.assert_called_once_with("start", examinee)
 		m_stop.assert_not_called()
@@ -101,16 +126,7 @@ class NMTSlaveTestCase(unittest.TestCase):
 		m_reset_communication.assert_called_once_with("reset-communication", examinee)
 		m_raises.assert_called_once()
 		
-		#### Test step: remove callback
-		with self.assertRaises(TypeError):
-			examinee.remove_callback("start", None)
-		
-		with self.assertRaises(ValueError):
-			examinee.remove_callback("xxx", m_start)
-		
-		with self.assertRaises(ValueError):
-			examinee.remove_callback("start", self.test_callback)
-		
+		#### Test step: Remove callbacks
 		examinee.remove_callback("start", m_start)
 		examinee.remove_callback("stop", m_stop)
 		examinee.remove_callback("pre-operational", m_pre_operational)
@@ -118,163 +134,136 @@ class NMTSlaveTestCase(unittest.TestCase):
 		examinee.remove_callback("reset-communication", m_reset_communication)
 		examinee.remove_callback("start", m_raises)
 	
-	def test_attach_detach(self):
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		node1 = canopen.Node("a", 1, dictionary)
-		node2 = canopen.Node("b", 2, dictionary)
-		examinee = canopen.node.service.NMTSlave()
-		
-		node1.attach(network)
-		node2.attach(network)
-		
-		self.assertEqual(examinee.node, None)
-		
-		with self.assertRaises(RuntimeError):
-			examinee.detach()
-		
-		with self.assertRaises(TypeError):
-			examinee.attach(None)
-		
-		examinee.attach(node1)
-		self.assertEqual(examinee.node, node1)
-		
-		with self.assertRaises(ValueError):
-			examinee.attach(node1)
-		
-		examinee.attach(node2)
-		self.assertEqual(examinee.node, node2)
-		
-		examinee.detach()
-		self.assertEqual(examinee.node, None)
-		
-		node1.detach()
-		node2.detach()
-	
 	def test_node_control(self):
 		bus = can.Bus(interface = "virtual", channel = 0, receive_own_messages = True)
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		node = canopen.LocalNode("a", 0x0A, dictionary)
-		
-		node.nmt.add_callback("start", self.__callback_start)
-		node.nmt.add_callback("stop", self.__callback_stop)
-		node.nmt.add_callback("pre-operational", self.__callback_pre_operational)
-		node.nmt.add_callback("reset-application", self.__callback_reset_application)
-		node.nmt.add_callback("reset-communication", self.__callback_reset_communication)
+		dictionary = ObjectDictionary()
+		node = Node("a", 0x0A, dictionary)
+		examinee = NMTSlave(node)
+		network = Network()
 		
 		network.attach(bus)
-		network.add(node)
+		node.attach(network)
+		examinee.attach()
 		
-		self.assertEqual(node.nmt.state, 0x00)
+		examinee.add_callback("start", self.__callback_start)
+		examinee.add_callback("stop", self.__callback_stop)
+		examinee.add_callback("pre-operational", self.__callback_pre_operational)
+		examinee.add_callback("reset-application", self.__callback_reset_application)
+		examinee.add_callback("reset-communication", self.__callback_reset_communication)
+		
+		self.assertEqual(examinee.state, INITIALIZATION)
 		
 		#### Test step: Wrong data length
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x00")
 		bus.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, canopen.nmt.states.INITIALIZATION)
+		self.assertEqual(examinee.state, INITIALIZATION)
 		
 		#### Test step: Wrong node id
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x01\x10")
 		bus.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, canopen.nmt.states.INITIALIZATION)
+		self.assertEqual(examinee.state, INITIALIZATION)
 		
 		#### Test step: Unknown command with direct addressing
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x00\x0A")
 		bus.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, canopen.nmt.states.INITIALIZATION)
+		self.assertEqual(examinee.state, INITIALIZATION)
 		
 		#### Test step: Unknwon command with broadcast
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x00\x00")
 		bus.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, canopen.nmt.states.INITIALIZATION)
+		self.assertEqual(examinee.state, INITIALIZATION)
 		
 		#### Test step: Addressing with node id
 		# Application somewhen finishes start-up and changes the node's nmt state to pre-operational
-		node.nmt.state = canopen.nmt.states.PRE_OPERATIONAL
+		examinee.state = PRE_OPERATIONAL
 		
 		# Start (enter NMT operational)
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x01\x0A")
 		bus.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, canopen.nmt.states.OPERATIONAL)
+		self.assertEqual(examinee.state, OPERATIONAL)
 		
 		# Enter NMT pre-operational
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x80\x0A")
 		bus.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
+		self.assertEqual(examinee.state, PRE_OPERATIONAL)
 		
 		# Enter NMT reset application
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x81\x0A")
 		bus.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
+		self.assertEqual(examinee.state, PRE_OPERATIONAL)
 		
 		# Stop (enter to NMT stopped)
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x02\x0A")
 		bus.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, canopen.nmt.states.STOPPED)
+		self.assertEqual(examinee.state, STOPPED)
 		
 		# Enter NMT reset communication
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x82\x0A")
 		bus.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
+		self.assertEqual(examinee.state, PRE_OPERATIONAL)
 		
 		#### Test step: Addressing with broadcast
 		# Start (enter NMT operational)
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x01\x00")
 		bus.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, canopen.nmt.states.OPERATIONAL)
+		self.assertEqual(examinee.state, OPERATIONAL)
 		
 		# Enter NMT pre-operational
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x80\x00")
 		bus.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
+		self.assertEqual(examinee.state, PRE_OPERATIONAL)
 		
 		# Enter NMT reset application
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x81\x00")
 		bus.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
+		self.assertEqual(examinee.state, PRE_OPERATIONAL)
 		
 		# Stop (enter to NMT stopped)
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x02\x00")
 		bus.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, canopen.nmt.states.STOPPED)
+		self.assertEqual(examinee.state, STOPPED)
 		
 		# Enter NMT reset communication
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x82\x00")
 		bus.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
+		self.assertEqual(examinee.state, PRE_OPERATIONAL)
 		
+		examinee.detach()
+		node.detach()
 		network.detach()
 		bus.shutdown()
 	
 	def test_error_control(self):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		node = canopen.LocalNode("a", 0x0A, dictionary)
-		
-		node.nmt.add_callback("start", self.__callback_start)
-		node.nmt.add_callback("stop", self.__callback_stop)
-		node.nmt.add_callback("pre-operational", self.__callback_pre_operational)
-		node.nmt.add_callback("reset-application", self.__callback_reset_application)
-		node.nmt.add_callback("reset-communication", self.__callback_reset_communication)
+		dictionary = ObjectDictionary()
+		node = Node("a", 0x0A, dictionary)
+		examinee = NMTSlave(node)
+		network = Network()
 		
 		network.attach(bus1)
-		network.add(node)
+		node.attach(network)
+		examinee.attach()
+		
+		examinee.add_callback("start", self.__callback_start)
+		examinee.add_callback("stop", self.__callback_stop)
+		examinee.add_callback("pre-operational", self.__callback_pre_operational)
+		examinee.add_callback("reset-application", self.__callback_reset_application)
+		examinee.add_callback("reset-communication", self.__callback_reset_communication)
 		
 		#### Test step: Missing data
 		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, data = [])
@@ -287,7 +276,7 @@ class NMTSlaveTestCase(unittest.TestCase):
 		time.sleep(0.001)
 		
 		#### Test step: Error control should not respond in initialization state
-		self.assertEqual(node.nmt.state, canopen.nmt.states.INITIALIZATION)
+		self.assertEqual(examinee.state, INITIALIZATION)
 		
 		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
@@ -298,12 +287,12 @@ class NMTSlaveTestCase(unittest.TestCase):
 		
 		#### Test step: Check toggle bit in operational state
 		# Application somewhen finishes start-up and changes the node's nmt state to pre-operational
-		node.nmt.state = canopen.nmt.states.PRE_OPERATIONAL
+		examinee.state = PRE_OPERATIONAL
 		
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x01\x0A")
 		bus2.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, canopen.nmt.states.OPERATIONAL)
+		self.assertEqual(examinee.state, OPERATIONAL)
 		
 		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
@@ -333,7 +322,7 @@ class NMTSlaveTestCase(unittest.TestCase):
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x82\x0A")
 		bus2.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
+		self.assertEqual(examinee.state, PRE_OPERATIONAL)
 		
 		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
@@ -347,7 +336,7 @@ class NMTSlaveTestCase(unittest.TestCase):
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x82\x0A")
 		bus2.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
+		self.assertEqual(examinee.state, PRE_OPERATIONAL)
 		
 		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
@@ -377,10 +366,10 @@ class NMTSlaveTestCase(unittest.TestCase):
 		message = can.Message(arbitration_id = 0x000, is_extended_id = False, data = b"\x81\x0A")
 		bus2.send(message)
 		time.sleep(0.001)
-		self.assertEqual(node.nmt.state, canopen.nmt.states.PRE_OPERATIONAL)
+		self.assertEqual(examinee.state, PRE_OPERATIONAL)
 		
-		node.nmt.state = canopen.nmt.states.OPERATIONAL
-		self.assertEqual(node.nmt.state, canopen.nmt.states.OPERATIONAL)
+		examinee.state = OPERATIONAL
+		self.assertEqual(examinee.state, OPERATIONAL)
 		
 		message = can.Message(arbitration_id = 0x700 + node.id, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
@@ -391,20 +380,22 @@ class NMTSlaveTestCase(unittest.TestCase):
 		self.assertEqual(message.data, b"\x05")
 		
 		#### Test step: Send heartbeat message
-		node.nmt.send_heartbeat()
+		examinee.send_heartbeat()
 		
 		message = bus2.recv(1)
 		self.assertEqual(message.arbitration_id, 0x700 + node.id)
 		self.assertEqual(message.is_remote_frame, False)
 		self.assertEqual(message.data, b"\x05")
 		
-		node.nmt.send_heartbeat()
+		examinee.send_heartbeat()
 		
 		message = bus2.recv(1)
 		self.assertEqual(message.arbitration_id, 0x700 + node.id)
 		self.assertEqual(message.is_remote_frame, False)
 		self.assertEqual(message.data, b"\x05")
 		
+		examinee.detach()
+		node.detach()
 		network.detach()
 		bus1.shutdown()
 		bus2.shutdown()
@@ -412,27 +403,28 @@ class NMTSlaveTestCase(unittest.TestCase):
 	def test_heartbeat(self):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		node = canopen.LocalNode("a", 0x0A, dictionary)
-		
-		cb = Mock()
-		
-		node.nmt.add_callback("guarding", cb)
+		dictionary = ObjectDictionary()
+		node = Node("a", 0x0A, dictionary)
+		examinee = NMTSlave(node)
+		network = Network()
 		
 		network.attach(bus1)
-		network.add(node)
+		node.attach(network)
+		examinee.attach()
+		
+		cb = Mock()
+		examinee.add_callback("guarding", cb)
 		
 		test_data = [-1.0, 0.0]
 		for value in test_data:
 			with self.subTest(value):
 				with self.assertRaises(ValueError):
-					node.nmt.start_heartbeat(value)
+					examinee.start_heartbeat(value)
 		
 		#### Test step 1: Starting heartbeat in initialization state and switching state afterwards. No message should be send until pre-operational state is set. 
-		node.nmt.state = canopen.nmt.states.INITIALIZATION
+		examinee.state = INITIALIZATION
 		
-		node.nmt.start_heartbeat(0.2)
+		examinee.start_heartbeat(0.2)
 		start_time = time.time()
 		
 		time.sleep(0.2 + start_time - time.time())
@@ -442,7 +434,7 @@ class NMTSlaveTestCase(unittest.TestCase):
 		
 		# No message until the state is set to pre-operational.
 		
-		node.nmt.state = canopen.nmt.states.PRE_OPERATIONAL
+		examinee.state = PRE_OPERATIONAL
 		
 		# First message should be boot-up message
 		message = bus2.recv(0.1)
@@ -459,7 +451,7 @@ class NMTSlaveTestCase(unittest.TestCase):
 		self.assertEqual(message.data, b"\x7F")
 		
 		# Stop heartbeat functionality
-		node.nmt.stop()
+		examinee.stop()
 		
 		time.sleep(0.7 + start_time - time.time())
 		
@@ -467,7 +459,7 @@ class NMTSlaveTestCase(unittest.TestCase):
 		self.assertEqual(message, None)
 		
 		# Start heartbeat functionality again. Now the node is in pre-operational state already.
-		node.nmt.start_heartbeat(0.2)
+		examinee.start_heartbeat(0.2)
 		
 		message = bus2.recv(0.1)
 		self.assertEqual(message.arbitration_id, 0x700 + node.id)
@@ -475,7 +467,7 @@ class NMTSlaveTestCase(unittest.TestCase):
 		self.assertEqual(message.data, b"\x7F")
 		
 		# Stop heartbeat functionality
-		node.nmt.stop()
+		examinee.stop()
 		
 		time.sleep(0.2)
 		
@@ -487,14 +479,15 @@ class NMTSlaveTestCase(unittest.TestCase):
 		
 		#### Test step: Calling the timer_callback from outside should not produce an error (it should only be called by the internal timer).
 		cb.reset_mock()
-		node.nmt.timer_callback()
+		examinee.timer_callback()
 		
 		message = bus2.recv(0.1)
 		self.assertEqual(message, None)
 		
 		cb.assert_not_called()
 		
-		del network[node.id]
+		examinee.detach()
+		node.detach()
 		network.detach()
 		bus1.shutdown()
 		bus2.shutdown()
@@ -502,26 +495,27 @@ class NMTSlaveTestCase(unittest.TestCase):
 	def test_guarding(self):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		node = canopen.LocalNode("a", 0x0A, dictionary)
-		
-		cb = Mock()
-		
-		node.nmt.add_callback("guarding", cb)
+		dictionary = ObjectDictionary()
+		node = Node("a", 0x0A, dictionary)
+		examinee = NMTSlave(node)
+		network = Network()
 		
 		network.attach(bus1)
-		network.add(node)
+		node.attach(network)
+		examinee.attach()
+		
+		cb = Mock()
+		examinee.add_callback("guarding", cb)
 		
 		test_data = [(-1, 1), (0, 1), (1, -1), (1, 0)]
 		for guard_time, life_time_factor in test_data:
 			with self.subTest("guard_time=" + str(guard_time) + ", life_time_factor=" + str(life_time_factor)):
 				with self.assertRaises(ValueError):
-					node.nmt.start_guarding(guard_time, life_time_factor)
+					examinee.start_guarding(guard_time, life_time_factor)
 		
-		node.nmt.state = canopen.nmt.states.PRE_OPERATIONAL
+		examinee.state = PRE_OPERATIONAL
 		
-		node.nmt.start_guarding(0.2, 2)
+		examinee.start_guarding(0.2, 2)
 		start_time = time.time()
 		
 		# Interval 0, Trigger guarding with the first RTR
@@ -565,40 +559,41 @@ class NMTSlaveTestCase(unittest.TestCase):
 		
 		time.sleep(0.75 + start_time - time.time())
 		
-		cb.assert_called_with("guarding", node.nmt)
+		cb.assert_called_with("guarding", examinee)
 		
-		node.nmt.stop()
+		examinee.stop()
 		
 		#### Test step: Calling the timer_callback from outside should not produce an error (it should only be called by the internal timer).
 		cb.reset_mock()
-		node.nmt.timer_callback()
+		examinee.timer_callback()
 		
 		message = bus2.recv(0.1)
 		self.assertEqual(message, None)
 		
 		cb.assert_not_called()
 		
-		del network[node.id]
+		examinee.detach()
+		node.detach()
 		network.detach()
 		bus1.shutdown()
 		bus2.shutdown()
 	
 	def __callback_start(self, event, service, *args):
-		service.node.nmt.state = canopen.nmt.states.OPERATIONAL
+		service.state = OPERATIONAL
 	
 	def __callback_stop(self, event, service, *args):
-		service.node.nmt.state = canopen.nmt.states.STOPPED
+		service.state = STOPPED
 	
 	def __callback_pre_operational(self, event, service, *args):
-		service.node.nmt.state = canopen.nmt.states.PRE_OPERATIONAL
+		service.state = PRE_OPERATIONAL
 	
 	def __callback_reset_application(self, event, service, *args):
-		service.node.nmt.state = canopen.nmt.states.INITIALIZATION
-		service.node.nmt.state = canopen.nmt.states.PRE_OPERATIONAL
+		service.state = INITIALIZATION
+		service.state = PRE_OPERATIONAL
 	
 	def __callback_reset_communication(self, event, service, *args):
-		service.node.nmt.state = canopen.nmt.states.INITIALIZATION
-		service.node.nmt.state = canopen.nmt.states.PRE_OPERATIONAL
+		service.state = INITIALIZATION
+		service.state = PRE_OPERATIONAL
 	
 	def __callback_raises(self, event, service, *args):
 		raise Exception()

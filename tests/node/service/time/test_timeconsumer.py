@@ -6,7 +6,10 @@ import time
 import calendar
 import struct
 import can
-import canopen.node.service.time
+
+from canopen import Node, Network
+from canopen.objectdictionary import ObjectDictionary
+from canopen.node.service.time import TIMEConsumer
 
 
 class Vehicle_Wait(threading.Thread):
@@ -21,18 +24,18 @@ class Vehicle_Wait(threading.Thread):
 	
 	def run(self):
 		try:
-			self._barrier.wait(1)
+			self.sync(1)
 			time.sleep(0.1)
 			d = struct.pack("<LH", 0, 60)
 			message = can.Message(arbitration_id = 0x100, is_extended_id = False, data = d)
 			self._bus.send(message)
 			
-			self._barrier.wait(1)
+			self.sync(1)
 			d = struct.pack("<LH", 0, 60)
 			message = can.Message(arbitration_id = 0x100, is_extended_id = False, data = d)
 			self._bus.send(message)
 			
-			self._barrier.wait(1)
+			self.sync(1)
 
 		except AssertionError:
 			self._testcase.result.addFailure(self._testcase, sys.exc_info())
@@ -42,58 +45,51 @@ class Vehicle_Wait(threading.Thread):
 
 class TIMEConsumerTestCase(unittest.TestCase):
 	def test_init(self):
-		canopen.node.service.time.TIMEConsumer()
+		dictionary = ObjectDictionary()
+		node = Node("n", 1, dictionary)
+		examinee = TIMEConsumer(node)
+		
+		self.assertEqual(examinee.node, node)
 	
 	def test_attach_detach(self):
-		dictionary = canopen.ObjectDictionary()
-		network = canopen.Network()
-		node1 = canopen.Node("a", 1, dictionary)
-		node2 = canopen.Node("b", 2, dictionary)
-		examinee = canopen.node.service.time.TIMEConsumer()
+		dictionary = ObjectDictionary()
+		node = Node("n", 1, dictionary)
+		examinee = TIMEConsumer(node)
+		network = Network()
 		
-		node1.attach(network)
-		node2.attach(network)
-		
-		self.assertEqual(examinee.node, None)
+		node.attach(network)
 		
 		with self.assertRaises(RuntimeError):
 			examinee.detach()
-		
-		with self.assertRaises(TypeError):
-			examinee.attach(None, 0x100)
 		
 		test_data = [-1, 0x100000000]
 		for value in test_data:
 			with self.subTest(value = value):
 				with self.assertRaises(ValueError):
-					examinee.attach(node1, value)
+					examinee.attach(value)
 		
-		examinee.attach(node1, 0x100)
-		self.assertEqual(examinee.node, node1)
+		examinee.attach()
+		self.assertTrue(examinee.is_attached())
 		
-		with self.assertRaises(ValueError):
-			examinee.attach(node1, 0x100)
-		
-		examinee.attach(node2, (1 <<29) | 0x100)
-		self.assertEqual(examinee.node, node2)
+		examinee.attach((1 << 29) | (0x100))
+		self.assertTrue(examinee.is_attached())
 		
 		examinee.detach()
-		self.assertEqual(examinee.node, None)
+		self.assertFalse(examinee.is_attached())
 		
-		node1.detach()
-		node2.detach()
+		node.detach()
 	
-	def test_on_sync(self):
+	def test_on_time(self):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		node = canopen.Node("a", 1, dictionary)
-		examinee = canopen.node.service.time.TIMEConsumer()
+		dictionary = ObjectDictionary()
+		node = Node("a", 1, dictionary)
+		examinee = TIMEConsumer(node)
+		network = Network()
 		
 		network.attach(bus1)
 		node.attach(network)
-		examinee.attach(node)
+		examinee.attach()
 		
 		cb = Mock()
 		examinee.add_callback("time", cb)
@@ -145,18 +141,17 @@ class TIMEConsumerTestCase(unittest.TestCase):
 	def test_wait_for_time(self):
 		bus1 = can.Bus(interface = "virtual", channel = 0)
 		bus2 = can.Bus(interface = "virtual", channel = 0)
+		dictionary = ObjectDictionary()
+		node = Node("a", 1, dictionary)
+		examinee = TIMEConsumer(node)
+		network = Network()
 		
-		vehicle = Vehicle_Wait(self, bus1)
-		vehicle.start()
-		
-		network = canopen.Network()
-		dictionary = canopen.ObjectDictionary()
-		node = canopen.Node("a", 1, dictionary)
-		examinee = canopen.node.service.TIMEConsumer()
-		
-		network.attach(bus2)
+		network.attach(bus1)
 		node.attach(network)
-		examinee.attach(node)
+		examinee.attach()
+		
+		vehicle = Vehicle_Wait(self, bus2)
+		vehicle.start()
 		
 		vehicle.sync(1)
 		self.assertTrue(examinee.wait_for_time(1))
@@ -167,11 +162,14 @@ class TIMEConsumerTestCase(unittest.TestCase):
 		vehicle.sync(1)
 		self.assertFalse(examinee.wait_for_time(0.1))
 		
+		vehicle.join(1)
+		
 		examinee.detach()
 		node.detach()
 		network.detach()
-		
-		vehicle.join(1)
-		
 		bus1.shutdown()
 		bus2.shutdown()
+
+
+if __name__ == "__main__":
+	unittest.main()

@@ -3,13 +3,10 @@ Service
 
 The ``Service`` class is the base class for all services of a ``Node``.
 
-It can be attached to a ``Node`` or detached from it.
-
 Attach/detach
 -------------
 
-The attach/detach pattern is used create a link from the ``Service`` (child) to the ``Node`` (parent). It only creates a functional relationship between them.
-The structural relation between the child and the parent is handled by other means. 
+The attach/detach methods are used as handlers of the the attach/detach of the node the service belongs to. The attach/detach method normally is called from the attach/detach method of the node to set up the service correctly.
 
 Callbacks
 ---------

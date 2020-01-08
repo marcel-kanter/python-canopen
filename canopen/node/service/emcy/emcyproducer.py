@@ -1,6 +1,6 @@
 import struct
 import can
-import canopen.node
+
 from canopen.node.service import Service
 
 
@@ -9,28 +9,48 @@ class EMCYProducer(Service):
 	
 	This class is an implementation of an EMCY producer.
 	"""
-	def __init__(self):
-		Service.__init__(self)
+	def __init__(self, node):
+		""" Initializes the service
+		
+		:param node: The node, to which this service belongs to.
+			Must be of type canopen.node.Node
+		
+		:raises: TypeError
+		"""
+		Service.__init__(self, node)
+		self._cob_id_emcy = None
 	
-	def attach(self, node, cob_id_emcy = None):
-		""" Attaches the ``EMCYProducer`` to a ``Node``. It does NOT add or assign this ``EMCYProducer`` to the ``Node``.
-		:param node: A canopen.Node, to which the service should be attached to.
+	def attach(self, cob_id_emcy = None):
+		""" Attach handler. Must be called when the node gets attached to the network.
+		
 		:param cob_id_emcy: The COB ID for the EMCY service, used for the CAN ID of the EMCY messages to be sent.
 			Bit 29 selects whether an extended frame is used. The CAN ID is masked out of the lowest 11 or 29 bits.
-			If it is omitted or None is passed, the value defaults to 0x80 + node.id . """
-		if not isinstance(node, canopen.node.Node):
-			raise TypeError()
+			It defaults to 0x80 + node.id if is omitted or None.
+		"""
 		if cob_id_emcy == None:
-			cob_id_emcy = 0x80 + node.id
+			cob_id_emcy = 0x80 + self._node.id
 		if cob_id_emcy < 0 or cob_id_emcy > 0xFFFFFFFF:
 			raise ValueError()
+		if self.is_attached():
+			self.detach()
 		
-		Service.attach(self, node)
 		self._cob_id_emcy = cob_id_emcy
 	
 	def detach(self):
-		""" Detaches the ``EMCYProducer`` from the ``Node``. It does NOT remove or delete the ``EMCYProducer`` from the ``Node``. """
-		Service.detach(self)
+		""" Detach handler. Must be called when the node gets detached from the network.
+		Raises RuntimeError if not attached.
+		
+		:raises: RuntimeError
+		"""
+		if not self.is_attached():
+			raise RuntimeError()
+		
+		self._cob_id_emcy = None
+	
+	def is_attached(self):
+		""" Returns True if the service is attached.
+		"""
+		return self._cob_id_emcy != None
 	
 	def send(self, error_code, error_register, data = None):
 		""" Sends an emcy message on the bus. """
