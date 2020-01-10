@@ -70,7 +70,7 @@ class NetworkTestCase(unittest.TestCase):
 		with self.assertRaises(TypeError):
 			network.subscribe(cb, 0x100)
 		
-		with self.assertRaises(TypeError):
+		with self.assertRaises(KeyError):
 			network.unsubscribe(cb, 0x100)
 		
 		cb = Mock()

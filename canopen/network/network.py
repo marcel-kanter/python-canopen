@@ -12,6 +12,8 @@ class Network(collections.abc.Collection):
 	In the end, the network may be detached from the CAN bus.
 	"""
 	def __init__(self):
+		""" Initialises a ``Network``
+		"""
 		self._bus = None
 		self._listeners = [MessageListener(self)]
 		self._notifier = None
@@ -21,7 +23,12 @@ class Network(collections.abc.Collection):
 		self._items_name = {}
 	
 	def __contains__(self, key):
-		""" Returns True if the network contains a node with the specified name or id. """
+		""" Returns True if the network contains a node with the specified name or id
+		
+		:param key: The name or identifier to look for
+		
+		:returns: True if a node is in the network with the given name or identifier
+		"""
 		try:
 			self[key]
 		except:
@@ -30,15 +37,25 @@ class Network(collections.abc.Collection):
 			return True
 	
 	def __iter__(self):
-		""" Returns an iterator over all ids of the nodes in the network. """
+		""" Returns an iterator over all nodes in the network.
+		"""
 		return iter(self._items_id.values())
 	
 	def __len__(self):
-		""" Returns the number of nodes in the network. """
+		""" Returns the number of nodes in the network.
+		"""
 		return len(self._items_id)
 	
 	def __getitem__(self, key):
-		""" Returns the node identified by the name or the id. """
+		""" Returns the node identified by the name or the id.
+		Raises KeyError if there is no node in the network with the given name or identifier.
+		
+		:param key: The name or identifier to look for
+		
+		:returns: A ``Node`` object
+		
+		:raises: KeyError
+		"""
 		if key in self._items_id:
 			return self._items_id[key]
 		if key in self._items_name:
@@ -46,14 +63,28 @@ class Network(collections.abc.Collection):
 		raise KeyError()
 	
 	def __delitem__(self, key):
-		""" Removes a node identified by the name of the id from the network. """
+		""" Removes a node identified by the name of the id from the network.
+		Raises KeyError if there is no node in the network with the given name or identifier.
+		
+		:param key: The name or identifier of the node to remove
+		
+		:raises: KeyError
+		"""
 		item = self[key]
 		item.detach()
 		del self._items_id[item.id]
 		del self._items_name[item.name]
 	
 	def add(self, node):
-		""" Adds a node to the network. It may be accessed later by the name or the id. """
+		""" Adds a node to the network. It may be accessed later by the name or the id.
+		Raises TypeError if the node is not a subclass of canopen.Node.
+		Raises ValueError if a node with the name or the identifier is already in the network.
+		Raises RuntimeError if the identifier of the node is 255.
+		
+		:param node: The node to add
+		
+		:raises: RuntimeError, TypeError, ValueError
+		"""
 		if not isinstance(node, canopen.Node):
 			raise TypeError()
 		if node.id in self._items_id or node.name in self._items_name:
@@ -67,8 +98,14 @@ class Network(collections.abc.Collection):
 	
 	def attach(self, bus, builtin_notifier = True):
 		""" Attach the network to a CAN bus.
+		Raises TypeError if the bus is not a subclass of can.BusABC
+		Raises ValueError if the network is already attached to the bus.
+		
 		:param bus: The can bus to connect.
+		
 		:param builtin_notifier: Use the builtin notifier or not. If False, all (relevant) CAN messages must be passed to on_message.
+		
+		:raises: TypeError, ValueError
 		"""
 		if not isinstance(bus, can.BusABC):
 			raise TypeError()
@@ -82,7 +119,11 @@ class Network(collections.abc.Collection):
 			self._notifier = can.Notifier(self._bus, self._listeners)
 	
 	def detach(self):
-		""" Detach the network from a CAN bus. """
+		""" Detach the network from a CAN bus.
+		Raises RuntimeError if the network is not attached to a bus.
+		
+		:raises: RuntimeError
+		"""
 		if not self.is_attached():
 			raise RuntimeError()
 		
@@ -92,18 +133,33 @@ class Network(collections.abc.Collection):
 		self._bus = None
 	
 	def is_attached(self):
-		""" Returns True when the ``Network`` is attached to a bus. """
+		""" Returns True when the ``Network`` is attached to a bus.
+		"""
 		return self._bus != None
 	
 	def send(self, message):
-		""" Sends a CAN message on the CAN bus. """
-		if self._bus == None:
+		""" Sends a CAN message on the CAN bus.
+		Raises RuntimeError if the network is not attached to a bus.
+		
+		:param message: The message to send.
+		
+		:raises: RuntimeError
+		"""
+		if not self.is_attached():
 			raise RuntimeError()
 		
 		self._bus.send(message)
 	
 	def subscribe(self, callback, message_id):
-		""" Adds a callback for messages with a specific message id to the network. """
+		""" Adds a callback for messages with a specific message id to the network.
+		Raises TypeError if callback is not callable
+		
+		:param callback: The function to call with the matching messages.
+		
+		:param message_id: The identifier of the messages for which the callback should be called.
+		
+		:raises: TypeError
+		"""
 		if not callable(callback):
 			raise TypeError()
 		
@@ -114,12 +170,16 @@ class Network(collections.abc.Collection):
 		self._subscribers[message_id].append(callback)
 	
 	def unsubscribe(self, callback, message_id):
-		""" Removes a callback for messagees with a specific message id from the network. """
-		if not callable(callback):
-			raise TypeError()
-		if not message_id in self._subscribers:
-			raise KeyError()
+		""" Removes a callback for messagees with a specific message id from the network.
+		Raises KeyError if there are no callbacks for the message identifier.
+		Raises ValueError if the callback is not in the list of callbacks for the message identifier.
 		
+		:param callback: The function to remove from the list of callbacks
+		
+		:param message_id: The identifier of the messages.
+		
+		:raises: KeyError, ValueError
+		"""		
 		self._subscribers[message_id].remove(callback)
 	
 	def on_message(self, message):
