@@ -1,4 +1,4 @@
-Copyright (c) 2019 by Marcel Kanter. All rights reserved.
+Copyright (c) 2019, 2020 by Marcel Kanter. All rights reserved.
 
 The above copyright notice shall be included in all copies or substantial portions of the Software.
 

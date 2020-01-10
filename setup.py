@@ -13,12 +13,13 @@ setup(
 	description = "CANopen package for python",
 	long_description = long_description,
 	version = version,
-	packages = find_packages(".", include=["canopen*"]),
+	packages = find_packages(include=["canopen*"]),
+	
+	python_requires = ">=3.6",
 	
 	install_requires = ["python-can>=3.0.0,<3.2"],
 	setup_requires = ["pytest-runner"],
 	tests_require = ["pytest", "pytest-timeout", "pytest-cov", "pytest-subtests"],
-	
 	
 	classifiers = [
 		"Development Status :: 4 - Beta",
@@ -30,9 +31,7 @@ setup(
 		"Intended Audience :: Science/Research",
 		"Intended Audience :: Telecommunications Industry",
 		"License :: Other/Proprietary License",
-		"Operating System :: MacOS",
-		"Operating System :: Microsoft :: Windows",
-		"Operating System :: POSIX :: Linux",
+		"Operating System :: OS Independent",
 		"Programming Language :: Python",
 		"Topic :: System :: Networking",
 		"Topic :: Software Development",
