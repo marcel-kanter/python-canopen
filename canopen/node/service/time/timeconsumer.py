@@ -43,7 +43,7 @@ class TIMEConsumer(Service):
 		else:
 			self._node.network.subscribe(self.on_time, cob_id_time & 0x7FF)
 		
-		self._cob_id_time = cob_id_time
+		self._cob_id_time = int(cob_id_time)
 	
 	def detach(self):
 		""" Detach handler. Must be called when the node gets detached from the network.

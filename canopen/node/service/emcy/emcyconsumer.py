@@ -44,7 +44,7 @@ class EMCYConsumer(Service):
 		else:
 			self._node.network.subscribe(self.on_emcy, cob_id_emcy & 0x7FF)
 		
-		self._cob_id_emcy = cob_id_emcy
+		self._cob_id_emcy = int(cob_id_emcy)
 	
 	def detach(self):
 		""" Detach handler. Must be called when the node gets detached from the network.

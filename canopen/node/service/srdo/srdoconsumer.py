@@ -60,8 +60,8 @@ class SRDOConsumer(SYNCConsumer):
 		else:
 			self._node.network.subscribe(self.on_message2, cob_id_2 & 0x7FF)
 		
-		self._cob_id_1 = cob_id_1
-		self._cob_id_2 = cob_id_2
+		self._cob_id_1 = int(cob_id_1)
+		self._cob_id_2 = int(cob_id_2)
 	
 	def detach(self):
 		""" Detach handler. Must be called when the node gets detached from the network.

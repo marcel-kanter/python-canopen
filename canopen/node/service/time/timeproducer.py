@@ -38,7 +38,7 @@ class TIMEProducer(Service):
 		if self.is_attached():
 			self.detach()
 		
-		self._cob_id_time = cob_id_time
+		self._cob_id_time = int(cob_id_time)
 	
 	def detach(self):
 		""" Detach handler. Must be called when the node gets detached from the network.

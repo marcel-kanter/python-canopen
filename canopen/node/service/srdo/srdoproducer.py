@@ -46,8 +46,8 @@ class SRDOProducer(Service):
 		if self.is_attached():
 			self.detach()
 		
-		self._cob_id_1 = cob_id_1
-		self._cob_id_2 = cob_id_2
+		self._cob_id_1 = int(cob_id_1)
+		self._cob_id_2 = int(cob_id_2)
 	
 	def detach(self):
 		""" Detach handler. Must be called when the node gets detached from the network.

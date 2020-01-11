@@ -19,7 +19,7 @@ class Array(collections.abc.Collection):
 		self._description = ""
 		
 		self._object_type = 8
-		self._data_type = data_type
+		self._data_type = int(data_type)
 		
 		self._items_subindex = {}
 		self._items_name = {}

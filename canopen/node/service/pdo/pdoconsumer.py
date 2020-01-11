@@ -55,7 +55,7 @@ class PDOConsumer(SYNCConsumer):
 		else:
 			self._node.network.subscribe(self.on_pdo, cob_id_rx & 0x7FF)
 		
-		self._cob_id_rx = cob_id_rx
+		self._cob_id_rx = int(cob_id_rx)
 	
 	def detach(self):
 		""" Detach handler. Must be called when the node gets detached from the network.

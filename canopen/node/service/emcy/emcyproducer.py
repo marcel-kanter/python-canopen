@@ -34,7 +34,7 @@ class EMCYProducer(Service):
 		if self.is_attached():
 			self.detach()
 		
-		self._cob_id_emcy = cob_id_emcy
+		self._cob_id_emcy = int(cob_id_emcy)
 	
 	def detach(self):
 		""" Detach handler. Must be called when the node gets detached from the network.

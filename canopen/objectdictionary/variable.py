@@ -25,9 +25,9 @@ class Variable(object):
 		self._description = ""
 		
 		self._object_type = 7
-		self._subindex = subindex
-		self._data_type = data_type
-		self._access_type = access_type
+		self._subindex = int(subindex)
+		self._data_type = int(data_type)
+		self._access_type = str(access_type)
 		
 		if self._data_type == BOOLEAN:
 			self._default_value = False

@@ -46,7 +46,7 @@ class SYNCConsumer(Service):
 		else:
 			self._node.network.subscribe(self.on_sync, cob_id_sync & 0x7FF)
 		
-		self._cob_id_sync = cob_id_sync
+		self._cob_id_sync = int(cob_id_sync)
 	
 	def detach(self):
 		""" Detach handler. Must be called when the node gets detached from the network.

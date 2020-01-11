@@ -30,8 +30,8 @@ class Node(collections.abc.Collection):
 			raise TypeError()
 		
 		self._dictionary = dictionary
-		self._id = node_id
-		self._name = name
+		self._id = int(node_id)
+		self._name = str(name)
 		self._network = None
 	
 	def __eq__(self, other):

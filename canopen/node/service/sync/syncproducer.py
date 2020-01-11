@@ -35,7 +35,7 @@ class SYNCProducer(Service):
 		if self.is_attached():
 			self.detach()
 		
-		self._cob_id_sync = cob_id_sync
+		self._cob_id_sync = int(cob_id_sync)
 	
 	def detach(self):
 		""" Detach handler. Must be called when the node gets detached from the network.

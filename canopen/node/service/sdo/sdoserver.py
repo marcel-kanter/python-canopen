@@ -31,7 +31,7 @@ class SDOServer(Service):
 		self._buffer = b""
 		self._index = 0
 		self._subindex = 0
-		self._timeout = timeout
+		self._timeout = float(timeout)
 	
 	def attach(self, cob_id_rx = None, cob_id_tx = None):
 		""" Attach handler. Must be called when the node gets attached to the network.
@@ -64,8 +64,8 @@ class SDOServer(Service):
 		else:
 			self._node.network.subscribe(self.on_request, cob_id_rx & 0x7FF)
 		
-		self._cob_id_rx = cob_id_rx
-		self._cob_id_tx = cob_id_tx
+		self._cob_id_rx = int(cob_id_rx)
+		self._cob_id_tx = int(cob_id_tx)
 	
 	def detach(self):
 		""" Detaches the ``SDOServer`` from the ``Node``. It does NOT remove or delete the ``SDOServer`` from the ``Node``. """
