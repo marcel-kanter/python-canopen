@@ -11,11 +11,13 @@ class DefStructTestCase(unittest.TestCase):
 		
 		name = "defstruct"
 		index = 0x40
-		ds = canopen.objectdictionary.DefStruct(name, index)
+		description = "abc"
+		ds = canopen.objectdictionary.DefStruct(name, index, description)
 		
 		self.assertEqual(ds.object_type, 6)
 		self.assertEqual(ds.name, name)
 		self.assertEqual(ds.index, index)
+		self.assertEqual(ds.description, description)
 		
 		with self.assertRaises(AttributeError):
 			ds.name = name

@@ -12,7 +12,8 @@ class DomainTest(unittest.TestCase):
 		name = "domain"
 		index = 100
 		access_type = "rw"
-		examinee = canopen.objectdictionary.Domain(name, index, access_type)
+		description = "abc"
+		examinee = canopen.objectdictionary.Domain(name, index, access_type, description)
 		
 		self.assertEqual(examinee.object_type, 2)
 		self.assertEqual(examinee.name, name)
@@ -20,6 +21,7 @@ class DomainTest(unittest.TestCase):
 		self.assertEqual(examinee.subindex, 0)
 		self.assertEqual(examinee.data_type, canopen.objectdictionary.DOMAIN)
 		self.assertEqual(examinee.access_type, access_type)
+		self.assertEqual(examinee.description, description)
 		
 		with self.assertRaises(AttributeError):
 			examinee.name = name

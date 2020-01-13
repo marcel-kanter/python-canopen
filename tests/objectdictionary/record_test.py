@@ -16,12 +16,14 @@ class RecordTestCase(unittest.TestCase):
 		name = "rec"
 		index = 100
 		data_type = canopen.objectdictionary.UNSIGNED32
-		examinee = canopen.objectdictionary.Record(name, index, data_type)
+		description = "abc"
+		examinee = canopen.objectdictionary.Record(name, index, data_type, description)
 		
 		self.assertEqual(examinee.object_type, 9)
 		self.assertEqual(examinee.name, name)
 		self.assertEqual(examinee.index, index)
 		self.assertEqual(examinee.data_type, data_type)
+		self.assertEqual(examinee.description, description)
 		
 		with self.assertRaises(AttributeError):
 			examinee.name = name

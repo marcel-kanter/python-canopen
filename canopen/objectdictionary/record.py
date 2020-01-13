@@ -9,7 +9,7 @@ class Record(collections.abc.Collection):
 	
 	This class is the representation of a record of a CANopen object dictionary. It is a mutable auto-associative mapping and may contain zero or more variables.
 	"""
-	def __init__(self, name, index, data_type):
+	def __init__(self, name, index, data_type, description = ""):
 		if index < 0 or index > 65535:
 			raise ValueError()
 		if int(data_type) < 0x0000 or int(data_type) > 0x1000:
@@ -17,7 +17,7 @@ class Record(collections.abc.Collection):
 		
 		self._name = str(name)
 		self._index = int(index)
-		self._description = ""
+		self._description = str(description)
 		
 		self._object_type = 9
 		self._data_type = int(data_type)

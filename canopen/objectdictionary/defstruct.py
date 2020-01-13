@@ -8,8 +8,8 @@ class DefStruct(Array):
 	
 	This class is the representation of a DefStruct of an object dictionary. It is a mutable auto-associative mapping and may contain zero or more variables.
 	"""
-	def __init__(self, name, index):
-		Array.__init__(self, name, index, UNSIGNED16)
+	def __init__(self, name, index, description = ""):
+		Array.__init__(self, name, index, UNSIGNED16, description)
 		self._object_type = 6
 	
 	def add(self, value):

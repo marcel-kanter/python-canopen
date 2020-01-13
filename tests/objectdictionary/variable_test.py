@@ -29,13 +29,15 @@ class VariableTestCase(unittest.TestCase):
 		subindex = 0
 		data_type = canopen.objectdictionary.UNSIGNED32
 		access_type = "rw"
-		examinee = canopen.objectdictionary.Variable(name, index, subindex, data_type, access_type)
+		description = "abc"
+		examinee = canopen.objectdictionary.Variable(name, index, subindex, data_type, access_type, description)
 		
 		self.assertEqual(examinee.object_type, 7)
 		self.assertEqual(examinee.name, name)
 		self.assertEqual(examinee.index, index)
 		self.assertEqual(examinee.subindex, subindex)
 		self.assertEqual(examinee.default_value, 0)
+		self.assertEqual(examinee.description, description)
 		
 		with self.assertRaises(AttributeError):
 			examinee.name = name

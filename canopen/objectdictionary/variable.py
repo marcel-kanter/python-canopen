@@ -10,7 +10,7 @@ class Variable(object):
 	_canopen_epoch = calendar.timegm((1984, 1, 1, 0, 0, 0))
 	__sizes = {BOOLEAN: 1, INTEGER8: 8, INTEGER16: 16, INTEGER32: 32, UNSIGNED8: 8, UNSIGNED16: 16, UNSIGNED32: 32, REAL32: 32, VISIBLE_STRING: 0, OCTET_STRING: 0, UNICODE_STRING: 0, TIME_OF_DAY: 48, TIME_DIFFERENCE: 48, DOMAIN: 0, INTEGER24: 24, REAL64: 64, INTEGER40: 40, INTEGER48: 48, INTEGER56: 56, INTEGER64: 64, UNSIGNED24: 24, UNSIGNED40: 40, UNSIGNED48: 48, UNSIGNED56: 56, UNSIGNED64: 64}
 	
-	def __init__(self, name, index, subindex, data_type, access_type = "rw"):
+	def __init__(self, name, index, subindex, data_type, access_type = "rw", description = ""):
 		if index < 0 or index > 65535:
 			raise ValueError()
 		if subindex < 0 or subindex > 255:
@@ -22,7 +22,7 @@ class Variable(object):
 		
 		self._name = str(name)
 		self._index = int(index)
-		self._description = ""
+		self._description = str(description)
 		
 		self._object_type = 7
 		self._subindex = int(subindex)
