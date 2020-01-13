@@ -1,126 +1,144 @@
 import unittest
 import struct
 import calendar
-import canopen.objectdictionary
+from hypothesis import given, example, settings, Phase
+import hypothesis.strategies as st
+
+from canopen.objectdictionary import Variable, DefType
 from canopen.objectdictionary.datatypes import *
 
 
 class VariableTestCase(unittest.TestCase):
-	def test_init(self):
-		with self.assertRaises(ValueError):
-			canopen.objectdictionary.Variable("var", -1, 0, canopen.objectdictionary.UNSIGNED32)
-		with self.assertRaises(ValueError):
-			canopen.objectdictionary.Variable("var", 65536, 0, canopen.objectdictionary.UNSIGNED32)
-		with self.assertRaises(ValueError):
-			canopen.objectdictionary.Variable("var", 0, -1, canopen.objectdictionary.UNSIGNED32)
-		with self.assertRaises(ValueError):
-			canopen.objectdictionary.Variable("var", 0, 256, canopen.objectdictionary.UNSIGNED32)
-		with self.assertRaises(ValueError):
-			canopen.objectdictionary.Variable("var", 0, 0, 0)
-		with self.assertRaises(ValueError):
-			canopen.objectdictionary.Variable("var", 0, 0, canopen.objectdictionary.UNSIGNED32, "X")
+	@given(
+		name = st.text(),
+		index = st.integers(),
+		subindex = st.integers(),
+		data_type = st.integers(),
+		access_type = st.text(),
+		description = st.text()
+	)
+	@settings(max_examples = 1000)
+	@example(name = "var", index = 0x1000, subindex = 0x00, data_type = UNSIGNED32, access_type = "rw", description = "", valid_example = True)
+	@example(name = "var", index = -1, subindex = 0, data_type = UNSIGNED32, access_type = "rw", description = "", valid_example = False)
+	@example(name = "var", index = 65536, subindex = 0, data_type = UNSIGNED32, access_type = "rw", description = "", valid_example = False)
+	@example(name = "var", index = 0, subindex = -1, data_type = UNSIGNED32, access_type = "rw", description = "", valid_example = False)
+	@example(name = "var", index = 0, subindex = 256, data_type = UNSIGNED32, access_type = "rw", description = "", valid_example = False)
+	@example(name = "var", index = 0, subindex = 0, data_type = 0, access_type = "rw", description = "", valid_example = False)
+	@example(name = "var", index = 0, subindex = 0, data_type = UNSIGNED32, access_type = "X", description = "", valid_example = False)
+	def test_init(self, **kwargs):
+		name = kwargs["name"]
+		index = kwargs["index"]
+		subindex = kwargs["subindex"]
+		data_type = kwargs["data_type"]
+		access_type = kwargs["access_type"]
+		description = kwargs["description"]
 		
-		for access_type in ["rw", "wo", "ro", "const"]:
-			examinee = canopen.objectdictionary.Variable("var", 100, 0, UNSIGNED32, access_type)
-			self.assertEqual(examinee.access_type, access_type)
+		valid_example = (
+			len(name) >= 0
+			and index >= 0 and index <= 65535
+			and subindex >= 0 and subindex <= 255
+			and data_type in [BOOLEAN, INTEGER8, INTEGER16, INTEGER32, UNSIGNED8, UNSIGNED16, UNSIGNED32, REAL32, VISIBLE_STRING, OCTET_STRING, UNICODE_STRING, TIME_OF_DAY, TIME_DIFFERENCE, DOMAIN, INTEGER24, REAL64, INTEGER40, INTEGER48, INTEGER56, INTEGER64, UNSIGNED24, UNSIGNED40, UNSIGNED48, UNSIGNED56, UNSIGNED64]
+			and access_type in ["ro", "wo", "rw", "const"]
+		)
 		
-		name = "var"
-		index = 100
-		subindex = 0
-		data_type = canopen.objectdictionary.UNSIGNED32
-		access_type = "rw"
-		description = "abc"
-		examinee = canopen.objectdictionary.Variable(name, index, subindex, data_type, access_type, description)
+		if "valid_example" in kwargs:
+			self.assertEqual(valid_example, kwargs["valid_example"])
+			del kwargs["valid_example"]
 		
-		self.assertEqual(examinee.object_type, 7)
-		self.assertEqual(examinee.name, name)
-		self.assertEqual(examinee.index, index)
-		self.assertEqual(examinee.subindex, subindex)
-		self.assertEqual(examinee.default_value, 0)
-		self.assertEqual(examinee.description, description)
-		
-		with self.assertRaises(AttributeError):
-			examinee.name = name
-		with self.assertRaises(AttributeError):
-			examinee.index = index
-		with self.assertRaises(AttributeError):
-			examinee.subindex = subindex
-		with self.assertRaises(AttributeError):
-			examinee.data_type = data_type
-		with self.assertRaises(ValueError):
-			examinee.access_type = "xx"
-				
-		examinee.access_type = "wo"
-		self.assertEqual(examinee.access_type, "wo")
-		examinee.access_type = "ro"
-		self.assertEqual(examinee.access_type, "ro")
-		
-		examinee.default_value = 100
-		self.assertEqual(examinee.default_value, 100)
-		
-		for data_type in [BOOLEAN, INTEGER8, INTEGER16, INTEGER32, UNSIGNED8, UNSIGNED16, UNSIGNED32, REAL32, VISIBLE_STRING, OCTET_STRING, UNICODE_STRING, TIME_OF_DAY, TIME_DIFFERENCE, DOMAIN, INTEGER24, REAL64, INTEGER40, INTEGER48, INTEGER56, INTEGER64, UNSIGNED24, UNSIGNED40, UNSIGNED48, UNSIGNED56, UNSIGNED64]:
-			examinee = canopen.objectdictionary.Variable("var", 100, 0, data_type)
+		if valid_example:
+			examinee = Variable(**kwargs)
+			examinee.description = description
+			
+			self.assertEqual(examinee.object_type, 7)
+			self.assertEqual(examinee.name, name)
+			self.assertEqual(examinee.index, index)
+			self.assertEqual(examinee.subindex, subindex)
 			self.assertEqual(examinee.data_type, data_type)
+			self.assertEqual(examinee.access_type, access_type)
+			self.assertEqual(examinee.description, description)
+			
+			with self.assertRaises(AttributeError):
+				examinee.name = name
+			with self.assertRaises(AttributeError):
+				examinee.index = index
+			with self.assertRaises(AttributeError):
+				examinee.subindex = subindex
+			with self.assertRaises(AttributeError):
+				examinee.data_type = data_type
+			
+			with self.assertRaises(ValueError):
+				examinee.access_type = "xx"
+			
+			for access_type in ["rw", "wo", "ro", "const"]:
+				examinee.access_type = access_type
+				self.assertEqual(examinee.access_type, access_type)
+			
 			self.assertEqual(examinee.default_value, examinee.decode(examinee.encode(examinee.default_value)))
-		
-		desc = "Franz jagt im komplett verwahrlosten Taxi quer durch Bayern."
-		examinee.description = desc
-		self.assertEqual(examinee.description, desc)
+			
+			examinee.default_value = 100
+			self.assertEqual(examinee.default_value, 100)
+			
+			description = "Franz jagt im komplett verwahrlosten Taxi quer durch Bayern."
+			examinee.description = description
+			self.assertEqual(examinee.description, description)
+		else:
+			with self.assertRaises(ValueError):
+				Variable(**kwargs)
 	
 	def test_equals(self):
-		a = canopen.objectdictionary.Variable("var", 100, 0, UNSIGNED32, "rw")
+		a = Variable("var", 100, 0, UNSIGNED32, "rw")
 		
 		#### Test step: Reflexivity
 		self.assertTrue(a == a)
 		
 		#### Test step: Compare same classes only (required for transitivity)
-		test_data = [None, 3, canopen.objectdictionary.DefType("var", 100)]
+		test_data = [None, 3, DefType("var", 100)]
 		for value in test_data:
 			with self.subTest("value=" + str(value)):
 				self.assertFalse(a == value)
 		
 		#### Test step: Consistency
-		b = canopen.objectdictionary.Variable("var", 100, 0, UNSIGNED32, "rw")
+		b = Variable("var", 100, 0, UNSIGNED32, "rw")
 		for _ in range(3):
 			self.assertTrue(a == b)
 		
 		#### Test step: Symmetricality, Contents
-		b = canopen.objectdictionary.Variable("var", 100, 0, UNSIGNED32, "rw")
+		b = Variable("var", 100, 0, UNSIGNED32, "rw")
 		self.assertTrue(a == b)
 		self.assertEqual(a == b, b == a)
 		
-		b = canopen.objectdictionary.Variable("x", 100, 0, UNSIGNED32, "rw")
+		b = Variable("x", 100, 0, UNSIGNED32, "rw")
 		self.assertFalse(a == b)
 		self.assertEqual(a == b, b == a)
 		
-		b = canopen.objectdictionary.Variable("var", 111, 0, UNSIGNED32, "rw")
+		b = Variable("var", 111, 0, UNSIGNED32, "rw")
 		self.assertFalse(a == b)
 		self.assertEqual(a == b, b == a)
 		
-		b = canopen.objectdictionary.Variable("var", 100, 1, UNSIGNED32, "rw")
+		b = Variable("var", 100, 1, UNSIGNED32, "rw")
 		self.assertFalse(a == b)
 		self.assertEqual(a == b, b == a)
 		
-		b = canopen.objectdictionary.Variable("var", 100, 0, BOOLEAN, "rw")
+		b = Variable("var", 100, 0, BOOLEAN, "rw")
 		self.assertFalse(a == b)
 		self.assertEqual(a == b, b == a)
 		
-		b = canopen.objectdictionary.Variable("var", 100, 0, UNSIGNED32, "ro")
+		b = Variable("var", 100, 0, UNSIGNED32, "ro")
 		self.assertFalse(a == b)
 		self.assertEqual(a == b, b == a)
 		
-		b = canopen.objectdictionary.Variable("var", 100, 0, UNSIGNED32, "rw")
+		b = Variable("var", 100, 0, UNSIGNED32, "rw")
 		b.default_value = 10
 		self.assertFalse(a == b)
 		self.assertEqual(a == b, b == a)
 		
-		b = canopen.objectdictionary.Variable("var", 100, 0, UNSIGNED32, "rw")
+		b = Variable("var", 100, 0, UNSIGNED32, "rw")
 		b.description = a.description + "XXX"
 		self.assertFalse(a == b)
 		self.assertEqual(a == b, b == a)
 	
 	def test_boolean(self):
-		variable = canopen.objectdictionary.Variable("BOOLEAN", 100, 0, canopen.objectdictionary.BOOLEAN)
+		variable = Variable("BOOLEAN", 100, 0, BOOLEAN)
 		
 		self.assertEqual(variable.size, 1)
 		
@@ -141,7 +159,7 @@ class VariableTestCase(unittest.TestCase):
 					self.assertEqual(variable.decode(x), y)
 	
 	def test_integer8(self):
-		variable = canopen.objectdictionary.Variable("INTEGER8", 100, 0, canopen.objectdictionary.INTEGER8)
+		variable = Variable("INTEGER8", 100, 0, INTEGER8)
 		
 		self.assertEqual(variable.size, 8)
 		
@@ -169,7 +187,7 @@ class VariableTestCase(unittest.TestCase):
 					self.assertEqual(variable.decode(x), y)
 	
 	def test_integer16(self):
-		variable = canopen.objectdictionary.Variable("INTEGER16", 100, 0, canopen.objectdictionary.INTEGER16)
+		variable = Variable("INTEGER16", 100, 0, INTEGER16)
 		
 		self.assertEqual(variable.size, 16)
 		
@@ -207,7 +225,7 @@ class VariableTestCase(unittest.TestCase):
 						variable.decode(x)
 	
 	def test_integer32(self):
-		variable = canopen.objectdictionary.Variable("INTEGER32", 100, 0, canopen.objectdictionary.INTEGER32)
+		variable = Variable("INTEGER32", 100, 0, INTEGER32)
 		
 		self.assertEqual(variable.size, 32)
 		
@@ -242,7 +260,7 @@ class VariableTestCase(unittest.TestCase):
 						variable.decode(x)
 	
 	def test_unsigned8(self):
-		variable = canopen.objectdictionary.Variable("UNSIGNED8", 100, 0, canopen.objectdictionary.UNSIGNED8)
+		variable = Variable("UNSIGNED8", 100, 0, UNSIGNED8)
 		
 		self.assertEqual(variable.size, 8)
 		
@@ -271,7 +289,7 @@ class VariableTestCase(unittest.TestCase):
 					self.assertEqual(variable.decode(x), y)
 	
 	def test_unsigned16(self):
-		variable = canopen.objectdictionary.Variable("UNSIGNED16", 100, 0, canopen.objectdictionary.UNSIGNED16)
+		variable = Variable("UNSIGNED16", 100, 0, UNSIGNED16)
 		
 		self.assertEqual(variable.size, 16)
 		
@@ -306,7 +324,7 @@ class VariableTestCase(unittest.TestCase):
 						variable.decode(x)
 	
 	def test_unsigned32(self):
-		variable = canopen.objectdictionary.Variable("UNSIGNED32", 100, 0, canopen.objectdictionary.UNSIGNED32)
+		variable = Variable("UNSIGNED32", 100, 0, UNSIGNED32)
 		
 		self.assertEqual(variable.size, 32)
 		
@@ -341,7 +359,7 @@ class VariableTestCase(unittest.TestCase):
 						variable.decode(x)
 	
 	def test_real32(self):
-		variable = canopen.objectdictionary.Variable("REAL32", 100, 0, canopen.objectdictionary.REAL32)
+		variable = Variable("REAL32", 100, 0, REAL32)
 		
 		self.assertEqual(variable.size, 32)
 		
@@ -364,7 +382,7 @@ class VariableTestCase(unittest.TestCase):
 						variable.decode(x)
 	
 	def test_visible_string(self):
-		variable = canopen.objectdictionary.Variable("VISIBLE_STRING", 100, 0, canopen.objectdictionary.VISIBLE_STRING)
+		variable = Variable("VISIBLE_STRING", 100, 0, VISIBLE_STRING)
 		
 		self.assertEqual(variable.size, 0)
 		
@@ -381,7 +399,7 @@ class VariableTestCase(unittest.TestCase):
 					self.assertEqual(variable.decode(x), y)
 	
 	def test_octet_string(self):
-		variable = canopen.objectdictionary.Variable("OCTET_STRING", 100, 0, canopen.objectdictionary.OCTET_STRING)
+		variable = Variable("OCTET_STRING", 100, 0, OCTET_STRING)
 		
 		self.assertEqual(variable.size, 0)
 		
@@ -398,7 +416,7 @@ class VariableTestCase(unittest.TestCase):
 					self.assertEqual(variable.decode(x), y)
 	
 	def test_unicode_string(self):
-		variable = canopen.objectdictionary.Variable("UNICODE_STRING", 100, 0, canopen.objectdictionary.UNICODE_STRING)
+		variable = Variable("UNICODE_STRING", 100, 0, UNICODE_STRING)
 		
 		self.assertEqual(variable.size, 0)
 		
@@ -415,7 +433,7 @@ class VariableTestCase(unittest.TestCase):
 					self.assertEqual(variable.decode(x), y)
 	
 	def test_time_of_day(self):	
-		variable = canopen.objectdictionary.Variable("TIME_OF_DAY", 100, 0, canopen.objectdictionary.TIME_OF_DAY)
+		variable = Variable("TIME_OF_DAY", 100, 0, TIME_OF_DAY)
 		
 		self.assertEqual(variable.size, 48)
 		
@@ -437,7 +455,7 @@ class VariableTestCase(unittest.TestCase):
 					self.assertEqual(variable.decode(x), y)
 	
 	def test_time_difference(self):
-		variable = canopen.objectdictionary.Variable("TIME_DIFFERENCE", 100, 0, canopen.objectdictionary.TIME_DIFFERENCE)
+		variable = Variable("TIME_DIFFERENCE", 100, 0, TIME_DIFFERENCE)
 		
 		self.assertEqual(variable.size, 48)
 		
@@ -459,7 +477,7 @@ class VariableTestCase(unittest.TestCase):
 					self.assertEqual(variable.decode(x), y)
 	
 	def test_domain(self):
-		variable = canopen.objectdictionary.Variable("DOMAIN", 100, 0, canopen.objectdictionary.DOMAIN)
+		variable = Variable("DOMAIN", 100, 0, DOMAIN)
 		
 		self.assertEqual(variable.size, 0)
 		
@@ -476,7 +494,7 @@ class VariableTestCase(unittest.TestCase):
 					self.assertEqual(variable.decode(x), y)
 	
 	def test_integer24(self):
-		variable = canopen.objectdictionary.Variable("INTEGER24", 100, 0, canopen.objectdictionary.INTEGER24)
+		variable = Variable("INTEGER24", 100, 0, INTEGER24)
 		
 		self.assertEqual(variable.size, 24)
 		
@@ -511,7 +529,7 @@ class VariableTestCase(unittest.TestCase):
 						variable.decode(x)
 	
 	def test_real64(self):
-		variable = canopen.objectdictionary.Variable("REAL64", 100, 0, canopen.objectdictionary.REAL64)
+		variable = Variable("REAL64", 100, 0, REAL64)
 		
 		self.assertEqual(variable.size, 64)
 		
@@ -534,7 +552,7 @@ class VariableTestCase(unittest.TestCase):
 						variable.decode(x)
 	
 	def test_integer40(self):
-		variable = canopen.objectdictionary.Variable("INTEGER40", 100, 0, canopen.objectdictionary.INTEGER40)
+		variable = Variable("INTEGER40", 100, 0, INTEGER40)
 		
 		self.assertEqual(variable.size, 40)
 		
@@ -569,7 +587,7 @@ class VariableTestCase(unittest.TestCase):
 						variable.decode(x)
 	
 	def test_integer48(self):
-		variable = canopen.objectdictionary.Variable("INTEGER48", 100, 0, canopen.objectdictionary.INTEGER48)
+		variable = Variable("INTEGER48", 100, 0, INTEGER48)
 		
 		self.assertEqual(variable.size, 48)
 		
@@ -604,7 +622,7 @@ class VariableTestCase(unittest.TestCase):
 						variable.decode(x)
 	
 	def test_integer56(self):
-		variable = canopen.objectdictionary.Variable("INTEGER56", 100, 0, canopen.objectdictionary.INTEGER56)
+		variable = Variable("INTEGER56", 100, 0, INTEGER56)
 		
 		self.assertEqual(variable.size, 56)
 		
@@ -639,7 +657,7 @@ class VariableTestCase(unittest.TestCase):
 						variable.decode(x)
 	
 	def test_integer64(self):
-		variable = canopen.objectdictionary.Variable("INTEGER64", 100, 0, canopen.objectdictionary.INTEGER64)
+		variable = Variable("INTEGER64", 100, 0, INTEGER64)
 		
 		self.assertEqual(variable.size, 64)
 		
@@ -674,7 +692,7 @@ class VariableTestCase(unittest.TestCase):
 						variable.decode(x)
 	
 	def test_unsigned24(self):
-		variable = canopen.objectdictionary.Variable("UNSIGNED24", 100, 0, canopen.objectdictionary.UNSIGNED24)
+		variable = Variable("UNSIGNED24", 100, 0, UNSIGNED24)
 		
 		self.assertEqual(variable.size, 24)
 		
@@ -709,7 +727,7 @@ class VariableTestCase(unittest.TestCase):
 						variable.decode(x)
 		
 	def test_unsigned40(self):	
-		variable = canopen.objectdictionary.Variable("UNSIGNED40", 100, 0, canopen.objectdictionary.UNSIGNED40)
+		variable = Variable("UNSIGNED40", 100, 0, UNSIGNED40)
 		
 		self.assertEqual(variable.size, 40)
 		
@@ -744,7 +762,7 @@ class VariableTestCase(unittest.TestCase):
 						variable.decode(x)
 	
 	def test_unsigned48(self):
-		variable = canopen.objectdictionary.Variable("UNSIGNED48", 100, 0, canopen.objectdictionary.UNSIGNED48)
+		variable = Variable("UNSIGNED48", 100, 0, UNSIGNED48)
 		
 		self.assertEqual(variable.size, 48)
 		
@@ -779,7 +797,7 @@ class VariableTestCase(unittest.TestCase):
 						variable.decode(x)
 	
 	def test_unsigned56(self):
-		variable = canopen.objectdictionary.Variable("UNSIGNED56", 100, 0, canopen.objectdictionary.UNSIGNED56)
+		variable = Variable("UNSIGNED56", 100, 0, UNSIGNED56)
 		
 		self.assertEqual(variable.size, 56)
 		
@@ -814,7 +832,7 @@ class VariableTestCase(unittest.TestCase):
 						variable.decode(x)
 	
 	def test_unsigned64(self):
-		variable = canopen.objectdictionary.Variable("UNSIGNED64", 100, 0, canopen.objectdictionary.UNSIGNED64)
+		variable = Variable("UNSIGNED64", 100, 0, UNSIGNED64)
 		
 		self.assertEqual(variable.size, 64)
 		

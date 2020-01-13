@@ -1,5 +1,6 @@
 .coverage
 .eggs
 *.egg-info
+.hypothesis
 .pytest_cache
 __pycache__

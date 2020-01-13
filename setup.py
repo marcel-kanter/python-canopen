@@ -19,7 +19,7 @@ setup(
 	
 	install_requires = ["python-can>=3.0.0,<3.2"],
 	setup_requires = ["pytest-runner"],
-	tests_require = ["pytest", "pytest-timeout", "pytest-cov", "pytest-subtests"],
+	tests_require = ["pytest", "pytest-timeout", "pytest-cov", "pytest-subtests", "hypothesis"],
 	
 	classifiers = [
 		"Development Status :: 4 - Beta",
