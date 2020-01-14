@@ -1,7 +1,7 @@
 import unittest
 import struct
 import calendar
-from hypothesis import given, example, settings, Phase
+from hypothesis import given, example, settings
 import hypothesis.strategies as st
 
 from canopen.objectdictionary import Variable, DefType
@@ -35,8 +35,8 @@ class VariableTestCase(unittest.TestCase):
 		
 		valid_example = (
 			len(name) >= 0
-			and index >= 0 and index <= 65535
-			and subindex >= 0 and subindex <= 255
+			and index >= 0x0000 and index <= 0xFFFF
+			and subindex >= 0x00 and subindex <= 0xFF
 			and data_type in [BOOLEAN, INTEGER8, INTEGER16, INTEGER32, UNSIGNED8, UNSIGNED16, UNSIGNED32, REAL32, VISIBLE_STRING, OCTET_STRING, UNICODE_STRING, TIME_OF_DAY, TIME_DIFFERENCE, DOMAIN, INTEGER24, REAL64, INTEGER40, INTEGER48, INTEGER56, INTEGER64, UNSIGNED24, UNSIGNED40, UNSIGNED48, UNSIGNED56, UNSIGNED64]
 			and access_type in ["ro", "wo", "rw", "const"]
 		)
