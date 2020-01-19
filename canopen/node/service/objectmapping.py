@@ -14,6 +14,7 @@ class ObjectMapping(object):
 		
 		self._service = service
 		self._items = []
+		self._size = 0
 	
 	def __getitem__(self, slot):
 		""" Gets a variable from the mapping.
@@ -43,14 +44,23 @@ class ObjectMapping(object):
 		
 		:raises: TypeError, ValueError
 		"""
-		if int(length) < 0:
+		length = int(length)
+		if length < 0:
 			raise ValueError()
 		
 		entry = MappedVariable(self, len(self._items), variable)
 		
 		self._items.append((entry, length))
+		self._size += length
 	
 	def clear(self):
 		""" Removes all mapped variables.
 		"""
 		self._items.clear()
+		self._size = 0
+	
+	@property
+	def size(self):
+		""" Returns the overall number of bits of the mapped variables.
+		"""
+		return self._size
