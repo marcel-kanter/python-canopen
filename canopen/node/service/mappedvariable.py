@@ -1,8 +1,9 @@
 class MappedVariable(object):
-	def __init__(self, mapping, slot, entry):
+	def __init__(self, mapping, slot, entry, size):
 		self._mapping = mapping
 		self._slot = slot
 		self._entry = entry
+		self._size = size
 	
 	@property
 	def index(self):
@@ -17,3 +18,7 @@ class MappedVariable(object):
 			return self._entry[1]
 		else:
 			return self._entry.subindex
+	
+	@property
+	def size(self):
+		return self._size

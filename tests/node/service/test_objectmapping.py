@@ -34,26 +34,26 @@ class ObjectMappingTest(unittest.TestCase):
 		examinee.append((0x1000, 0x00), 20)
 		self.assertEqual(len(examinee), 1)
 		self.assertEqual(examinee.size, 20)
-		variable, length = examinee[0]
-		self.assertEqual(variable.index, 0x1000)
-		self.assertEqual(variable.subindex, 0x00)
-		self.assertEqual(length, 20)
+		mapped_variable = examinee[0]
+		self.assertEqual(mapped_variable.index, 0x1000)
+		self.assertEqual(mapped_variable.subindex, 0x00)
+		self.assertEqual(mapped_variable.size, 20)
 		
 		examinee.append((0x1000, 0x00), 1)
 		self.assertEqual(examinee.size, 21)
 		self.assertEqual(len(examinee), 2)
-		variable, length = examinee[1]
-		self.assertEqual(variable.index, 0x1000)
-		self.assertEqual(variable.subindex, 0x00)
-		self.assertEqual(length, 1)
+		mapped_variable = examinee[1]
+		self.assertEqual(mapped_variable.index, 0x1000)
+		self.assertEqual(mapped_variable.subindex, 0x00)
+		self.assertEqual(mapped_variable.size, 1)
 		
 		examinee.append(dictionary["var"], 10)
 		self.assertEqual(examinee.size, 31)
 		self.assertEqual(len(examinee), 3)
-		variable, length = examinee[2]
-		self.assertEqual(variable.index, dictionary["var"].index)
-		self.assertEqual(variable.subindex, dictionary["var"].subindex)
-		self.assertEqual(length, 10)
+		mapped_variable = examinee[2]
+		self.assertEqual(mapped_variable.index, dictionary["var"].index)
+		self.assertEqual(mapped_variable.subindex, dictionary["var"].subindex)
+		self.assertEqual(mapped_variable.size, 10)
 		
 		examinee.clear()
 		self.assertEqual(len(examinee), 0)

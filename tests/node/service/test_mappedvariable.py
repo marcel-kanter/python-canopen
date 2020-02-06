@@ -18,20 +18,24 @@ class MappedVariableTest(unittest.TestCase):
 			slot = 0
 			index = 0x1000
 			subindex = 0x00
+			size = 10
 			
 			entry = (index, subindex)
-			examinee = MappedVariable(mapping, slot, entry)
+			examinee = MappedVariable(mapping, slot, entry, size)
 			
 			self.assertEqual(examinee.index, index)
 			self.assertEqual(examinee.subindex, subindex)
+			self.assertEqual(examinee.size, size)
 		
 		with self.subTest("variable"):
 			slot = 0
 			entry = dictionary["var"]
-			examinee = MappedVariable(mapping, slot, entry)
+			size = 15
+			examinee = MappedVariable(mapping, slot, entry, size)
 			
 			self.assertEqual(examinee.index, entry.index)
 			self.assertEqual(examinee.subindex, entry.subindex)
+			self.assertEqual(examinee.size, size)
 
 
 if __name__ == "__main__":

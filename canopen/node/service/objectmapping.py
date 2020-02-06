@@ -22,7 +22,7 @@ class ObjectMapping(object):
 		
 		:param slot: The slot from with the variable should be returned. Must be a non-negativer integer lower than the number of mapped variables.
 		
-		:returns: A tuple in the form of (entry, length) with entry beeing a MappedVariable
+		:returns: The MappedVariable in the slot
 		
 		:raises: IndexError
 		"""
@@ -35,23 +35,23 @@ class ObjectMapping(object):
 		"""
 		return len(self._items)
 	
-	def append(self, variable, length):
-		""" Appends a variable to the mapping, only length bits should be used.
+	def append(self, variable, size):
+		""" Appends a variable to the mapping, only size bits should be used.
 		
 		:param variable: Variable to append. Must be a Variable from object dictionary, a Variable from node or a tuple in the form of (index, subindex).
 		
-		:param length: Number of bits to use. Must be a non-negative integer.
+		:param size: Number of bits to use. Must be a non-negative integer.
 		
 		:raises: TypeError, ValueError
 		"""
-		length = int(length)
-		if length < 0:
+		size = int(size)
+		if size < 0:
 			raise ValueError()
 		
-		entry = MappedVariable(self, len(self._items), variable)
+		entry = MappedVariable(self, len(self._items), variable, size)
 		
-		self._items.append((entry, length))
-		self._size += length
+		self._items.append(entry)
+		self._size += size
 	
 	def clear(self):
 		""" Removes all mapped variables.
