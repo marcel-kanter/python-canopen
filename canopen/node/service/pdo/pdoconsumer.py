@@ -28,7 +28,7 @@ class PDOConsumer(SYNCConsumer):
 
 		self._transmission_type = int(transmission_type)
 		self._data = None
-		self._condition = threading.Condition()
+		self._pdo_condition = threading.Condition()
 	
 	def attach(self, cob_id_rx = None, cob_id_sync = None):
 		""" Attach handler. Must be called when the node gets attached to the network.
@@ -75,8 +75,8 @@ class PDOConsumer(SYNCConsumer):
 		return self._cob_id_rx != None
 	
 	def wait_for_pdo(self, timeout = None):
-		with self._condition:
-			gotit = self._condition.wait(timeout)
+		with self._pdo_condition:
+			gotit = self._pdo_condition.wait(timeout)
 		return gotit
 	
 	def on_pdo(self, message):
@@ -86,8 +86,8 @@ class PDOConsumer(SYNCConsumer):
 			return
 		self._data = message.data
 		self.notify("pdo", self)
-		with self._condition:
-			self._condition.notify_all()
+		with self._pdo_condition:
+			self._pdo_condition.notify_all()
 	
 	@property
 	def data(self):
