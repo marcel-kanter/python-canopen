@@ -1,4 +1,5 @@
 from canopen.node.service.sync import SYNCConsumer
+from canopen.node.service.objectmapping import ObjectMapping
 
 
 class SRDOConsumer(SYNCConsumer):
@@ -20,6 +21,8 @@ class SRDOConsumer(SYNCConsumer):
 		
 		self._normal_data = None
 		self._complement_data = None
+		
+		self.mapping = ObjectMapping(self)
 	
 	def attach(self, cob_id_1 = None, cob_id_2 = None, cob_id_sync = None):
 		""" Attach handler. Must be called when the node gets attached to the network.

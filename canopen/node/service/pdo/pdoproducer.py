@@ -1,6 +1,7 @@
 import can
 
 from canopen.node.service.sync import SYNCConsumer
+from canopen.node.service.objectmapping import ObjectMapping
 
 
 class PDOProducer(SYNCConsumer):
@@ -28,6 +29,8 @@ class PDOProducer(SYNCConsumer):
 		
 		self._transmission_type = int(transmission_type)
 		self._data = None
+		
+		self.mapping = ObjectMapping(self)
 	
 	def attach(self, cob_id_tx = None, cob_id_sync = None):
 		""" Attach handler. Must be called when the node gets attached to the network.

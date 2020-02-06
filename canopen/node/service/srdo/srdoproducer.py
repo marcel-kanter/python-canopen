@@ -1,6 +1,7 @@
 import can
 
 from canopen.node.service import Service
+from canopen.node.service.objectmapping import ObjectMapping
 
 
 class SRDOProducer(Service):
@@ -19,6 +20,8 @@ class SRDOProducer(Service):
 		
 		self._normal_data = None
 		self._complement_data = None
+		
+		self.mapping = ObjectMapping(self)
 	
 	def attach(self, cob_id_1 = None, cob_id_2 = None):
 		""" Attach handler. Must be called when the node gets attached to the network.

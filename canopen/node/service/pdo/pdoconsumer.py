@@ -1,6 +1,7 @@
 import threading
 
 from canopen.node.service.sync import SYNCConsumer
+from canopen.node.service.objectmapping import ObjectMapping
 
 
 class PDOConsumer(SYNCConsumer):
@@ -29,6 +30,8 @@ class PDOConsumer(SYNCConsumer):
 		self._transmission_type = int(transmission_type)
 		self._data = None
 		self._pdo_condition = threading.Condition()
+		
+		self.mapping = ObjectMapping(self)
 	
 	def attach(self, cob_id_rx = None, cob_id_sync = None):
 		""" Attach handler. Must be called when the node gets attached to the network.
