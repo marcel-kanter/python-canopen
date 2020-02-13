@@ -1,4 +1,5 @@
 import unittest
+
 import canopen.objectdictionary
 from canopen.node.service import Service
 from canopen.node.service.objectmapping import ObjectMapping

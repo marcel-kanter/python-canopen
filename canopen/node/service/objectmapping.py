@@ -26,7 +26,9 @@ class ObjectMapping(object):
 		
 		:raises: IndexError
 		"""
-		return self._items[slot]
+		entry, size = self._items[slot]
+		
+		return MappedVariable(self, slot, entry, size)
 	
 	def __len__(self):
 		""" Gets the number of mapped variables.
@@ -48,9 +50,7 @@ class ObjectMapping(object):
 		if size < 0:
 			raise ValueError()
 		
-		entry = MappedVariable(self, len(self._items), variable, size)
-		
-		self._items.append(entry)
+		self._items.append((variable, size))
 		self._size += size
 	
 	def clear(self):
