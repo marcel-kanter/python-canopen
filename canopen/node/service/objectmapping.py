@@ -1,5 +1,6 @@
 from canopen.node.service.service import Service
 from canopen.node.service.mappedvariable import MappedVariable
+from canopen.objectdictionary import Variable
 
 
 class ObjectMapping(object):
@@ -49,6 +50,26 @@ class ObjectMapping(object):
 		size = int(size)
 		if size < 0:
 			raise ValueError()
+		
+		if isinstance(variable, tuple):
+			index = variable[0]
+			subindex = variable[1]
+		else:
+			index = variable.index
+			subindex = variable.subindex
+		
+		# If the index does not belong to a dummy value (index < 0x20), use the variable of the dictionary
+		if index >= 0x20:
+			try:
+				variable = self._service.node.dictionary[index]
+			except:
+				raise ValueError()
+			
+			if not isinstance(variable, Variable):
+				try:
+					variable = variable[subindex]
+				except:
+					raise ValueError()
 		
 		self._items.append((variable, size))
 		self._size += size
