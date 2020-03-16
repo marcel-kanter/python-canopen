@@ -29,6 +29,8 @@ class VariableTestCase(unittest.TestCase):
 		self.assertEqual(examinee.default_value, entry.default_value)
 		self.assertEqual(examinee.description, entry.description)
 		self.assertEqual(examinee.size, entry.size)
+		self.assertEqual(examinee.pdo_mapping, entry.pdo_mapping)
+		self.assertEqual(examinee.srdo_mapping, entry.srdo_mapping)
 		
 		#### Test step: data access set_data
 		value = 100

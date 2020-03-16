@@ -53,3 +53,11 @@ class Variable(object):
 	@property
 	def size(self):
 		return self._entry.size
+	
+	@property
+	def pdo_mapping(self):
+		return self._entry.pdo_mapping
+	
+	@property
+	def srdo_mapping(self):
+		return self._entry.srdo_mapping

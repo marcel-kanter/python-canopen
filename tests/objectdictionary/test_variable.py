@@ -15,16 +15,20 @@ class VariableTestCase(unittest.TestCase):
 		subindex = st.integers(),
 		data_type = st.integers(),
 		access_type = st.text(),
-		description = st.text()
+		description = st.text(),
+		pdo_mapping = st.text(),
+		srdo_mapping = st.text()
 	)
 	@settings(max_examples = 1000)
-	@example(name = "var", index = 0x1000, subindex = 0x00, data_type = UNSIGNED32, access_type = "rw", description = "", valid_example = True)
-	@example(name = "var", index = -1, subindex = 0, data_type = UNSIGNED32, access_type = "rw", description = "", valid_example = False)
-	@example(name = "var", index = 65536, subindex = 0, data_type = UNSIGNED32, access_type = "rw", description = "", valid_example = False)
-	@example(name = "var", index = 0, subindex = -1, data_type = UNSIGNED32, access_type = "rw", description = "", valid_example = False)
-	@example(name = "var", index = 0, subindex = 256, data_type = UNSIGNED32, access_type = "rw", description = "", valid_example = False)
-	@example(name = "var", index = 0, subindex = 0, data_type = 0, access_type = "rw", description = "", valid_example = False)
-	@example(name = "var", index = 0, subindex = 0, data_type = UNSIGNED32, access_type = "X", description = "", valid_example = False)
+	@example(name = "var", index = 0x1000, subindex = 0x00, data_type = UNSIGNED32, access_type = "rw", description = "", pdo_mapping = "no", srdo_mapping = "no", valid_example = True)
+	@example(name = "var", index = -1, subindex = 0, data_type = UNSIGNED32, access_type = "rw", description = "", pdo_mapping = "no", srdo_mapping = "no", valid_example = False)
+	@example(name = "var", index = 65536, subindex = 0, data_type = UNSIGNED32, access_type = "rw", description = "", pdo_mapping = "no", srdo_mapping = "no", valid_example = False)
+	@example(name = "var", index = 0, subindex = -1, data_type = UNSIGNED32, access_type = "rw", description = "", pdo_mapping = "no", srdo_mapping = "no", valid_example = False)
+	@example(name = "var", index = 0, subindex = 256, data_type = UNSIGNED32, access_type = "rw", description = "", pdo_mapping = "no", srdo_mapping = "no", valid_example = False)
+	@example(name = "var", index = 0, subindex = 0, data_type = 0, access_type = "rw", description = "", pdo_mapping = "no", srdo_mapping = "no", valid_example = False)
+	@example(name = "var", index = 0, subindex = 0, data_type = UNSIGNED32, access_type = "X", description = "", pdo_mapping = "no", srdo_mapping = "no", valid_example = False)
+	@example(name = "var", index = 0, subindex = 0, data_type = UNSIGNED32, access_type = "X", description = "", pdo_mapping = False, srdo_mapping = "no", valid_example = False)
+	@example(name = "var", index = 0, subindex = 0, data_type = UNSIGNED32, access_type = "X", description = "", pdo_mapping = "no", srdo_mapping = False, valid_example = False)
 	def test_init(self, **kwargs):
 		name = kwargs["name"]
 		index = kwargs["index"]
@@ -32,6 +36,8 @@ class VariableTestCase(unittest.TestCase):
 		data_type = kwargs["data_type"]
 		access_type = kwargs["access_type"]
 		description = kwargs["description"]
+		pdo_mapping = kwargs["pdo_mapping"]
+		srdo_mapping = kwargs["srdo_mapping"]
 		
 		valid_example = (
 			len(name) >= 0
@@ -39,6 +45,8 @@ class VariableTestCase(unittest.TestCase):
 			and subindex >= 0x00 and subindex <= 0xFF
 			and data_type in [BOOLEAN, INTEGER8, INTEGER16, INTEGER32, UNSIGNED8, UNSIGNED16, UNSIGNED32, REAL32, VISIBLE_STRING, OCTET_STRING, UNICODE_STRING, TIME_OF_DAY, TIME_DIFFERENCE, DOMAIN, INTEGER24, REAL64, INTEGER40, INTEGER48, INTEGER56, INTEGER64, UNSIGNED24, UNSIGNED40, UNSIGNED48, UNSIGNED56, UNSIGNED64]
 			and access_type in ["ro", "wo", "rw", "const"]
+			and pdo_mapping in ["r", "t", "tr", "no"]
+			and srdo_mapping in ["r", "t", "tr", "no"]
 		)
 		
 		if "valid_example" in kwargs:
@@ -56,6 +64,8 @@ class VariableTestCase(unittest.TestCase):
 			self.assertEqual(examinee.data_type, data_type)
 			self.assertEqual(examinee.access_type, access_type)
 			self.assertEqual(examinee.description, description)
+			self.assertEqual(examinee.pdo_mapping, pdo_mapping)
+			self.assertEqual(examinee.srdo_mapping, srdo_mapping)
 			
 			with self.assertRaises(AttributeError):
 				examinee.name = name
@@ -68,10 +78,20 @@ class VariableTestCase(unittest.TestCase):
 			
 			with self.assertRaises(ValueError):
 				examinee.access_type = "xx"
+			with self.assertRaises(ValueError):
+				examinee.pdo_mapping = "xx"
+			with self.assertRaises(ValueError):
+				examinee.srdo_mapping = "xx"
 			
 			for access_type in ["rw", "wo", "ro", "const"]:
 				examinee.access_type = access_type
 				self.assertEqual(examinee.access_type, access_type)
+			for pdo_mapping in ["r", "t", "tr", "no"]:
+				examinee.pdo_mapping = pdo_mapping
+				self.assertEqual(examinee.pdo_mapping, pdo_mapping)
+			for srdo_mapping in ["r", "t", "tr", "no"]:
+				examinee.srdo_mapping = srdo_mapping
+				self.assertEqual(examinee.srdo_mapping, srdo_mapping)
 			
 			self.assertEqual(examinee.default_value, examinee.decode(examinee.encode(examinee.default_value)))
 			

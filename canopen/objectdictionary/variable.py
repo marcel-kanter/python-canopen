@@ -10,7 +10,26 @@ class Variable(object):
 	_canopen_epoch = calendar.timegm((1984, 1, 1, 0, 0, 0))
 	__sizes = {BOOLEAN: 1, INTEGER8: 8, INTEGER16: 16, INTEGER32: 32, UNSIGNED8: 8, UNSIGNED16: 16, UNSIGNED32: 32, REAL32: 32, VISIBLE_STRING: 0, OCTET_STRING: 0, UNICODE_STRING: 0, TIME_OF_DAY: 48, TIME_DIFFERENCE: 48, DOMAIN: 0, INTEGER24: 24, REAL64: 64, INTEGER40: 40, INTEGER48: 48, INTEGER56: 56, INTEGER64: 64, UNSIGNED24: 24, UNSIGNED40: 40, UNSIGNED48: 48, UNSIGNED56: 56, UNSIGNED64: 64}
 	
-	def __init__(self, name, index, subindex, data_type, access_type = "rw", description = ""):
+	def __init__(self, name, index, subindex, data_type, access_type = "rw", description = "", pdo_mapping = "no", srdo_mapping = "no"):
+		"""
+		:param name: A string. The name of this variable.
+		
+		:param index: An integer. Must be in range 0x0000 .. 0xFFFF
+		
+		:param subindex: An integer. Must be in range 0x00 .. 0xFF
+		
+		:param data_type: An integer. Must be one of the allowed data types.
+		
+		:param access_type: A string. Must be one of "rw", "wo", "ro", "const".
+		
+		:param description: A string.
+		
+		:param pdo_mapping: A string. Must be one of "r", "t", "tr", "no".
+		
+		:param srdo_mapping: A string. Must be one of "r", "t", "tr", "no".
+		
+		:raises: ValueError
+		"""
 		if index < 0 or index > 65535:
 			raise ValueError()
 		if subindex < 0 or subindex > 255:
@@ -23,6 +42,8 @@ class Variable(object):
 		self._name = str(name)
 		self._index = int(index)
 		self._description = str(description)
+		self.pdo_mapping = str(pdo_mapping)
+		self.srdo_mapping = str(srdo_mapping)
 		
 		self._object_type = 7
 		self._subindex = int(subindex)
@@ -314,3 +335,23 @@ class Variable(object):
 		For variables with variable length (VISIBLE_STRING, OCTET_STRING, UNICODE_STRING and DOMAIN) it returns 0.
 		"""
 		return self.__sizes[self.data_type]
+	
+	@property
+	def pdo_mapping(self):
+		return self._pdo_mapping
+	
+	@pdo_mapping.setter
+	def pdo_mapping(self, x):
+		if x not in ["r", "t", "tr", "no"]:
+			raise ValueError()
+		self._pdo_mapping = x
+	
+	@property
+	def srdo_mapping(self):
+		return self._srdo_mapping
+	
+	@srdo_mapping.setter
+	def srdo_mapping(self, x):
+		if x not in ["r", "t", "tr", "no"]:
+			raise ValueError()
+		self._srdo_mapping = x
