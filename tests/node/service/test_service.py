@@ -16,6 +16,13 @@ class ServiceTestCase(unittest.TestCase):
 		with self.assertRaises(TypeError):
 			node = None
 			Service(node)
+		
+		self.assertTrue(examinee.is_enabled())
+		examinee.disable()
+		self.assertFalse(examinee.is_enabled())
+		examinee.enable()
+		self.assertTrue(examinee.is_enabled())
+		
 	
 	def test_attach_detach(self):
 		dictionary = ObjectDictionary()

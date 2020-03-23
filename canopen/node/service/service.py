@@ -19,6 +19,7 @@ class Service(object):
 		
 		self._node = node
 		self._callbacks = {}
+		self._enabled = True
 	
 	def attach(self):
 		""" Attach handler. Must be called when the node gets attached to the network.
@@ -43,6 +44,22 @@ class Service(object):
 		:raises: NotImplementedError
 		"""
 		raise NotImplementedError
+	
+	def enable(self):
+		""" Enables this service
+		"""
+		self._enabled = True
+	
+	def disable(self):
+		""" Disables this service
+		"""
+		self._enabled = False
+	
+	def is_enabled(self):
+		"""
+		:returns: True, if this service is enabled.
+		"""
+		return self._enabled
 	
 	def add_callback(self, event, callback):
 		""" Adds the given callback for the event.
