@@ -30,11 +30,16 @@ class Vehicle_Wait(threading.Thread):
 			
 			self.sync(1)
 			time.sleep(0.1)
-			message = can.Message(arbitration_id = 0x80, is_extended_id = False, data = b"\x01")
+			message = can.Message(arbitration_id = 0x80, is_extended_id = False, data = b"\x02")
 			self._bus.send(message)
 			
 			self.sync(1)
-
+			time.sleep(0.1)
+			message = can.Message(arbitration_id = 0x80, is_extended_id = False, data = b"\x03")
+			self._bus.send(message)
+			
+			self.sync(1)
+			
 		except AssertionError:
 			self._testcase.result.addFailure(self._testcase, sys.exc_info())
 		except:
@@ -96,7 +101,7 @@ class SYNCConsumerTestCase(unittest.TestCase):
 		cb.reset_mock()
 		message = can.Message(arbitration_id = 0x80, is_extended_id = False, dlc = 0)
 		bus2.send(message)
-		time.sleep(0.001)
+		time.sleep(0.01)
 		cb.assert_called_with("sync", examinee, None)
 		
 		#### Test step: Ignore RTR
@@ -113,13 +118,24 @@ class SYNCConsumerTestCase(unittest.TestCase):
 		time.sleep(0.01)
 		cb.assert_not_called()
 		
+		#### Test step: sync message with counter, but disabled service
+		cb.reset_mock()
+		examinee.disable()
+		value = 22
+		d = struct.pack("<B", value)
+		message = can.Message(arbitration_id = 0x80, is_extended_id = False, data = d)
+		bus2.send(message)
+		time.sleep(0.01)
+		cb.assert_not_called()
+		examinee.enable()
+		
 		#### Test step: sync message with counter
 		cb.reset_mock()
 		value = 111
 		d = struct.pack("<B", value)
 		message = can.Message(arbitration_id = 0x80, is_extended_id = False, data = d)
 		bus2.send(message)
-		time.sleep(0.001)
+		time.sleep(0.01)
 		cb.assert_called_with("sync", examinee, value)
 		
 		examinee.detach()
@@ -149,8 +165,13 @@ class SYNCConsumerTestCase(unittest.TestCase):
 		vehicle.sync(1)
 		self.assertTrue(examinee.wait_for_sync())
 		
+		examinee.disable()
 		vehicle.sync(1)
-		self.assertFalse(examinee.wait_for_sync(0.1))
+		self.assertFalse(examinee.wait_for_sync(0.2))
+		examinee.enable()
+		
+		vehicle.sync(1)
+		self.assertFalse(examinee.wait_for_sync(0.2))
 		
 		vehicle.join(1)
 		

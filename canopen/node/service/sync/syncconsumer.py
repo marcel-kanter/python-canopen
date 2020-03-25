@@ -71,6 +71,8 @@ class SYNCConsumer(Service):
 	
 	def on_sync(self, message):
 		""" Message handler for incoming SYNC messages. """
+		if not self._enabled:
+			return
 		if message.is_remote_frame:
 			return
 		if message.is_extended_id != bool(self._cob_id_sync & (1 << 29)):
@@ -91,8 +93,10 @@ class SYNCConsumer(Service):
 		
 		:param timeout: The time to wait in seconds, or ``None``
 		
-		:returns: True if the sync message was received, False if the timeout occured
+		:returns: True if the sync message was received, False if the timeout occured, or if the service is disabled
 		"""
+		if not self._enabled:
+			return False
 		with self._sync_condition:
 			gotit = self._sync_condition.wait(timeout)
 		return gotit

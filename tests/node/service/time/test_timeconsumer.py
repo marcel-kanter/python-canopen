@@ -31,12 +31,19 @@ class Vehicle_Wait(threading.Thread):
 			self._bus.send(message)
 			
 			self.sync(1)
-			d = struct.pack("<LH", 0, 60)
+			time.sleep(0.1)
+			d = struct.pack("<LH", 1, 60)
 			message = can.Message(arbitration_id = 0x100, is_extended_id = False, data = d)
 			self._bus.send(message)
 			
 			self.sync(1)
-
+			time.sleep(0.1)
+			d = struct.pack("<LH", 2, 60)
+			message = can.Message(arbitration_id = 0x100, is_extended_id = False, data = d)
+			self._bus.send(message)
+			
+			self.sync(1)
+		
 		except AssertionError:
 			self._testcase.result.addFailure(self._testcase, sys.exc_info())
 		except:
@@ -99,21 +106,21 @@ class TIMEConsumerTestCase(unittest.TestCase):
 		d = struct.pack("<LH", 0, 0)
 		message = can.Message(arbitration_id = 0x100, is_extended_id = False, data = d)
 		bus2.send(message)
-		time.sleep(0.001)
+		time.sleep(0.01)
 		cb.assert_called_with("time", examinee, calendar.timegm((1984, 1, 1, 0, 0, 0)))
 		
 		#### Test step: Too short message
 		cb.reset_mock()
 		message = can.Message(arbitration_id = 0x100, is_extended_id = False, data = b"\x00")
 		bus2.send(message)
-		time.sleep(0.001)
+		time.sleep(0.01)
 		cb.assert_not_called()
 		
 		#### Test step: Ignore RTR
 		cb.reset_mock()
 		message = can.Message(arbitration_id = 0x100, is_extended_id = False, is_remote_frame = True, dlc = 6)
 		bus2.send(message)
-		time.sleep(0.001)
+		time.sleep(0.01)
 		cb.assert_not_called()
 		
 		#### Test step: Message with some time - 60 days after CANopen epoch (1984 is a leap year) but extended frame bit differs to cob_id
@@ -121,15 +128,25 @@ class TIMEConsumerTestCase(unittest.TestCase):
 		d = struct.pack("<LH", 0, 60)
 		message = can.Message(arbitration_id = 0x100, is_extended_id = True, data = d)
 		bus2.send(message)
-		time.sleep(0.001)
+		time.sleep(0.01)
 		cb.assert_not_called()
+		
+		#### Test step: Message with some time, with disabled service
+		cb.reset_mock()
+		examinee.disable()
+		d = struct.pack("<LH", 0, 60)
+		message = can.Message(arbitration_id = 0x100, is_extended_id = False, data = d)
+		bus2.send(message)
+		time.sleep(0.01)
+		cb.assert_not_called()
+		examinee.enable()
 		
 		#### Test step: Message with some time - 60 days after CANopen epoch (1984 is a leap year)
 		cb.reset_mock()
 		d = struct.pack("<LH", 0, 60)
 		message = can.Message(arbitration_id = 0x100, is_extended_id = False, data = d)
 		bus2.send(message)
-		time.sleep(0.001)
+		time.sleep(0.01)
 		cb.assert_called_with("time", examinee, calendar.timegm((1984, 3, 1, 0, 0, 0)))
 		
 		examinee.detach()
@@ -159,8 +176,13 @@ class TIMEConsumerTestCase(unittest.TestCase):
 		vehicle.sync(1)
 		self.assertTrue(examinee.wait_for_time())
 		
+		examinee.disable()
 		vehicle.sync(1)
-		self.assertFalse(examinee.wait_for_time(0.1))
+		self.assertFalse(examinee.wait_for_time(0.2))
+		examinee.enable()
+		
+		vehicle.sync(1)
+		self.assertFalse(examinee.wait_for_time(0.2))
 		
 		vehicle.join(1)
 		

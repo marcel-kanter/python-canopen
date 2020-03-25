@@ -68,6 +68,8 @@ class TIMEConsumer(Service):
 	
 	def on_time(self, message):
 		""" Message handler for incoming SYNC messages. """
+		if not self._enabled:
+			return
 		if message.is_remote_frame:
 			return
 		if message.is_extended_id != bool(self._cob_id_time & (1 << 29)):
@@ -87,8 +89,10 @@ class TIMEConsumer(Service):
 		
 		:param timeout: The time to wait in seconds, or ``None``
 		
-		:returns: True if the sync message was received, False if the timeout occured
+		:returns: True if the sync message was received, False if the timeout occured, or if the service is disabled.
 		"""
+		if not self._enabled:
+			return False
 		with self._time_condition:
 			gotit = self._time_condition.wait(timeout)
 		return gotit
