@@ -68,6 +68,8 @@ class EMCYConsumer(Service):
 		return self._cob_id_emcy != None
 	
 	def on_emcy(self, message):
+		if not self._enabled:
+			return
 		if message.is_extended_id != bool(self._cob_id_emcy & (1 << 29)):
 			return
 		

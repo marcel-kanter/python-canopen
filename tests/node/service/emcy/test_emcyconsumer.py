@@ -98,20 +98,37 @@ class EMCYConsumerTestCase(unittest.TestCase):
 		#### Test step: EMCY write with differing extended frame bit
 		with self.subTest("EMCY write with differing extended frame bit"):
 			cb1.reset_mock()
-			d = struct.pack("<HB4s", 0x0000, 0x00, b"\x00\x00\x00\x00\x00")
+			d = struct.pack("<HB4s", 0x0001, 0x00, b"\x00\x00\x00\x00\x00")
 			message = can.Message(arbitration_id = 0x80 + node.id, is_extended_id = True, data = d)
 			bus2.send(message)
-			time.sleep(0.001)
+			time.sleep(0.1)
 			cb1.assert_not_called()
 		
 		#### Test step: EMCY write with malformed message - too short message
 		with self.subTest("EMCY write with malformed message - too short message"):
 			cb1.reset_mock()
-			d = struct.pack("<HB4s", 0x0000, 0x00, b"\x00\x00\x00\x00")
+			d = struct.pack("<HB4s", 0x0002, 0x00, b"\x00\x00\x00\x00")
+			message = can.Message(arbitration_id = 0x80 + node.id, is_extended_id = False, data = d)
+			bus2.send(message)
+			time.sleep(0.1)
+			cb1.assert_not_called()
+		
+		#### Test step: EMCY write with disabled service and re-enabled service
+		with self.subTest("EMCY write with disabled service"):
+			examinee.disable()
+			cb1.reset_mock()
+			d = struct.pack("<HB4s", 0x0003, 0x00, b"\x00\x00\x00\x00")
+			message = can.Message(arbitration_id = 0x80 + node.id, is_extended_id = False, data = d)
+			bus2.send(message)
+			time.sleep(0.1)
+			cb1.assert_not_called()
+			
+			examinee.enable()
+			d = struct.pack("<HB5s", 0x0004, 0x00, b"\x00\x00\x00\x00\x00")
 			message = can.Message(arbitration_id = 0x80 + node.id, is_extended_id = False, data = d)
 			bus2.send(message)
 			time.sleep(0.001)
-			cb1.assert_not_called()
+			cb1.assert_called_once_with("emcy", examinee, 0x0004, 0x00, b"\x00\x00\x00\x00\x00")
 		
 		examinee.detach()
 		node.detach()

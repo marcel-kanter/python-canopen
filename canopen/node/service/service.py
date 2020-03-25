@@ -57,7 +57,7 @@ class Service(object):
 	
 	def is_enabled(self):
 		"""
-		:returns: True, if this service is enabled.
+		:returns: A boolean. True, if this service is enabled.
 		"""
 		return self._enabled
 	
