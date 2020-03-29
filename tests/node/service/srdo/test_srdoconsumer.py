@@ -107,7 +107,45 @@ class SRDOConsumerTestCase(unittest.TestCase):
 		
 		self.assertEqual(examinee.complement_data, b"\xFF")
 		
-		#### Test step: Correct frame pair, service just collects
+		#### Test step: Correct frame pair, but service disabled
+		examinee.normal_data = b"\x5A"
+		examinee.complement_data = b"\xA5"
+
+		examinee.disable()
+
+		message = can.Message(arbitration_id = 0xFF + 2 * node.id, is_extended_id = False, is_remote_frame = False, data = b"\x33")
+		bus2.send(message)
+		time.sleep(0.01)
+		
+		self.assertEqual(examinee.normal_data, b"\x5A")
+		
+		examinee.enable()
+		
+		message = can.Message(arbitration_id = 0x100 + 2 * node.id, is_extended_id = False, is_remote_frame = False, data = b"\xCC")
+		bus2.send(message)
+		time.sleep(0.01)
+		
+		self.assertEqual(examinee.complement_data, b"\xCC")
+		
+		examinee.normal_data = b"\x5A"
+		examinee.complement_data = b"\xA5"
+
+		message = can.Message(arbitration_id = 0xFF + 2 * node.id, is_extended_id = False, is_remote_frame = False, data = b"\x33")
+		bus2.send(message)
+		time.sleep(0.01)
+		
+		self.assertEqual(examinee.normal_data, b"\x33")
+		
+		examinee.disable()
+		
+		message = can.Message(arbitration_id = 0x100 + 2 * node.id, is_extended_id = False, is_remote_frame = False, data = b"\xCC")
+		bus2.send(message)
+		time.sleep(0.01)
+		
+		self.assertEqual(examinee.complement_data, b"\xA5")
+		examinee.enable()
+		
+		#### Test step: Frame pair, complement data is not the inverse. The service just collects the data. 
 		message = can.Message(arbitration_id = 0xFF + 2 * node.id, is_extended_id = False, is_remote_frame = False, data = b"\xAA")
 		bus2.send(message)
 		time.sleep(0.01)
@@ -148,22 +186,37 @@ class SRDOConsumerTestCase(unittest.TestCase):
 				cb1.reset_mock()
 				message = can.Message(arbitration_id = 0x80, is_extended_id = False, data = data)
 				bus2.send(message)
-				time.sleep(0.001)
+				time.sleep(0.01)
 				cb1.assert_called_with("sync", examinee, counter)
 		
 		#### Test step: sync message, ignore remote frame
 		cb1.reset_mock()
 		message = can.Message(arbitration_id = 0x80, is_extended_id = True, data = b"\x01")
 		bus2.send(message)
-		time.sleep(0.001)
+		time.sleep(0.01)
 		cb1.assert_not_called()
 		
 		#### Test step: sync message, ignore remote frame
 		cb1.reset_mock()
 		message = can.Message(arbitration_id = 0x80, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
-		time.sleep(0.001)
+		time.sleep(0.01)
 		cb1.assert_not_called()
+		
+		#### Test step: Sync message, enable/disbale service
+		cb1.reset_mock()
+		examinee.disable()
+		message = can.Message(arbitration_id = 0x80, is_extended_id = False, data = None)
+		bus2.send(message)
+		time.sleep(0.01)
+		cb1.assert_not_called()
+		examinee.enable()
+		
+		cb1.reset_mock()
+		message = can.Message(arbitration_id = 0x80, is_extended_id = False, data = None)
+		bus2.send(message)
+		time.sleep(0.01)
+		cb1.assert_called_with("sync", examinee, None)
 		
 		examinee.detach()
 		node.detach()

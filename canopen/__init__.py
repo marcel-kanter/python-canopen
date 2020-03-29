@@ -3,4 +3,4 @@ from canopen.node import Node, LocalNode, RemoteNode
 from canopen.objectdictionary import ObjectDictionary
 
 
-__version__ = "0.3.6"
+__version__ = "0.3.7"

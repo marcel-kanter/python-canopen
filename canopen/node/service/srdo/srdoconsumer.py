@@ -90,6 +90,8 @@ class SRDOConsumer(SYNCConsumer):
 	
 	def on_message1(self, message):
 		""" Message handler for incoming SRDO messages with normal data. """
+		if not self._enabled:
+			return
 		if message.is_remote_frame:
 			return
 		if message.is_extended_id != bool(self._cob_id_1 & (1 << 29)):
@@ -99,6 +101,8 @@ class SRDOConsumer(SYNCConsumer):
 	
 	def on_message2(self, message):
 		""" Message handler for incoming SRDO messages with complement data. """
+		if not self._enabled:
+			return
 		if message.is_remote_frame:
 			return
 		if message.is_extended_id != bool(self._cob_id_2 & (1 << 29)):
