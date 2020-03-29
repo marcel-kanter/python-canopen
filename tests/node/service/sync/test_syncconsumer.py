@@ -145,8 +145,8 @@ class SYNCConsumerTestCase(unittest.TestCase):
 		bus2.shutdown()
 		
 	def test_wait_for_sync(self):
-		bus1 = can.Bus(interface = "virtual", channel = 0)
-		bus2 = can.Bus(interface = "virtual", channel = 0)
+		bus1 = can.ThreadSafeBus(interface = "virtual", channel = 0)
+		bus2 = can.ThreadSafeBus(interface = "virtual", channel = 0)
 		dictionary = ObjectDictionary()
 		node = Node("a", 1, dictionary)
 		examinee = SYNCConsumer(node)
@@ -167,11 +167,11 @@ class SYNCConsumerTestCase(unittest.TestCase):
 		
 		examinee.disable()
 		vehicle.sync(1)
-		self.assertFalse(examinee.wait_for_sync(0.2))
+		self.assertFalse(examinee.wait_for_sync(0.4))
 		examinee.enable()
 		
 		vehicle.sync(1)
-		self.assertFalse(examinee.wait_for_sync(0.2))
+		self.assertFalse(examinee.wait_for_sync(0.4))
 		
 		vehicle.join(1)
 		

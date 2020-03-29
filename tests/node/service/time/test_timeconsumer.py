@@ -156,8 +156,8 @@ class TIMEConsumerTestCase(unittest.TestCase):
 		bus2.shutdown()
 	
 	def test_wait_for_time(self):
-		bus1 = can.Bus(interface = "virtual", channel = 0)
-		bus2 = can.Bus(interface = "virtual", channel = 0)
+		bus1 = can.ThreadSafeBus(interface = "virtual", channel = 0)
+		bus2 = can.ThreadSafeBus(interface = "virtual", channel = 0)
 		dictionary = ObjectDictionary()
 		node = Node("a", 1, dictionary)
 		examinee = TIMEConsumer(node)
@@ -178,11 +178,11 @@ class TIMEConsumerTestCase(unittest.TestCase):
 		
 		examinee.disable()
 		vehicle.sync(1)
-		self.assertFalse(examinee.wait_for_time(0.2))
+		self.assertFalse(examinee.wait_for_time(0.4))
 		examinee.enable()
 		
 		vehicle.sync(1)
-		self.assertFalse(examinee.wait_for_time(0.2))
+		self.assertFalse(examinee.wait_for_time(0.4))
 		
 		vehicle.join(1)
 		

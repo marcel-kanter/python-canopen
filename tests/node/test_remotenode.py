@@ -103,8 +103,8 @@ class RemoteNodeTestCase(unittest.TestCase):
 		node.detach()
 	
 	def test_data_access(self):
-		bus1 = can.Bus(interface = "virtual", channel = 0)
-		bus2 = can.Bus(interface = "virtual", channel = 0)
+		bus1 = can.ThreadSafeBus(interface = "virtual", channel = 0)
+		bus2 = can.ThreadSafeBus(interface = "virtual", channel = 0)
 		
 		vehicle = Vehicle(self, bus1)
 		vehicle.start()
