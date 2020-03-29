@@ -78,11 +78,25 @@ class PDOConsumer(SYNCConsumer):
 		return self._cob_id_rx != None
 	
 	def wait_for_pdo(self, timeout = None):
+		""" Wait for the reception of the PDO message.
+		
+		:param timeout: The time to wait in seconds, or ``None``
+		
+		:returns: True if the sync message was received, False if the timeout occured, or if the service is disabled
+		"""
+		if not self._enabled:
+			return False
+		
 		with self._pdo_condition:
 			gotit = self._pdo_condition.wait(timeout)
 		return gotit
 	
 	def on_pdo(self, message):
+		"""
+		Handler for PDO messages.
+		"""
+		if not self._enabled:
+			return
 		if message.is_remote_frame:
 			return
 		if message.is_extended_id != bool(self._cob_id_rx & (1 << 29)):

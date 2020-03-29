@@ -29,7 +29,12 @@ class Vehicle_Wait(threading.Thread):
 		
 			self.sync(1)
 			time.sleep(0.1)
-			message = can.Message(arbitration_id = 0x201, is_extended_id = False, data = b"\x11\x22\x33\x44\x55\x66\x77\x88")
+			message = can.Message(arbitration_id = 0x201, is_extended_id = False, data = b"\x22\x22\x33\x44\x55\x66\x77\x88")
+			self._bus.send(message)
+			
+			self.sync(1)
+			time.sleep(0.1)
+			message = can.Message(arbitration_id = 0x201, is_extended_id = False, data = b"\x33\x22\x33\x44\x55\x66\x77\x88")
 			self._bus.send(message)
 			
 			self.sync(1)
@@ -121,9 +126,27 @@ class PDOConsumerTest(unittest.TestCase):
 				cb1.reset_mock()
 				message = can.Message(arbitration_id = 0x201, is_extended_id = False, data = data)
 				bus2.send(message)
-				time.sleep(0.001)
+				time.sleep(0.01)
 				cb1.assert_called_with("pdo", examinee)
 				self.assertEqual(examinee.data, data)
+		
+		#### Test step: Enable/Disable Service
+		cb1.reset_mock()
+		examinee.disable()
+		data = b"\x11\x22\x33"
+		message = can.Message(arbitration_id = 0x201, is_extended_id = False, data = data)
+		bus2.send(message)
+		time.sleep(0.01)
+		cb1.assert_not_called()
+		examinee.enable()
+		
+		cb1.reset_mock()
+		data = b"\x11\x22\x33\x44\x55"
+		message = can.Message(arbitration_id = 0x201, is_extended_id = False, data = data)
+		bus2.send(message)
+		time.sleep(0.01)
+		cb1.assert_called_with("pdo", examinee)
+		self.assertEqual(examinee.data, data)
 		
 		#### Test step: PDO message, ignore differend extended frame type
 		cb1.reset_mock()
@@ -167,21 +190,36 @@ class PDOConsumerTest(unittest.TestCase):
 				cb1.reset_mock()
 				message = can.Message(arbitration_id = 0x80, is_extended_id = False, data = data)
 				bus2.send(message)
-				time.sleep(0.001)
+				time.sleep(0.01)
 				cb1.assert_called_with("sync", examinee, counter)
+		
+		#### Test step: Sync message, enable/disbale service
+		cb1.reset_mock()
+		examinee.disable()
+		message = can.Message(arbitration_id = 0x80, is_extended_id = False, data = None)
+		bus2.send(message)
+		time.sleep(0.01)
+		cb1.assert_not_called()
+		examinee.enable()
+		
+		cb1.reset_mock()
+		message = can.Message(arbitration_id = 0x80, is_extended_id = False, data = None)
+		bus2.send(message)
+		time.sleep(0.01)
+		cb1.assert_called_with("sync", examinee, None)
 		
 		#### Test step: sync message, ignore remote frame
 		cb1.reset_mock()
 		message = can.Message(arbitration_id = 0x80, is_extended_id = True, data = b"\x01")
 		bus2.send(message)
-		time.sleep(0.001)
+		time.sleep(0.01)
 		cb1.assert_not_called()
 		
 		#### Test step: sync message, ignore remote frame
 		cb1.reset_mock()
 		message = can.Message(arbitration_id = 0x80, is_extended_id = False, is_remote_frame = True, dlc = 1)
 		bus2.send(message)
-		time.sleep(0.001)
+		time.sleep(0.01)
 		cb1.assert_not_called()
 		
 		examinee.detach()
@@ -204,15 +242,20 @@ class PDOConsumerTest(unittest.TestCase):
 		
 		vehicle = Vehicle_Wait(self, bus2)
 		vehicle.start()
-
+		
 		vehicle.sync(1)
-		self.assertTrue(examinee.wait_for_pdo(1))
-			
+		self.assertTrue(examinee.wait_for_pdo(0.5))
+		
 		vehicle.sync(1)
 		self.assertTrue(examinee.wait_for_pdo())
 		
-		vehicle.sync(1)		
-		self.assertFalse(examinee.wait_for_sync(0.4))
+		examinee.disable()
+		vehicle.sync(1)
+		self.assertFalse(examinee.wait_for_pdo(0.5))
+		examinee.enable()
+		
+		vehicle.sync(1)
+		self.assertFalse(examinee.wait_for_pdo(0.5))
 		
 		vehicle.join(1)
 		
