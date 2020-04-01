@@ -5,16 +5,16 @@ import can
 
 from canopen import Node, Network
 from canopen.objectdictionary import ObjectDictionary
-from canopen.node.service.nmt import NMTSlave
+from canopen.node.service.nmt import LocalNMTSlave
 
 from canopen.nmt.states import *
 
 
-class NMTSlaveTestCase(unittest.TestCase):
+class LocalNMTSlaveTestCase(unittest.TestCase):
 	def test_init(self):
 		dictionary = ObjectDictionary()
 		node = Node("n", 1, dictionary)
-		examinee = NMTSlave(node)
+		examinee = LocalNMTSlave(node)
 		
 		self.assertEqual(examinee.node, node)
 		
@@ -45,7 +45,7 @@ class NMTSlaveTestCase(unittest.TestCase):
 	def test_attach_detach(self):
 		dictionary = ObjectDictionary()
 		node = Node("n", 1, dictionary)
-		examinee = NMTSlave(node)
+		examinee = LocalNMTSlave(node)
 		network = Network()
 		
 		node.attach(network)
@@ -67,7 +67,7 @@ class NMTSlaveTestCase(unittest.TestCase):
 	def test_callback(self):
 		dictionary = ObjectDictionary()
 		node = Node("n", 1, dictionary)
-		examinee = NMTSlave(node)
+		examinee = LocalNMTSlave(node)
 				
 		m_start = Mock()
 		m_stop = Mock()
@@ -138,7 +138,7 @@ class NMTSlaveTestCase(unittest.TestCase):
 		bus = can.Bus(interface = "virtual", channel = 0, receive_own_messages = True)
 		dictionary = ObjectDictionary()
 		node = Node("a", 0x0A, dictionary)
-		examinee = NMTSlave(node)
+		examinee = LocalNMTSlave(node)
 		network = Network()
 		
 		network.attach(bus)
@@ -252,7 +252,7 @@ class NMTSlaveTestCase(unittest.TestCase):
 		bus2 = can.Bus(interface = "virtual", channel = 0)
 		dictionary = ObjectDictionary()
 		node = Node("a", 0x0A, dictionary)
-		examinee = NMTSlave(node)
+		examinee = LocalNMTSlave(node)
 		network = Network()
 		
 		network.attach(bus1)
@@ -405,7 +405,7 @@ class NMTSlaveTestCase(unittest.TestCase):
 		bus2 = can.Bus(interface = "virtual", channel = 0)
 		dictionary = ObjectDictionary()
 		node = Node("a", 0x0A, dictionary)
-		examinee = NMTSlave(node)
+		examinee = LocalNMTSlave(node)
 		network = Network()
 		
 		network.attach(bus1)
@@ -497,7 +497,7 @@ class NMTSlaveTestCase(unittest.TestCase):
 		bus2 = can.Bus(interface = "virtual", channel = 0)
 		dictionary = ObjectDictionary()
 		node = Node("a", 0x0A, dictionary)
-		examinee = NMTSlave(node)
+		examinee = LocalNMTSlave(node)
 		network = Network()
 		
 		network.attach(bus1)

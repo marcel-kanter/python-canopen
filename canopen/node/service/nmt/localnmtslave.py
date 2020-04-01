@@ -5,10 +5,10 @@ from canopen.node.service import Service
 from canopen.nmt.states import *
 
 
-class NMTSlave(Service):
-	""" NMTSlave service.
+class LocalNMTSlave(Service):
+	""" LocalNMTSlave service.
 	
-	This class is an implementation of the NMT slave. The nmt state of the node can be accessed by the state property.
+	This class is an implementation of the NMT slave for local nodes. The nmt state of the node can be accessed by the state property.
 	
 	Callbacks
 	"start": ("start", service)

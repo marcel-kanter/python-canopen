@@ -1,6 +1,6 @@
 import canopen.objectdictionary
 from .node import Node
-from .service import NMTSlave, EMCYProducer, SDOServer, PDOConsumer, PDOProducer
+from .service import LocalNMTSlave, EMCYProducer, SDOServer, PDOConsumer, PDOProducer
 
 
 class LocalNode(Node):
@@ -21,7 +21,7 @@ class LocalNode(Node):
 		"""
 		Node.__init__(self, name, node_id, dictionary)
 		self._data = {}
-		self.nmt = NMTSlave(self)
+		self.nmt = LocalNMTSlave(self)
 		self.emcy = EMCYProducer(self)
 		self.sdo = SDOServer(self)
 		self.rpdo = {1: PDOConsumer(self), 2: PDOConsumer(self), 3: PDOConsumer(self), 4: PDOConsumer(self)}

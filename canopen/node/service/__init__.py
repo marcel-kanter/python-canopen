@@ -1,7 +1,7 @@
 from canopen.node.service.service import Service
 
 from canopen.node.service.emcy import EMCYConsumer, EMCYProducer
-from canopen.node.service.nmt import RemoteNMTSlave, NMTSlave
+from canopen.node.service.nmt import RemoteNMTSlave, LocalNMTSlave
 from canopen.node.service.pdo import PDOConsumer, PDOProducer
 from canopen.node.service.sdo import SDOClient, SDOServer
 from canopen.node.service.sync import SYNCConsumer, SYNCProducer
