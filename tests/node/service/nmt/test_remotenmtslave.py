@@ -6,15 +6,15 @@ import can
 
 from canopen import Node, Network
 from canopen.objectdictionary import ObjectDictionary
-from canopen.node.service.nmt import NMTMaster
+from canopen.node.service.nmt import RemoteNMTSlave
 from canopen.nmt.states import *
 
 
-class NMTMasterTestCase(unittest.TestCase):
+class RemoteNMTSlaveTestCase(unittest.TestCase):
 	def test_init(self):
 		dictionary = ObjectDictionary()
 		node = Node("n", 1, dictionary)
-		examinee = NMTMaster(node)
+		examinee = RemoteNMTSlave(node)
 		
 		self.assertEqual(examinee.node, node)
 		
@@ -23,7 +23,7 @@ class NMTMasterTestCase(unittest.TestCase):
 	def test_attach_detach(self):
 		dictionary = ObjectDictionary()
 		node = Node("n", 1, dictionary)
-		examinee = NMTMaster(node)
+		examinee = RemoteNMTSlave(node)
 		network = Network()
 		
 		node.attach(network)
@@ -47,7 +47,7 @@ class NMTMasterTestCase(unittest.TestCase):
 		bus2 = can.Bus(interface = "virtual", channel = 0)
 		dictionary = ObjectDictionary()
 		node = Node("a", 0x0A, dictionary)
-		examinee = NMTMaster(node)
+		examinee = RemoteNMTSlave(node)
 		network = Network()
 		
 		network.attach(bus1)
@@ -118,7 +118,7 @@ class NMTMasterTestCase(unittest.TestCase):
 		bus2 = can.Bus(interface = "virtual", channel = 0)
 		dictionary = ObjectDictionary()
 		node = Node("a", 0x0A, dictionary)
-		examinee = NMTMaster(node)
+		examinee = RemoteNMTSlave(node)
 		network = Network()
 		
 		network.attach(bus1)
@@ -185,7 +185,7 @@ class NMTMasterTestCase(unittest.TestCase):
 		bus2 = can.Bus(interface = "virtual", channel = 0)
 		dictionary = ObjectDictionary()
 		node = Node("a", 0x0A, dictionary)
-		examinee = NMTMaster(node)
+		examinee = RemoteNMTSlave(node)
 		network = Network()
 		
 		cb = Mock()
@@ -250,7 +250,7 @@ class NMTMasterTestCase(unittest.TestCase):
 		bus2 = can.Bus(interface = "virtual", channel = 0)
 		dictionary = ObjectDictionary()
 		node = Node("a", 0x0A, dictionary)
-		examinee = NMTMaster(node)
+		examinee = RemoteNMTSlave(node)
 		network = Network()
 		
 		cb = Mock()

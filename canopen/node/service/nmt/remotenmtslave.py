@@ -6,10 +6,10 @@ from canopen.node.service import Service
 from canopen.nmt.states import *
 
 
-class NMTMaster(Service):
-	""" NMTMaster service.
+class RemoteNMTSlave(Service):
+	""" RemoteNMTSlave service.
 	
-	This class is an implementation of the NMT master. The nmt state of the node can be accessed by the state property.
+	This class is an implementation of the NMT slave for remote nodes. The nmt state of the node can be accessed by the state property.
 	
 	Callbacks
 	"heartbeat": ("heartbeat", service)

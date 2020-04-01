@@ -1,5 +1,5 @@
 from .node import Node
-from .service import NMTMaster, EMCYConsumer, SDOClient, PDOConsumer, PDOProducer
+from .service import RemoteNMTSlave, EMCYConsumer, SDOClient, PDOConsumer, PDOProducer
 
 
 class RemoteNode(Node):
@@ -19,7 +19,7 @@ class RemoteNode(Node):
 		:raises: TypeError, ValueError
 		"""
 		Node.__init__(self, name, node_id, dictionary)
-		self.nmt = NMTMaster(self)
+		self.nmt = RemoteNMTSlave(self)
 		self.emcy = EMCYConsumer(self)
 		self.sdo = SDOClient(self)
 		self.rpdo = {1: PDOProducer(self), 2: PDOProducer(self), 3: PDOProducer(self), 4: PDOProducer(self)}

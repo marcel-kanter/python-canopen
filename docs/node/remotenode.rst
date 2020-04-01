@@ -8,7 +8,7 @@ No data of any object is held by the node. For every access to an object's value
 
 The following services are used by this class:
 
-* NMT master
+* Remote NMT slave
 * EMCY client
 * SDO client
 
