@@ -75,36 +75,67 @@ class SDOServerTestCase(unittest.TestCase):
 		# Wrong data length -> Ignored by SDOServer
 		message_send = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\x00")
 		bus2.send(message_send)
-		time.sleep(0.001)
+		
+		message_recv = bus2.recv(0.5)
+		self.assertEqual(message_recv, None)
 		
 		# Abort transfer -> No response
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\x80\x00\x00\x00\x00\x00\x00\x00")
 		bus2.send(message)
-		time.sleep(0.001)
+		
+		message_recv = bus2.recv(0.5)
+		self.assertEqual(message_recv, None)
+
+		# Block upload: Not implemented and disabled -> No response
+		examinee.disable()
+		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\xA0\x00\x00\x00\x00\x00\x00\x00")
+		bus2.send(message)
+		
+		message_recv = bus2.recv(0.5)
+		self.assertEqual(message_recv, None)
+		examinee.enable()
 		
 		# Block upload -> Not implemented and thus the response is an abort
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\xA0\x00\x00\x00\x00\x00\x00\x00")
 		bus2.send(message)
 		
-		message_recv = bus2.recv(1)
+		message_recv = bus2.recv(0.5)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
 		self.assertEqual(message_recv.data, b"\x80\x00\x00\x00\x01\x00\x04\x05")
+		
+		# Block download: Not implemented and disabled -> No response
+		examinee.disable()
+		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\xC0\x00\x00\x00\x00\x00\x00\x00")
+		bus2.send(message)
+		
+		message_recv = bus2.recv(0.5)
+		self.assertEqual(message_recv, None)
+		examinee.enable()
 		
 		# Block download -> Not implemented and thus the response is an abort
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\xC0\x00\x00\x00\x00\x00\x00\x00")
 		bus2.send(message)
 		
-		message_recv = bus2.recv(1)
+		message_recv = bus2.recv(0.5)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
 		self.assertEqual(message_recv.data, b"\x80\x00\x00\x00\x01\x00\x04\x05")
+		
+		# Network indication: Not implemented and disabled -> No response
+		examinee.disable()
+		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\xE0\x00\x00\x00\x00\x00\x00\x00")
+		bus2.send(message)
+		
+		message_recv = bus2.recv(0.5)
+		self.assertEqual(message_recv, None)
+		examinee.enable()
 		
 		# Network indication -> Not implemented and thus the response is an abort
 		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = b"\xE0\x00\x00\x00\x00\x00\x00\x00")
 		bus2.send(message)
 		
-		message_recv = bus2.recv(1)
+		message_recv = bus2.recv(0.5)
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
 		self.assertEqual(message_recv.data, b"\x80\x00\x00\x00\x01\x00\x04\x05")
@@ -527,6 +558,22 @@ class SDOServerTestCase(unittest.TestCase):
 		
 		self.assertEqual(node[0x5678].value, 0x12345678)
 		
+		#### Test step: Expedited download, disabled service -> No response
+		# Initiate: index: +, subindex: +, rw: +, e = 1 & s = 0 & n = 0 -> No response (disabled service)
+		examinee.disable()
+		index = 0x5678
+		subindex = 0x00
+		d = struct.pack("<BHBL", 0x22, index, subindex, 0x87654321)
+		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
+		bus2.send(message)
+		
+		message_recv = bus2.recv(0.5)
+		self.assertEqual(message_recv, None)
+		
+		# check previously written value
+		self.assertEqual(node[0x5678].value, 0x12345678)
+		examinee.enable()
+		
 		#### Test step
 		# Initiate: index: +, subindex: +, rw: +, e = 1 & s = 1 & n = 0 -> Abort on variable with 5 bytes or more
 		index = 0x1234
@@ -817,6 +864,19 @@ class SDOServerTestCase(unittest.TestCase):
 		self.assertEqual(message_recv.arbitration_id, 0x581)
 		self.assertEqual(message_recv.is_extended_id, False)
 		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x43, index, subindex, 12345))
+		
+		#### Test step
+		# Initiate: index: +, subindex: +, rw: + -> But service disabled -> No response
+		examinee.disable()
+		index = 0x5678
+		subindex = 0x00
+		d = struct.pack("<BHBL", 0x40, index, subindex, 0x00000000)
+		message = can.Message(arbitration_id = 0x601, is_extended_id = False, data = d)
+		bus2.send(message)
+		
+		message_recv = bus2.recv(0.5)
+		self.assertEqual(message_recv, None)
+		examinee.enable()
 		
 		#### Test step
 		# Initiate: index: +, subindex: +, rw: + -> Confirm segmented transfer

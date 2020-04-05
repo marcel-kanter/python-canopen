@@ -2,7 +2,7 @@ import struct
 import can
 
 from canopen.node.service import Service
-from canopen.sdo.abortcodes import TOGGLE_BIT_NOT_ALTERNATED, COMMAND_SPECIFIER_NOT_VALID, OBJECT_DOES_NOT_EXIST, SUBINDEX_DOES_NOT_EXIST, NO_DATA_AVAILABLE
+from canopen.sdo.abortcodes import TOGGLE_BIT_NOT_ALTERNATED, COMMAND_SPECIFIER_NOT_VALID, OBJECT_DOES_NOT_EXIST, SUBINDEX_DOES_NOT_EXIST, NO_DATA_AVAILABLE, GENERAL_ERROR
 from canopen.objectdictionary import Variable
 
 
@@ -85,8 +85,18 @@ class SDOServer(Service):
 		"""
 		return self._cob_id_rx != None
 	
+	def disable(self):
+		"""
+		Disable this service. Silently aborts ongoing transaction.
+		"""
+		self._enabled = False
+		self._state = 0x80
+	
 	def on_request(self, message):
 		""" Handler for upload and download requests to the SDO server. """
+		if not self._enabled:
+			return
+		
 		if message.dlc != 8:
 			return
 		
