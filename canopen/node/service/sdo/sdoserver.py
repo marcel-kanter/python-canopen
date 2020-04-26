@@ -2,7 +2,7 @@ import struct
 import can
 
 from canopen.node.service import Service
-from canopen.sdo.abortcodes import TOGGLE_BIT_NOT_ALTERNATED, COMMAND_SPECIFIER_NOT_VALID, OBJECT_DOES_NOT_EXIST, SUBINDEX_DOES_NOT_EXIST, NO_DATA_AVAILABLE, GENERAL_ERROR
+from canopen.sdo.abortcodes import TOGGLE_BIT_NOT_ALTERNATED, COMMAND_SPECIFIER_NOT_VALID, OBJECT_DOES_NOT_EXIST, SUBINDEX_DOES_NOT_EXIST, NO_DATA_AVAILABLE, GENERAL_ERROR, NO_ERROR
 from canopen.objectdictionary import Variable
 
 
@@ -71,6 +71,9 @@ class SDOServer(Service):
 		""" Detaches the ``SDOServer`` from the ``Node``. It does NOT remove or delete the ``SDOServer`` from the ``Node``. """
 		if not self.is_attached():
 			raise RuntimeError()
+		
+		if self._state != 0x80:
+			self._abort(self._index, self._subindex, NO_ERROR)
 		
 		if self._cob_id_rx & (1 << 29):
 			self._node.network.unsubscribe(self.on_request, self._cob_id_rx & 0x1FFFFFFF)
