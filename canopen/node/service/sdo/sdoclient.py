@@ -3,7 +3,8 @@ import can
 import threading
 
 from canopen.node.service import Service
-from canopen.sdo.abortcodes import TOGGLE_BIT_NOT_ALTERNATED, SDO_PROTOCOL_TIMED_OUT, COMMAND_SPECIFIER_NOT_VALID, GENERAL_ERROR
+from canopen.sdo.abortcodes import TOGGLE_BIT_NOT_ALTERNATED, SDO_PROTOCOL_TIMED_OUT, COMMAND_SPECIFIER_NOT_VALID, GENERAL_ERROR, LENGTH_DOES_NOT_MATCH
+from canopen.sdo.exception import SDOAbortError
 from canopen.objectdictionary import Variable
 
 
@@ -92,6 +93,13 @@ class SDOClient(Service):
 		return self._cob_id_rx != None
 	
 	def upload(self, index, subindex):
+		"""
+		:param index: An integer. Range 0x0000 ... 0xFFFF. The object index
+		
+		:param subindex: An integer. Range 0x00 ... 0xFF. The object subindex.
+		
+		:raises: TimeoutError, SDOAbortError
+		"""
 		item = self._node.dictionary[index]
 		
 		if not isinstance(item, Variable):
@@ -123,17 +131,26 @@ class SDOClient(Service):
 				try:
 					value = item.decode(self._buffer)
 				except:
-					# 0x06070010 Data type does not match; length of service parameter does not match.
-					self._abort(self._index, self._subindex, 0x06070010)
-					raise Exception()
+					self._abort(self._index, self._subindex, LENGTH_DOES_NOT_MATCH)
+					raise SDOAbortError(LENGTH_DOES_NOT_MATCH)
 				
 				self._state = 0x80
 				return value
 			else:
 				self._state = 0x80
-				raise Exception()
+				#TODO: Get specific exception from lower half.
+				raise SDOAbortError(GENERAL_ERROR)
 	
 	def download(self, index, subindex, value):
+		"""
+		:param index: An integer. Range 0x0000 ... 0xFFFF. The object index
+		
+		:param subindex: An integer. Range 0x00 ... 0xFF. The object subindex.
+		
+		:param value: An object. The data to write
+		
+		:raises: TimeoutError, SDOAbortError
+		"""
 		item = self._node.dictionary[index]
 		
 		if not isinstance(item, Variable):
@@ -168,7 +185,8 @@ class SDOClient(Service):
 			
 			if self._state & 0xE0 != 0x20:
 				self._state = 0x80
-				raise Exception()
+				#TODO: Get specific exception from lower half.
+				raise SDOAbortError(GENERAL_ERROR)
 			self._state = 0x80
 	
 	def on_response(self, message):

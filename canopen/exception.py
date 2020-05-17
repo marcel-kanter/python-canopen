@@ -1,0 +1,2 @@
+class CANopenError(Exception):
+	pass

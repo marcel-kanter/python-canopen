@@ -8,6 +8,8 @@ import can
 from canopen import Node, Network
 from canopen.objectdictionary import ObjectDictionary, Record, Variable, UNICODE_STRING, UNSIGNED32
 from canopen.node.service.sdo import SDOClient
+from canopen.sdo.exception import SDOAbortError
+from canopen.sdo.abortcodes import LENGTH_DOES_NOT_MATCH
 
 
 class Vehicle_Download(threading.Thread):
@@ -252,6 +254,19 @@ class Vehicle_Upload(threading.Thread):
 			value = examinee.upload(index, subindex)
 			
 			assert(value == 1234)
+			
+			self.sync(1)
+			
+			#### Test step: Upload, expedited transfer, size not correct (mainly too less bytes)
+			index = 0x5678
+			subindex = 0x00
+
+			try:
+				value = examinee.upload(index, subindex)
+			except SDOAbortError:
+				pass
+			else:
+				assert(False)
 			
 			self.sync(1)
 			
@@ -976,6 +991,30 @@ class SDOClientTestCase(unittest.TestCase):
 		message_send = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
 		bus2.send(message_send)
 		time.sleep(0.001)
+		
+		vehicle.sync(1)
+		
+		#### Test step: Upload, expedited transfer, size not correct (mainly too less bytes)
+		index = 0x5678
+		subindex = 0x00
+		value = 1234
+		# Initiation
+		message_recv = bus2.recv(1)
+		self.assertEqual(message_recv.arbitration_id, 0x601)
+		self.assertEqual(message_recv.is_remote_frame, False)
+		self.assertEqual(message_recv.is_extended_id, False)
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x40, index, subindex, 0x00000000))
+		
+		d = struct.pack("<BHBL", 0x4F, index, subindex, value)
+		message_send = can.Message(arbitration_id = 0x581, is_extended_id = False, data = d)
+		bus2.send(message_send)
+		time.sleep(0.001)
+		
+		message_recv = bus2.recv(1)
+		self.assertEqual(message_recv.arbitration_id, 0x601)
+		self.assertEqual(message_recv.is_remote_frame, False)
+		self.assertEqual(message_recv.is_extended_id, False)
+		self.assertEqual(message_recv.data, struct.pack("<BHBL", 0x80, index, subindex, 0x06070010))
 		
 		vehicle.sync(1)
 		
